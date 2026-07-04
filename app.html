@@ -543,6 +543,7 @@ $('goBtn').onclick=()=>{
 };
 $('consentOk').onclick=()=>{
   $('consent').style.display='none';
+  try{localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value}))}catch(_){/* 深度报告(内测)读取,仍仅本机 */}
   const [y,m,d]=$('bDate').value.split('-').map(Number);
   const tv=$('bTime').value;
   const hour=tv?Number(tv.split(':')[0]):undefined;

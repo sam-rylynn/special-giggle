@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E1220">
+<title>知·星 — 深度本命报告(内测)</title>
+<style>
+  :root{--ink:#0E1220;--panel:#1A2233;--gold:#C9A85C;--gold-dim:#8f7a45;--moon:#E8E4D8;--cinnabar:#B5472F;--mist:#6B7280;
+    --serif:"Noto Serif SC","Songti SC","STSong",serif;--sans:"Noto Sans SC","PingFang SC",sans-serif}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:var(--ink)}
+  body{background:var(--ink);color:var(--moon);font-family:var(--sans);font-size:15px;line-height:1.9;overflow-x:hidden}
+  .wrap{max-width:640px;margin:0 auto;padding:0 18px 70px}
+
+  /* 封面:观星大厅 */
+  .cover{position:relative;height:min(56vh,460px);overflow:hidden;border-radius:0 0 14px 14px}
+  .cover img{width:100%;height:100%;object-fit:cover;object-position:50% 38%;animation:kb 34s ease-in-out infinite alternate}
+  @keyframes kb{from{transform:scale(1)}to{transform:scale(1.06)}}
+  .cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.25),rgba(14,18,32,.05) 40%,rgba(14,18,32,.82) 88%,var(--ink))}
+  .cover .tt{position:absolute;left:0;right:0;bottom:26px;text-align:center;z-index:2}
+  .badge{display:inline-block;font-size:10px;letter-spacing:.3em;text-indent:.3em;color:var(--gold);border:1px solid rgba(201,168,92,.5);border-radius:99px;padding:2px 12px;margin-bottom:12px}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(26px,7vw,32px);letter-spacing:.22em;text-indent:.22em;
+    background:linear-gradient(180deg,#fff6dd,#e9d09a 45%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .cover .sub{margin-top:8px;color:var(--mist);font-size:12px;letter-spacing:.3em;text-indent:.3em}
+
+  .card{background:var(--panel);border:1px solid rgba(201,168,92,.22);border-radius:12px;margin-top:20px;overflow:hidden}
+  .card .pad{padding:20px 18px}
+  .card h2{font-family:var(--serif);font-size:17px;color:var(--gold);letter-spacing:.16em;margin-bottom:12px;
+    display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap;text-indent:.16em}
+  .card h2::before,.card h2::after{content:"";flex:0 1 32px;min-width:8px;height:1px}
+  .card h2::before{background:linear-gradient(90deg,transparent,rgba(201,168,92,.5))}
+  .card h2::after{background:linear-gradient(90deg,rgba(201,168,92,.5),transparent)}
+  .chapviz{position:relative;height:150px;overflow:hidden}
+  .chapviz img{width:100%;height:100%;object-fit:cover;transition:transform 6s ease}
+  .card:hover .chapviz img{transform:scale(1.05)}
+  .chapviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,34,51,0) 40%,var(--panel))}
+  .src{display:inline-block;font-size:10.5px;color:var(--gold);border:1px solid rgba(201,168,92,.4);border-radius:99px;padding:0 10px;letter-spacing:.08em;margin-bottom:10px}
+  .mode{float:right;font-size:10.5px;color:var(--mist);border:1px dashed rgba(107,114,128,.5);border-radius:99px;padding:0 10px}
+  .body p{margin-bottom:10px;text-align:justify;white-space:pre-wrap}
+  .body p:last-child{margin-bottom:0}
+
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input,button,textarea{height:46px;border-radius:8px;border:1px solid rgba(232,228,216,.16);background:#10182a;color:var(--moon);
+    padding:0 12px;font-size:15px;font-family:var(--sans);color-scheme:dark;-webkit-appearance:none}
+  button{background:linear-gradient(180deg,#d8b96a,var(--gold));color:#241c0c;border:none;font-family:var(--serif);font-weight:700;
+    letter-spacing:.2em;text-indent:.2em;padding:0 24px;cursor:pointer;border-radius:999px}
+  button.ghost{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+
+  table{width:100%;border-collapse:collapse;text-align:center;font-family:var(--serif)}
+  th{color:var(--gold-dim);font-weight:400;font-size:11.5px;padding:5px 0;letter-spacing:.2em}
+  td{padding:4px 0;border-top:1px dashed rgba(201,168,92,.15)}
+  td.gz{font-size:25px;font-weight:700;background:linear-gradient(180deg,#fff6dd,#e9d09a 40%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  td.tg{font-size:11.5px;color:var(--mist)}
+  .warn{background:rgba(181,71,47,.12);border:1px solid rgba(181,71,47,.4);border-radius:8px;padding:9px 12px;font-size:12.5px;color:#e0a294;margin-top:10px}
+
+  .bar{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .bar b{width:2em;font-family:var(--serif);font-weight:400}
+  .bar .track{flex:1;height:9px;background:#10182a;border-radius:99px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.2,.7,.3,1)}
+  .basis li{color:var(--mist);font-size:12.5px;list-style:none}
+  .basis li::before{content:"· ";color:var(--gold-dim)}
+
+  /* 卦象 */
+  .hex{display:flex;flex-direction:column-reverse;gap:7px;width:120px;margin:14px auto}
+  .yao{display:flex;gap:10px;height:10px}
+  .yao i{flex:1;background:var(--gold);border-radius:2px;opacity:.85}
+  .yao.mov i{background:var(--cinnabar);box-shadow:0 0 10px rgba(181,71,47,.6)}
+  .hexname{text-align:center;font-family:var(--serif);font-size:20px;letter-spacing:.2em;
+    background:linear-gradient(180deg,#fff6dd,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* AI 生成中:浑天仪 */
+  #aiLoading{display:none;position:fixed;inset:0;z-index:60;background:rgba(7,9,15,.9)}
+  #aiLoading .inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+  #aiLoading img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;animation:kb 20s ease-in-out infinite alternate}
+  #aiLoading .txt{position:relative;font-family:var(--serif);color:var(--gold);letter-spacing:.3em;text-indent:.3em;font-size:15px;animation:breathe2 2.4s ease-in-out infinite}
+  @keyframes breathe2{0%,100%{opacity:.45}50%{opacity:1}}
+
+  .rip{position:fixed;border:1.5px solid rgba(201,168,92,.7);border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;
+    animation:rp .85s ease-out forwards;z-index:70}
+  @keyframes rp{from{width:10px;height:10px;opacity:.9}to{width:42vmin;height:42vmin;opacity:0}}
+
+  .meta{color:#4b5563;font-size:11.5px;line-height:1.9;margin-top:24px;text-align:center}
+  .endviz{position:relative;height:170px;overflow:hidden;border-radius:12px;margin-top:22px}
+  .endviz img{width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+  .endviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.15),rgba(14,18,32,.75))}
+  .endviz .cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--serif);color:var(--moon);font-size:13px;letter-spacing:.24em;text-indent:.24em}
+  small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
+  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt{animation:none;transition:none}}
+</style>
+</head>
+<body>
+<div class="cover">
+  <img src="./img/cover.jpg" alt="">
+  <div class="tt">
+    <span class="badge">内 测 版 · V1 骨架</span>
+    <h1>深度本命报告</h1>
+    <div class="sub">五行能量 · 四柱全盘 · 一问一卦</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="card"><div class="pad">
+    <h2>出生信息</h2>
+    <div class="row">
+      <input type="date" id="d" style="flex:1.2;min-width:150px">
+      <input type="time" id="t" style="flex:1;min-width:110px">
+      <input type="text" id="c" placeholder="城市" style="width:96px">
+      <button id="go">生 成</button>
+    </div>
+    <small class="note">与简版一致:信息仅在本机计算。规则解读为模板 v0;AI 解读为内测通道,正式版将由服务端生成。</small>
+  </div></div>
+
+  <div id="out"></div>
+
+  <div class="card"><div class="pad">
+    <h2>AI 解读(内测通道)</h2>
+    <div class="row">
+      <input type="password" id="key" placeholder="Anthropic API Key(仅存本机)" style="flex:1;min-width:200px">
+      <button id="ai" class="ghost">AI 生成</button>
+    </div>
+    <small class="note">Key 只写入本机 localStorage,直连 Anthropic API(claude-opus-4-8),用于内测验证解读质量;正式版 Key 只在后端。生成结果过校验器(禁词/来源/幻觉干支),未过的章节自动回退模板。</small>
+  </div></div>
+
+  <div class="endviz"><img src="./img/token.jpg" alt=""><div class="cap">本 命 信 物 · 分 享 位(V1)</div></div>
+
+  <div class="meta">
+    本报告基于传统文化框架(八字/星盘/易理)对出生时间信息的结构化解读,仅供自我探索与个人发展参考,<br>
+    不构成医疗、心理、法律、投资建议,不含对未来事件的预测。<br>
+    精度:节气±15min(天文近似)· 真太阳时含均时差 · 强弱为简化计分 v0 · 时间卦为公历近似<br>
+    <span id="engv"></span>
+  </div>
+</div>
+
+<div id="aiLoading"><img src="./img/altar.jpg" alt=""><div class="inner"><div class="txt">正在推演整张盘……</div></div></div>
+
+<script src="./bazi-engine.js"></script>
+<script src="./explainer.js"></script>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const ELEM_COLOR = { 木:'#7FA864', 火:'#C96A4A', 土:'#C9A85C', 金:'#D8D5CB', 水:'#5C82AE' };
+const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', astro:'./img/astro.jpg' };
+const SIGN_LINE = { 白羊座:'第一反应永远是"上"',金牛座:'认定之前很慢,认定之后极稳',双子座:'好奇心过载的旁观者',巨蟹座:'壳硬心软,记性太好',狮子座:'可以累,不能狼狈',处女座:'对自己的标准最狠',天秤座:'替所有人着想,所以内耗',天蝎座:'看穿不说穿',射手座:'困住你的只有"没意思"',摩羯座:'把野心藏进沉默',水瓶座:'和谁都聊得来,不属于任何圈',双鱼座:'别人的情绪会漫进身体' };
+function sunSign(m,d){const t=[[1,20,'摩羯座','水瓶座'],[2,19,'水瓶座','双鱼座'],[3,21,'双鱼座','白羊座'],[4,20,'白羊座','金牛座'],[5,21,'金牛座','双子座'],[6,22,'双子座','巨蟹座'],[7,23,'巨蟹座','狮子座'],[8,23,'狮子座','处女座'],[9,23,'处女座','天秤座'],[10,24,'天秤座','天蝎座'],[11,23,'天蝎座','射手座'],[12,22,'射手座','摩羯座']];const r=t[m-1];return d<r[1]?r[2]:r[3]}
+
+let CHART = null;
+
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function chartCard(c){
+  const cols=['year','month','day','hour'], names={year:'年柱',month:'月柱',day:'日柱',hour:'时柱'};
+  const p=c.pillars;
+  return `<div class="card"><div class="pad"><h2>盘面</h2><table>
+    <tr>${cols.map(k=>`<th>${names[k]}</th>`).join('')}</tr>
+    <tr>${cols.map(k=>`<td class="gz">${p[k]?p[k].stem+p[k].branch:'—'}</td>`).join('')}</tr>
+    <tr>${cols.map(k=>`<td class="tg">${p[k]?(c.tenGods[k].stem+'<br>'+(BaziEngine.HIDDEN[p[k].branch]||[]).join(' ')):'—'}</td>`).join('')}</tr></table>
+    <div style="margin-top:10px;font-size:12.5px;color:var(--mist)">
+      <span class="src">日主 · ${c.dayMaster.stem}${c.dayMaster.element}(${c.dayMaster.yinyang})</span>
+      ${c.solar.trueSolarTime?` 真太阳时 ${c.solar.trueSolarTime}(${c.solar.lonSource},偏移 ${c.solar.offsetMin}min)`:esc(c.solar.note||'')}
+    </div>
+    ${c.meta.warnings.map(w=>`<div class="warn">⚠ ${esc(w)}</div>`).join('')}
+  </div></div>`;
+}
+
+function energyExtra(c){
+  const fe=c.fiveElements, maxV=Math.max(...Object.values(fe.counts));
+  return Object.entries(fe.counts).map(([k,v])=>
+    `<div class="bar"><b>${k}</b><div class="track"><div class="fill" style="width:${(v/maxV*100).toFixed(0)}%;background:${ELEM_COLOR[k]}"></div></div><small style="width:2.6em;text-align:right;color:var(--mist)">${v}</small></div>`).join('')
+    + `<div style="margin:8px 0 4px"><span class="src">计分 ${fe.dayMasterStrength.score} · ${fe.dayMasterStrength.label}</span></div>
+       <ul class="basis">${fe.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
+}
+
+function sectionCard(s, mode, c){
+  const viz = CHAP_VIZ[s.id] ? `<div class="chapviz"><img src="${CHAP_VIZ[s.id]}" alt=""></div>` : '';
+  const extra = s.id==='energy' ? energyExtra(c) : '';
+  const paras = s.body.split(/\n\n+/).map(t=>`<p>${esc(t)}</p>`).join('');
+  const issue = s.issues && s.issues.length ? `<div class="warn">该章 AI 输出未过校验(${esc(s.issues.join('/'))}),已回退模板版本</div>` : '';
+  return `<div class="card">${viz}<div class="pad"><h2>${esc(s.title)}</h2>
+    <span class="src">来源 · ${esc(s.source)}</span><span class="mode">${mode}</span>
+    ${extra}<div class="body">${paras}</div>${issue}</div></div>`;
+}
+
+function astroSection(input){
+  const sign = sunSign(input.m, input.d);
+  return { id:'astro', title:'星盘辅证', source:'太阳' + sign,
+    body:`太阳${sign}:${SIGN_LINE[sign]}。西盘在这里只做辅证——与八字主轴相互印证时,那个特质往往格外突出;相互反差时,则常是你"人前人后不一样"的来源。月亮与上升 V1 接入(swisseph)。来源:星盘辅证·太阳${sign}` };
+}
+
+function guaCard(){
+  return `<div class="card"><div class="chapviz"><img src="./img/gua.jpg" alt=""></div><div class="pad">
+    <h2>一问一卦</h2><span class="src">来源 · 卦象(独立交互)</span>
+    <div class="row" style="margin-top:6px">
+      <input type="text" id="q" placeholder="此刻心里的一个问题(不必说出口的部分也算)" style="flex:1;min-width:220px">
+      <button id="cast" class="ghost">起 卦</button>
+    </div>
+    <div id="guaOut"></div>
+    <small class="note">时间起卦(公历近似 v0):以起卦当下的时刻与问题字数入卦,只解结构与当下侧重,不做吉凶断语。</small>
+  </div></div>`;
+}
+
+function renderGua(g){
+  /* 阴爻:两段;阳爻:一整段;动爻朱砂 */
+  const yao2 = g.lines.map((v,i)=>{
+    const cls = 'yao' + (i+1===g.moving ? ' mov' : '');
+    return v ? `<div class="${cls}"><i></i></div>` : `<div class="${cls}"><i></i><i style="opacity:0"></i><i></i></div>`;
+  }).join('');
+  $('guaOut').innerHTML = `<div class="hex">${yao2}</div>
+    <div class="hexname">${g.name}</div>
+    <div class="body" style="margin-top:10px"><p>${esc(g.body)}</p></div>
+    <small class="note">${esc(g.rule)}</small>`;
+}
+
+function render(chart, sections, mode){
+  CHART = chart;
+  let h = chartCard(chart);
+  const order = ['overview','energy','skeleton','relation','action','phase'];
+  for (const id of order){
+    const s = sections.find(x=>x.id===id);
+    if (s) h += sectionCard(s, mode, chart);
+  }
+  h += sectionCard(astroSection(chart.input), '规则', chart);
+  h += guaCard();
+  $('out').innerHTML = h;
+  $('engv').textContent = chart.meta.engine + ' · ' + chart.meta.tz;
+  $('cast').onclick = () => renderGua(Explainer.castGua(new Date(), $('q').value));
+}
+
+function currentInput(){
+  const [y,m,d] = ($('d').value || '1995-06-08').split('-').map(Number);
+  const input = { y, m, d, city: $('c').value.trim() };
+  const tv = $('t').value;
+  if (tv){ input.hh = +tv.split(':')[0]; input.mm = +tv.split(':')[1]; }
+  return input;
+}
+
+function generateRule(){
+  const chart = BaziEngine.computeChart(currentInput());
+  const sections = Explainer.validateSections(Explainer.buildSections(chart), chart)
+    .map(s => s.issues.length ? { ...s, body:'(模板输出未过自检,已隐藏)来源:校验器', issues:[] } : s);
+  render(chart, sections, '模板 v0');
+}
+$('go').onclick = generateRule;
+
+/* ---------- AI 直连(内测;正式版走后端) ---------- */
+const AI_SYS = `你是「知星·命盘研究所」的解读者。你收到一份由确定性程序排出的盘面 JSON,你的唯一职责是"解释",不是"推断命运"。
+硬规则:1)只解释盘面 JSON 中存在的事实,不得自行排盘或修改干支。2)每个自然段结尾标注来源,格式「来源:日主·壬水」。3)禁词:算命、测吉凶、改运、消灾、破财、血光、灾祸、克夫、克妻、寿命,以及对健康/生死/婚姻成败/官司输赢的断言。4)所有描述用「倾向/常见于/往往/容易」,禁止「一定/注定/必然」。5)语气:具体、略痛、不安抚不恐吓,禁止星座号式泛泛安抚。6)dayMasterStrength 是简化计分,表述为「本盘计分显示…(依据:…)」。7)boundaries 非空时 overview 第一段必须提示需精校。8)定位:个人发展/人格分析/文化研究。
+生成六章,id 依次为 overview(命局总览)、energy(五行能量图谱)、skeleton(性格骨架)、relation(关系与协作)、action(行动与决策)、phase(当前的进与收)。每章 body 为 2-3 段,每段≤120字,段间用两个换行分隔。`;
+
+const AI_SCHEMA = { type:'object', properties:{ sections:{ type:'array', items:{ type:'object',
+  properties:{ id:{type:'string'}, title:{type:'string'}, source:{type:'string'}, body:{type:'string'} },
+  required:['id','title','source','body'], additionalProperties:false } } },
+  required:['sections'], additionalProperties:false };
+
+$('key').value = localStorage.getItem('zx_api_key') || '';
+$('ai').onclick = async () => {
+  const key = $('key').value.trim();
+  if (!key){ alert('先粘贴 API Key(仅存本机,用于内测)'); return; }
+  localStorage.setItem('zx_api_key', key);
+  const chart = BaziEngine.computeChart(currentInput());
+  $('aiLoading').style.display = 'block';
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-8',
+        max_tokens: 6000,
+        thinking: { type: 'adaptive' },
+        system: AI_SYS,
+        output_config: { format: { type: 'json_schema', schema: AI_SCHEMA } },
+        messages: [{ role: 'user', content: '盘面 JSON:\n' + JSON.stringify(chart) }]
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error && data.error.message || ('HTTP ' + r.status));
+    if (data.stop_reason === 'refusal') throw new Error('请求被安全策略拒绝');
+    if (data.stop_reason === 'max_tokens') throw new Error('输出被截断,请重试');
+    const text = (data.content.find(b => b.type === 'text') || {}).text || '';
+    const ai = JSON.parse(text).sections;
+    /* 校验:未过的章节回退模板 */
+    const ruleSecs = Explainer.buildSections(chart);
+    const checked = Explainer.validateSections(ai, chart).map(s => {
+      if (s.issues.length){
+        const fb = ruleSecs.find(x => x.id === s.id);
+        return fb ? { ...fb, issues: s.issues } : s;
+      }
+      return s;
+    });
+    render(chart, checked, 'AI · claude-opus-4-8');
+  } catch (e) {
+    alert('AI 生成失败:' + e.message + '\n已展示模板版本');
+    generateRule();
+  } finally {
+    $('aiLoading').style.display = 'none';
+  }
+};
+
+/* ---------- 首屏流光(与主应用同语言) ---------- */
+document.addEventListener('pointerdown', e => {
+  const r = document.createElement('div'); r.className = 'rip';
+  r.style.left = e.clientX + 'px'; r.style.top = e.clientY + 'px';
+  document.body.appendChild(r); setTimeout(() => r.remove(), 900);
+});
+
+/* ---------- 初始化:URL 参数 / 简版握手 / 默认样例 ---------- */
+(function init(){
+  const q = new URLSearchParams(location.search);
+  let stash = null;
+  try { stash = JSON.parse(localStorage.getItem('zx_input') || 'null'); } catch(_){}
+  const d = q.get('d') || (stash && stash.d) || '1995-06-08';
+  const t = q.get('t') || (stash && stash.t) || '14:30';
+  const c = q.get('c') || (stash && stash.c) || '贵阳';
+  $('d').value = d; $('t').value = t; $('c').value = c;
+  generateRule();
+})();
+</script>
+</body>
+</html>
