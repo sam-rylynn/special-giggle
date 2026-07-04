@@ -33,6 +33,12 @@
   .hero-bg::after{content:"";position:absolute;inset:0;
     background:linear-gradient(180deg,rgba(14,18,32,.3),rgba(14,18,32,.06) 32%,rgba(14,18,32,.5) 74%,var(--ink) 98%)}
   @keyframes heroKB{from{transform:scale(1)}to{transform:scale(1.055)}}
+  /* 视频主视觉(太极星云):body.video-hero 生效,失败自动回退矢量罗经 */
+  .hero-video{position:relative;left:calc(50% - 50vw);width:100vw;height:clamp(420px,58vh,590px);display:none;overflow:hidden;
+    -webkit-mask-image:linear-gradient(180deg,#000 74%,transparent 100%);mask-image:linear-gradient(180deg,#000 74%,transparent 100%)}
+  .hero-video video{width:100%;height:100%;object-fit:cover;object-position:50% 32%;background:#0B0E18 url(./media/hero-taiji-poster.jpg) center/cover}
+  body.video-hero .hero-video{display:block}
+  body.video-hero .orrery,body.video-hero .hero-bg{display:none}
   .stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
     -webkit-mask-image:linear-gradient(180deg,#000 50%,transparent 90%);
             mask-image:linear-gradient(180deg,#000 50%,transparent 90%)}
@@ -214,6 +220,9 @@
         <path d="M34 118l1.3 4.4 4.4 1.3-4.4 1.3-1.3 4.4-1.3-4.4-4.4-1.3 4.4-1.3z" opacity=".4"/>
       </g>
     </svg>
+
+    <!-- 视频主视觉:太极星云(USE_VIDEO_HERO 控制;含太极,合规渠道置 false 回退罗经) -->
+    <div class="hero-video"><video id="heroVideo" src="./media/hero-taiji.mp4" poster="./media/hero-taiji-poster.jpg" muted loop playsinline autoplay preload="metadata"></video></div>
 
     <!-- 星盘罗经 · 浑天层环 -->
     <div class="orrery">
@@ -458,6 +467,22 @@ const GUA=['☰','☱','☲','☳','☴','☵','☶','☷'];
   [[0,"午"],[90,"酉"],[180,"子"],[270,"卯"]].forEach(function(p){
     tx(gC,p[0],74,p[1],8,"#8f7a45",.9,false);
   });
+})();
+/* ============ 首屏视频主视觉开关 ============ */
+const USE_VIDEO_HERO=true;   // ⚠ 视频含太极图:合规渠道置 false → 自动回退矢量罗经首屏
+(function(){
+  if(!USE_VIDEO_HERO) return;
+  const v=document.getElementById('heroVideo');
+  if(!v) return;
+  document.body.classList.add('video-hero');
+  v.addEventListener('error',()=>document.body.classList.remove('video-hero'));  // 加载失败 → 罗经回位
+  v.muted=true;
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ v.removeAttribute('autoplay'); try{v.pause()}catch(_){}}
+  else{
+    const tryPlay=()=>{const p=v.play(); if(p&&p.catch)p.catch(()=>{})};
+    tryPlay();
+    document.addEventListener('pointerdown',tryPlay,{once:true});  // 低电量模式:首次触摸激活
+  }
 })();
 (function(){
   // 首屏流光:与开屏同款"轻点见流光"(复用 .deep-rip)
