@@ -13,6 +13,7 @@
     --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{background:var(--ink)}
   body{background:var(--ink);color:var(--moon);font-family:var(--sans);font-size:16px;line-height:1.8;min-height:100vh;overflow-x:hidden}
   #starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
   .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:0 22px 60px}
@@ -22,9 +23,9 @@
   @keyframes spinR{to{transform:rotate(-360deg)}}
 
   /* ---------- 首屏主视觉:浑天层环罗经 ---------- */
-  header{position:relative;text-align:center;padding:clamp(30px,8vw,50px) 0 36px;overflow:hidden}
-  /* 首屏氛围底图:入口主视觉的星野山海(无太极,合规),极缓呼吸 */
-  .hero-bg{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  header{position:relative;text-align:center;padding:clamp(30px,8vw,50px) 0 36px}
+  /* 首屏氛围底图:入口主视觉的星野山海(无太极,合规),破格全出血,极缓呼吸 */
+  .hero-bg{position:absolute;top:0;bottom:0;left:calc(50% - 50vw);width:100vw;z-index:-1;pointer-events:none;overflow:hidden;
     -webkit-mask-image:linear-gradient(180deg,#000 60%,transparent 97%);
             mask-image:linear-gradient(180deg,#000 60%,transparent 97%)}
   .hero-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;opacity:.52;
@@ -72,7 +73,11 @@
 
   .field{margin-bottom:18px}
   .field label{display:block;font-size:13px;color:var(--mist);letter-spacing:.15em;margin-bottom:7px}
-  .field input,.field select{width:100%;padding:12px 14px;border-radius:6px;background:#10182a;border:1px solid rgba(232,228,216,.16);color:var(--moon);font-size:16px;font-family:var(--sans);color-scheme:dark}
+  /* 统一控件高度与外观:iOS 原生 date/time/select 高度不一致,全部拉平到 50px */
+  .field input,.field select{width:100%;height:50px;padding:0 14px;border-radius:8px;background:#10182a;border:1px solid rgba(232,228,216,.16);color:var(--moon);font-size:16px;font-family:var(--sans);color-scheme:dark;-webkit-appearance:none;appearance:none;box-sizing:border-box}
+  .field input::-webkit-date-and-time-value{text-align:left}
+  .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A85C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+  .row2{align-items:flex-end}
   .field input:focus,.field select:focus{outline:none;border-color:var(--gold)}
   .row2{display:flex;gap:12px}.row2 .field{flex:1}
   .optional{color:#4b5563;font-size:11px;margin-left:6px}
@@ -119,6 +124,10 @@
 
   .portrait{margin-top:8px;font-size:15px;color:var(--moon);text-align:justify}
   .portrait p{margin-bottom:14px}
+  .portrait .pt{color:var(--gold);font-weight:600}            /* 「要留意的是X」金色引子 */
+  .portrait .pq{color:#f0ddaa;font-weight:700}                /* 结尾自问句:暖金加粗 */
+  .deep-tease{color:var(--mist);font-size:13.5px;line-height:2;margin-top:14px}
+  .deep-tease b{color:var(--gold-dim);font-weight:600}
   .src-tag{display:inline-block;font-size:11px;color:var(--gold);border:1px solid rgba(201,168,92,.4);border-radius:99px;padding:1px 10px;margin-right:6px;vertical-align:1px;letter-spacing:.08em}
   .aux-block{border-top:1px dashed rgba(201,168,92,.2);padding-top:14px;color:var(--mist);font-size:14px}
   .aux-block .src-tag{color:var(--mist);border-color:rgba(107,114,128,.5)}
@@ -149,7 +158,10 @@
   .deep-copy{text-align:center;max-width:520px}
   .deep-copy h3{font-family:var(--serif);color:var(--gold);font-size:22px;letter-spacing:.3em;text-indent:.3em}
   .deep-sub{margin-top:8px;color:var(--moon);font-family:var(--serif);font-size:14px;letter-spacing:.22em}
-  .deep-note{margin-top:10px;color:var(--mist);font-size:12.5px;line-height:1.9}
+  .deep-hook{margin-top:12px;font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:.08em;
+    background:linear-gradient(180deg,#fff3d6,#d9ba76);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .deep-note{margin-top:10px;color:var(--mist);font-size:13px;line-height:1.95;text-align:justify}
+  .deep-slot{margin-top:10px;color:var(--gold-dim);font-size:11px;letter-spacing:.28em;text-indent:.28em}
   #deepClose{margin-top:14px;width:min(76vw,300px)}
   .deep-rip{position:absolute;border:1.5px solid rgba(201,168,92,.75);border-radius:50%;transform:translate(-50%,-50%);
     pointer-events:none;animation:dripple .9s ease-out forwards}
@@ -348,7 +360,9 @@
   <div class="deep-copy">
     <h3>深度本命报告</h3>
     <p class="deep-sub">五行能量 · 四柱全盘 · 一问一卦</p>
-    <p class="deep-note">正在打磨中,V1 上线解锁。你的日主只是入口,全盘才是完整的故事。</p>
+    <p class="deep-hook">你今天看到的,只是你的 1/4。</p>
+    <p class="deep-note">为什么又想扛事、又想逃?为什么道理都懂,却总在同一个地方内耗?——单看日主解释不了的矛盾,答案在另外三柱的拉扯里。深度报告把整张盘摊开:你的能量从哪里来、漏在哪里、此刻该进还是该收。</p>
+    <p class="deep-slot">V1 上线首批开放 · 简版用户优先</p>
     <button class="btn ghost" id="deepClose">先 看 简 版</button>
   </div>
 </div></div>
@@ -557,10 +571,14 @@ function showResult(){
   $('kwList').innerHTML=
     S.kw.map(k=>`<div class="kw">${k}<small>日主 · ${dp.stem}${S.el}</small></div>`).join('')+
     `<div class="kw aux">${SIGN_KW[sign]}<small>星盘辅证 · 太阳${sign}</small></div>`;
+  // 重点句字效:三段式引子金色、结尾自问句暖金加粗(十条文案同构,正则安全)
+  const pDeco=S.p
+    .replace(/(要留意的是[^:]+):/,'<b class="pt">$1:</b>')
+    .replace(/偶尔要问自己,([^。]+)。/,'偶尔要问自己,<b class="pq">$1。</b>');
   $('portrait').innerHTML=
-    `<p><span class="src-tag">日主·${dp.stem}${S.el}</span>${S.p}</p>`+
+    `<p><span class="src-tag">日主·${dp.stem}${S.el}</span>${pDeco}</p>`+
     `<div class="aux-block"><span class="src-tag">星盘辅证·太阳${sign}</span>${SIGN_AUX[sign]}</div>`+
-    `<p style="color:var(--mist);font-size:13px;margin-top:14px">日主只是四柱之一。你的月柱、时柱,以及日主在全局中的强弱——那是深度报告要讲的故事。</p>`;
+    `<p class="deep-tease">简版只读了你的<b>日柱</b>——相当于 1/4 张命盘。那种"说得很像我,但又不全是我"的感觉,缺的部分写在<b>月柱、时柱</b>和全局强弱里。</p>`;
   $('result').style.display='block';
   scrollTo({top:0,behavior:'smooth'});
 }
