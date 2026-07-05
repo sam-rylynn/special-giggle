@@ -33,12 +33,18 @@
   .hero-bg::after{content:"";position:absolute;inset:0;
     background:linear-gradient(180deg,rgba(14,18,32,.3),rgba(14,18,32,.06) 32%,rgba(14,18,32,.5) 74%,var(--ink) 98%)}
   @keyframes heroKB{from{transform:scale(1)}to{transform:scale(1.055)}}
-  /* 视频主视觉(太极星云):body.video-hero 生效,失败自动回退矢量罗经 */
-  .hero-video{position:relative;left:calc(50% - 50vw);width:100vw;height:clamp(420px,58vh,590px);display:none;overflow:hidden;
-    -webkit-mask-image:linear-gradient(180deg,#000 74%,transparent 100%);mask-image:linear-gradient(180deg,#000 74%,transparent 100%)}
-  .hero-video video{width:100%;height:100%;object-fit:cover;object-position:50% 32%;background:#0B0E18 url(./media/hero-taiji-poster.jpg) center/cover}
-  body.video-hero .hero-video{display:block}
-  body.video-hero .orrery,body.video-hero .hero-bg{display:none}
+  /* 海报主视觉(静态底图):body.image-hero 生效,失败自动回退矢量罗经+文字 lockup。
+     底图自带「命盘研究所/知·星/slogan」品牌字,故此模式隐藏 HTML lockup 免重复。 */
+  .hero-poster{position:relative;left:calc(50% - 50vw);width:100vw;display:none;overflow:hidden;line-height:0}
+  /* 宽屏:收回内容列宽(抵消 .wrap 的 22px 内边距),不撑爆桌面 */
+  @media(min-width:540px){.hero-poster{left:auto;width:calc(100% + 44px);margin:0 -22px}}
+  .hero-poster img{display:block;width:100%;height:auto}
+  /* 底部融进玄夜底色,消除下缝 */
+  .hero-poster::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16%;pointer-events:none;
+    background:linear-gradient(180deg,transparent,var(--ink))}
+  body.image-hero .hero-poster{display:block}
+  body.image-hero header{padding-top:0}              /* 图齐顶,消除上缝 */
+  body.image-hero .orrery,body.image-hero .hero-bg,body.image-hero .lockup,body.image-hero .stars{display:none}
   .stars{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
     -webkit-mask-image:linear-gradient(180deg,#000 50%,transparent 90%);
             mask-image:linear-gradient(180deg,#000 50%,transparent 90%)}
@@ -221,8 +227,8 @@
       </g>
     </svg>
 
-    <!-- 视频主视觉:太极星云(USE_VIDEO_HERO 控制;含太极,合规渠道置 false 回退罗经) -->
-    <div class="hero-video"><video id="heroVideo" src="./media/hero-taiji.mp4" poster="./media/hero-taiji-poster.jpg" muted loop playsinline autoplay preload="metadata"></video></div>
+    <!-- 海报主视觉:知星·地图星盘底图(USE_IMAGE_HERO 控制;含太极,合规渠道置 false 回退罗经+文字) -->
+    <div class="hero-poster"><img id="heroPoster" src="./media/hero-taiji-poster.jpg" alt="知星·命盘研究所 — 以易理观己,以星盘为证"></div>
 
     <!-- 星盘罗经 · 浑天层环 -->
     <div class="orrery">
@@ -468,21 +474,14 @@ const GUA=['☰','☱','☲','☳','☴','☵','☶','☷'];
     tx(gC,p[0],74,p[1],8,"#8f7a45",.9,false);
   });
 })();
-/* ============ 首屏视频主视觉开关 ============ */
-const USE_VIDEO_HERO=true;   // ⚠ 视频含太极图:合规渠道置 false → 自动回退矢量罗经首屏
+/* ============ 首屏海报主视觉开关 ============ */
+const USE_IMAGE_HERO=true;   // ⚠ 底图含太极:合规渠道置 false → 自动回退矢量罗经+文字 lockup
 (function(){
-  if(!USE_VIDEO_HERO) return;
-  const v=document.getElementById('heroVideo');
-  if(!v) return;
-  document.body.classList.add('video-hero');
-  v.addEventListener('error',()=>document.body.classList.remove('video-hero'));  // 加载失败 → 罗经回位
-  v.muted=true;
-  if(matchMedia('(prefers-reduced-motion:reduce)').matches){ v.removeAttribute('autoplay'); try{v.pause()}catch(_){}}
-  else{
-    const tryPlay=()=>{const p=v.play(); if(p&&p.catch)p.catch(()=>{})};
-    tryPlay();
-    document.addEventListener('pointerdown',tryPlay,{once:true});  // 低电量模式:首次触摸激活
-  }
+  if(!USE_IMAGE_HERO) return;
+  const img=document.getElementById('heroPoster');
+  if(!img) return;
+  document.body.classList.add('image-hero');
+  img.addEventListener('error',()=>document.body.classList.remove('image-hero'));  // 加载失败 → 罗经+文字回位
 })();
 (function(){
   // 首屏流光:与开屏同款"轻点见流光"(复用 .deep-rip)
