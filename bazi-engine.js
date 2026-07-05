@@ -9,6 +9,8 @@
  * - 输入时间按东八区(北京时间)解释。
  * - 晚子时(23:00–23:59)按次日日柱起时柱(与 V0 dayPillar 规则一致,派别注明)。
  * - 日主强弱为简化计分模型 v1(得令/得地/得势加权),供解释层引用,非断语。
+ * - 西盘三要素(回归黄道):太阳黄经同引擎复用;月亮黄经 Meeus 主项截断(±0.3°,
+ *   足以定星座,近宫界另行标注);上升点由恒星时+城市经纬度解出。与八字同刻同源。
  *
  * 同构:Node(单测/后端)与浏览器(demo)均可运行。零依赖。
  * ========================================================================== */
@@ -67,6 +69,41 @@ function equationOfTime(utcMs){
   return wrap180(L0 - 0.0057183 - norm360(ra)) * 4;      // deg→min
 }
 
+/* ---------------- 西盘:太阳/月亮/上升(回归黄道) ---------------- */
+const SIGNS = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
+const signOf = lon => SIGNS[Math.floor(norm360(lon) / 30)];
+const D2R = Math.PI / 180;
+
+/* 月亮地心视黄经(Meeus 主项截断,精度约 ±0.3°,足以定星座) */
+function moonLon(utcMs){
+  const T = (toJD(utcMs) - 2451545.0) / 36525;
+  const Lp = 218.3164477 + 481267.88123421 * T - 0.0015786 * T * T;
+  const D  = (297.8501921 + 445267.1114034 * T - 0.0018819 * T * T) * D2R;
+  const M  = (357.5291092 + 35999.0502909 * T - 0.0001536 * T * T) * D2R;
+  const Mp = (134.9633964 + 477198.8675055 * T + 0.0087414 * T * T) * D2R;
+  const F  = (93.2720950 + 483202.0175233 * T - 0.0036539 * T * T) * D2R;
+  const s = Math.sin;
+  return norm360(Lp
+    + 6.288774 * s(Mp)         + 1.274027 * s(2*D - Mp)     + 0.658314 * s(2*D)
+    + 0.213618 * s(2*Mp)       - 0.185116 * s(M)            - 0.114332 * s(2*F)
+    + 0.058793 * s(2*D - 2*Mp) + 0.057066 * s(2*D - M - Mp) + 0.053322 * s(2*D + Mp)
+    + 0.045758 * s(2*D - M)    - 0.040923 * s(M - Mp)       - 0.034720 * s(D)
+    - 0.030383 * s(M + Mp)     + 0.015327 * s(2*D - 2*F)    - 0.012528 * s(Mp + 2*F)
+    + 0.010980 * s(Mp - 2*F));
+}
+
+/* 上升点黄经:恒星时 + 纬度解黄道升点
+ * 锚点自检(解析可证):LST=90° → 180°(天秤 0°);LST=270° → 0°(白羊 0°) */
+function ascendantLon(utcMs, latDeg, lonEastDeg){
+  const jd = toJD(utcMs), T = (jd - 2451545.0) / 36525;
+  const gmst = norm360(280.46061837 + 360.98564736629 * (jd - 2451545.0));
+  const lst = (gmst + lonEastDeg) * D2R;
+  const eps = (23.4392911 - 0.0130042 * T) * D2R;
+  const y = Math.cos(lst);
+  const x = -(Math.sin(lst) * Math.cos(eps) + Math.tan(latDeg * D2R) * Math.sin(eps));
+  return norm360(Math.atan2(y, x) / D2R);
+}
+
 /* ---------------- 节气(十二节定月 + 立春定年) ---------------- */
 /* 近似日期(月,日):作为牛顿迭代初猜 */
 const JIE = [ // 十二"节"(定月边界):黄经 315°起 寅月
@@ -118,18 +155,28 @@ const CITY_LON = {
   无锡:120.31, 大连:121.61, 东莞:113.75, 佛山:113.12, 珠海:113.58, 香港:114.17,
   澳门:113.55, 台北:121.51
 };
+const CITY_LAT = {
+  北京:39.90, 上海:31.23, 广州:23.13, 深圳:22.54, 贵阳:26.65, 成都:30.57,
+  重庆:29.56, 杭州:30.27, 武汉:30.59, 西安:34.34, 南京:32.06, 天津:39.13,
+  长沙:28.23, 郑州:34.75, 沈阳:41.80, 哈尔滨:45.80, 长春:43.90, 昆明:25.04,
+  兰州:36.06, 西宁:36.62, 银川:38.49, 乌鲁木齐:43.83, 拉萨:29.65, 南宁:22.82,
+  海口:20.04, 福州:26.07, 厦门:24.48, 合肥:31.82, 南昌:28.68, 济南:36.65,
+  青岛:36.07, 石家庄:38.04, 太原:37.87, 呼和浩特:40.84, 苏州:31.30, 宁波:29.87,
+  无锡:31.49, 大连:38.91, 东莞:23.02, 佛山:23.02, 珠海:22.27, 香港:22.32,
+  澳门:22.20, 台北:25.03
+};
 
 function computeChart(input){
   const { y, m, d, city } = input;
   const hasTime = typeof input.hh === 'number';
   const hh = hasTime ? input.hh : 12, mm = hasTime ? (input.mm || 0) : 0;
-  const meta = { engine: 'bazi-engine v1.0.0-alpha', tz: 'UTC+8(北京时间)', notes: [], warnings: [] };
+  const meta = { engine: 'bazi-engine v1.1.0-alpha', tz: 'UTC+8(北京时间)', notes: [], warnings: [] };
 
   /* 真太阳时 */
   let lon = 120, lonSource = 'default(120°E 标准时)';
   const cityKey = city && Object.keys(CITY_LON).find(k => String(city).includes(k));
   if (cityKey){ lon = CITY_LON[cityKey]; lonSource = 'city:' + cityKey; }
-  else if (city) meta.warnings.push('城市「' + city + '」未收录,按 120°E 标准时;V1 后端接全量城市库');
+  else if (city) meta.warnings.push('城市「' + city + '」暂未收录,已按东八区标准时推算,真太阳时可能有数分钟偏差');
   const stdUtc = Date.UTC(y, m - 1, d, hh - 8, mm);
   const eot = hasTime ? equationOfTime(stdUtc) : 0;
   const tstOffsetMin = hasTime ? (lon - 120) * 4 + eot : 0;
@@ -189,6 +236,24 @@ function computeChart(input){
   if (boundaries.length)
     meta.warnings.push('出生时刻接近排盘边界(节气时刻近似 ±15 分钟),正式报告需权威万年历精校');
 
+  /* 西盘三要素:与八字同刻同源计算(北京时间→UTC,回归黄道) */
+  const lat = cityKey ? CITY_LAT[cityKey] : null;
+  const sunL = sunLon(stdUtc), moonL = moonLon(stdUtc);
+  const astro = {
+    sun:  { lon: +sunL.toFixed(2),  sign: signOf(sunL) },
+    moon: { lon: +moonL.toFixed(2), sign: signOf(moonL), approx: !hasTime },
+    asc: null, notes: []
+  };
+  if (!hasTime){
+    astro.notes.push('未提供出生时间:月亮星座按当日正午近似(月亮每日约移动 13°),上升星座无法计算');
+    if (Math.min(moonL % 30, 30 - moonL % 30) < 7) astro.moon.nearEdge = true;
+  } else if (lat == null){
+    astro.notes.push('城市未收录经纬度,上升星座暂缺');
+  } else {
+    const ascL = ascendantLon(stdUtc, lat, lon);
+    astro.asc = { lon: +ascL.toFixed(2), sign: signOf(ascL) };
+  }
+
   /* 十神 + 五行 */
   const pillars = { year: yearP, month: monthP, day: dayP, hour: hourP };
   const dayStem = dayP.stem;
@@ -231,8 +296,10 @@ function computeChart(input){
     input: { ...input },
     solar: hasTime ? {
       trueSolarTime: tst.toISOString().slice(0, 16).replace('T', ' ') + '(UTC+8 表出)',
-      offsetMin: +tstOffsetMin.toFixed(1), eqTimeMin: +eot.toFixed(1), lonUsed: lon, lonSource
+      offsetMin: +tstOffsetMin.toFixed(1), eqTimeMin: +eot.toFixed(1), lonUsed: lon, lonSource,
+      city: cityKey || null
     } : { note: '未提供时间,未做真太阳时换算' },
+    astro,
     pillars,
     dayMaster: { stem: dayStem, element: de, yinyang: STEM_YANG[dayStem] ? '阳' : '阴' },
     tenGods,
@@ -242,8 +309,8 @@ function computeChart(input){
       dayMasterStrength: {
         score, label,
         basis: [ '月令·' + monthP.branch + ':' + seasonName,
-                 '通根:' + rootN + ' 处(得地分 ' + rootScore.toFixed(2) + ')',
-                 '干上印比:' + mateN + ' 个' ],
+                 '通根 ' + rootN + ' 处',
+                 '天干印比 ' + mateN + ' 个' ],
         model: '简化计分 v1(得令40%+得地30%+得势30%),供解释层引用,非断语'
       }
     },
@@ -252,6 +319,6 @@ function computeChart(input){
 }
 
 /* 导出(Node + 浏览器) */
-const BaziEngine = { computeChart, sunLon, jieTime, equationOfTime, tenGod, STEMS, BRANCHES, HIDDEN, JIE };
+const BaziEngine = { computeChart, sunLon, moonLon, ascendantLon, jieTime, equationOfTime, tenGod, STEMS, BRANCHES, HIDDEN, JIE, SIGNS };
 if (typeof module !== 'undefined' && module.exports) module.exports = BaziEngine;
 if (typeof window !== 'undefined') window.BaziEngine = BaziEngine;

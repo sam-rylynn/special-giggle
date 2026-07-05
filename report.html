@@ -36,7 +36,17 @@
   .card:hover .chapviz img{transform:scale(1.05)}
   .chapviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,34,51,0) 40%,var(--panel))}
   .src{display:inline-block;font-size:10.5px;color:var(--gold);border:1px solid rgba(201,168,92,.4);border-radius:99px;padding:0 10px;letter-spacing:.08em;margin-bottom:10px}
-  .mode{float:right;font-size:10.5px;color:var(--mist);border:1px dashed rgba(107,114,128,.5);border-radius:99px;padding:0 10px}
+
+  /* 方法论开篇 */
+  .manifesto p{margin-bottom:10px;text-align:justify}
+  .manifesto b{color:var(--gold);font-weight:700}
+  .manifesto .axiom{font-family:var(--serif);font-size:17px;color:var(--gold);text-align:center;letter-spacing:.3em;text-indent:.3em;margin:16px 0 4px}
+  .manifesto .axiom-sub{text-align:center;color:var(--mist);font-size:12px;margin-bottom:0}
+
+  /* 星盘轮 */
+  .wheel{display:block;width:min(100%,320px);margin:8px auto 4px}
+  .wheelkey{margin:4px 0 12px;text-align:center}
+  .wheelkey li{display:block}
   .body p{margin-bottom:10px;text-align:justify;white-space:pre-wrap}
   .body p:last-child{margin-bottom:0}
 
@@ -93,13 +103,21 @@
 <div class="cover">
   <img src="./img/cover.jpg" alt="">
   <div class="tt">
-    <span class="badge">内 测 版 · V1 骨架</span>
+    <span class="badge">内 测 · 抢 先 版</span>
     <h1>深度本命报告</h1>
-    <div class="sub">五行能量 · 四柱全盘 · 一问一卦</div>
+    <div class="sub">五行能量 · 星盘互证 · 一问一卦</div>
   </div>
 </div>
 
 <div class="wrap">
+  <div class="card"><div class="pad manifesto">
+    <h2>以易理观己 · 以星盘为证</h2>
+    <p>这份报告同时动用两套彼此独立的古老体系,观测同一个对象——<b>你出生的那一刻</b>。八字把那一刻拆成天干地支,读的是你内在的能量配置;星盘把同一刻的天空原样存档,读的是这份配置向外的投影。</p>
+    <p>一个来自黄河流域,一个来自地中海,两千年互不通信,却不约而同选了同一个坐标:出生时刻。所以我们不混用、不互相代劳——<b>易理为主轴,星盘只做印证</b>。两套独立体系在同一个结论上相遇,那个结论才值得你认真对待;而它们彼此打架的地方,往往就是你身上最值得琢磨的张力。</p>
+    <p class="axiom">孤证不立,双盘互证。</p>
+    <p class="axiom-sub">下面每一条解读都标注了出处盘位,随时可以回头查证。</p>
+  </div></div>
+
   <div class="card"><div class="pad">
     <h2>出生信息</h2>
     <div class="row">
@@ -108,27 +126,27 @@
       <input type="text" id="c" placeholder="城市" style="width:96px">
       <button id="go">生 成</button>
     </div>
-    <small class="note">与简版一致:信息仅在本机计算。规则解读为模板 v0;AI 解读为内测通道,正式版将由服务端生成。</small>
+    <small class="note">出生信息只在你自己的设备上完成计算,不上传、不存储;这份报告,只有你看得到。</small>
   </div></div>
 
   <div id="out"></div>
 
-  <div class="card"><div class="pad">
-    <h2>AI 解读(内测通道)</h2>
+  <div id="labPanel" style="display:none"><div class="card"><div class="pad">
+    <h2>AI 解读(内部实验通道)</h2>
     <div class="row">
       <input type="password" id="key" placeholder="Anthropic API Key(仅存本机)" style="flex:1;min-width:200px">
       <button id="ai" class="ghost">AI 生成</button>
     </div>
-    <small class="note">Key 只写入本机 localStorage,直连 Anthropic API(claude-opus-4-8),用于内测验证解读质量;正式版 Key 只在后端。生成结果过校验器(禁词/来源/幻觉干支),未过的章节自动回退模板。</small>
-  </div></div>
+    <small class="note">仅供内部测试:Key 只写入本机 localStorage,直连 Anthropic API,生成结果经合规自检,未通过的章节自动回退稳定版本。</small>
+  </div></div></div>
 
-  <div class="endviz"><img src="./img/token.jpg" alt=""><div class="cap">本 命 信 物 · 分 享 位(V1)</div></div>
+  <div class="endviz"><img src="./img/token.jpg" alt="" loading="lazy"><div class="cap">本 命 信 物</div></div>
 
   <div class="meta">
     本报告基于传统文化框架(八字/星盘/易理)对出生时间信息的结构化解读,仅供自我探索与个人发展参考,<br>
     不构成医疗、心理、法律、投资建议,不含对未来事件的预测。<br>
-    精度:节气±15min(天文近似)· 真太阳时含均时差 · 强弱为简化计分 v0 · 时间卦为公历近似<br>
-    <span id="engv"></span>
+    精度说明:节气按天文算法推算(约 ±15 分钟);真太阳时已按出生地经度与均时差校正;<br>
+    日主强弱与时间卦为简化读法,提供参考视角,非定论。
   </div>
 </div>
 
@@ -140,9 +158,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const ELEM_COLOR = { 木:'#7FA864', 火:'#C96A4A', 土:'#C9A85C', 金:'#D8D5CB', 水:'#5C82AE' };
-const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', astro:'./img/astro.jpg' };
-const SIGN_LINE = { 白羊座:'第一反应永远是"上"',金牛座:'认定之前很慢,认定之后极稳',双子座:'好奇心过载的旁观者',巨蟹座:'壳硬心软,记性太好',狮子座:'可以累,不能狼狈',处女座:'对自己的标准最狠',天秤座:'替所有人着想,所以内耗',天蝎座:'看穿不说穿',射手座:'困住你的只有"没意思"',摩羯座:'把野心藏进沉默',水瓶座:'和谁都聊得来,不属于任何圈',双鱼座:'别人的情绪会漫进身体' };
-function sunSign(m,d){const t=[[1,20,'摩羯座','水瓶座'],[2,19,'水瓶座','双鱼座'],[3,21,'双鱼座','白羊座'],[4,20,'白羊座','金牛座'],[5,21,'金牛座','双子座'],[6,22,'双子座','巨蟹座'],[7,23,'巨蟹座','狮子座'],[8,23,'狮子座','处女座'],[9,23,'处女座','天秤座'],[10,24,'天秤座','天蝎座'],[11,23,'天蝎座','射手座'],[12,22,'射手座','摩羯座']];const r=t[m-1];return d<r[1]?r[2]:r[3]}
+const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg' };
 
 let CHART = null;
 
@@ -157,7 +173,7 @@ function chartCard(c){
     <tr>${cols.map(k=>`<td class="tg">${p[k]?(c.tenGods[k].stem+'<br>'+(BaziEngine.HIDDEN[p[k].branch]||[]).join(' ')):'—'}</td>`).join('')}</tr></table>
     <div style="margin-top:10px;font-size:12.5px;color:var(--mist)">
       <span class="src">日主 · ${c.dayMaster.stem}${c.dayMaster.element}(${c.dayMaster.yinyang})</span>
-      ${c.solar.trueSolarTime?` 真太阳时 ${c.solar.trueSolarTime}(${c.solar.lonSource},偏移 ${c.solar.offsetMin}min)`:esc(c.solar.note||'')}
+      ${c.solar.trueSolarTime?` 真太阳时 ${c.solar.trueSolarTime.slice(11,16)}${c.solar.city?` · 已按${esc(c.solar.city)}经度与均时差校正`:' · 按标准经度推算'}`:esc(c.solar.note||'')}
     </div>
     ${c.meta.warnings.map(w=>`<div class="warn">⚠ ${esc(w)}</div>`).join('')}
   </div></div>`;
@@ -167,35 +183,104 @@ function energyExtra(c){
   const fe=c.fiveElements, maxV=Math.max(...Object.values(fe.counts));
   return Object.entries(fe.counts).map(([k,v])=>
     `<div class="bar"><b>${k}</b><div class="track"><div class="fill" style="width:${(v/maxV*100).toFixed(0)}%;background:${ELEM_COLOR[k]}"></div></div><small style="width:2.6em;text-align:right;color:var(--mist)">${v}</small></div>`).join('')
-    + `<div style="margin:8px 0 4px"><span class="src">计分 ${fe.dayMasterStrength.score} · ${fe.dayMasterStrength.label}</span></div>
+    + `<div style="margin:8px 0 4px"><span class="src">日主 · ${fe.dayMasterStrength.label}</span></div>
        <ul class="basis">${fe.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
 }
 
-function sectionCard(s, mode, c){
-  const viz = CHAP_VIZ[s.id] ? `<div class="chapviz"><img src="${CHAP_VIZ[s.id]}" alt=""></div>` : '';
+function sectionCard(s, c){
+  const viz = CHAP_VIZ[s.id] ? `<div class="chapviz"><img src="${CHAP_VIZ[s.id]}" alt="" loading="lazy"></div>` : '';
   const extra = s.id==='energy' ? energyExtra(c) : '';
   const paras = s.body.split(/\n\n+/).map(t=>`<p>${esc(t)}</p>`).join('');
-  const issue = s.issues && s.issues.length ? `<div class="warn">该章 AI 输出未过校验(${esc(s.issues.join('/'))}),已回退模板版本</div>` : '';
+  const issue = s.issues && s.issues.length ? `<div class="warn">本章内容未通过自动校对,已展示稳定版本</div>` : '';
   return `<div class="card">${viz}<div class="pad"><h2>${esc(s.title)}</h2>
-    <span class="src">来源 · ${esc(s.source)}</span><span class="mode">${mode}</span>
+    <span class="src">来源 · ${esc(s.source)}</span>
     ${extra}<div class="body">${paras}</div>${issue}</div></div>`;
 }
 
-function astroSection(input){
-  const sign = sunSign(input.m, input.d);
-  return { id:'astro', title:'星盘辅证', source:'太阳' + sign,
-    body:`太阳${sign}:${SIGN_LINE[sign]}。西盘在这里只做辅证——与八字主轴相互印证时,那个特质往往格外突出;相互反差时,则常是你"人前人后不一样"的来源。月亮与上升 V1 接入(swisseph)。来源:星盘辅证·太阳${sign}` };
+/* ---------- 星盘互证:黄道轮(外圈西盘)× 五行星形(内圈八字)同图叠加 ---------- */
+function wheelSVG(c){
+  const a = c.astro, fe = c.fiveElements.counts, dm = c.dayMaster;
+  const CX=170, CY=170, R1=158, R2=126, RM=(R1+R2)/2;
+  /* U+FE0E 变体选择符:强制文本样式,防安卓/Chrome 渲染成 emoji(项目铁坑) */
+  const GLY = '♈♉♊♋♌♍♎♏♐♑♒♓'.split('').map(g => g + '︎');
+  const WCOL = { 火:'#C96A4A', 土:'#C9A85C', 风:'#9FB4C7', 水:'#5C82AE' };
+  const SIGNS = BaziEngine.SIGNS;
+  const pt = (lon,r)=>{ const t=(180-lon)*Math.PI/180; return [CX + r*Math.cos(t), CY - r*Math.sin(t)]; };
+  let g = '';
+  /* 外圈:十二宫分段(按西盘四象着色)+ 宫界刻度 + 星座符号(必须带 U+FE0E) */
+  for (let i=0;i<12;i++){
+    const col = WCOL[Explainer.SIGN_WEST[SIGNS[i]]];
+    const [x1,y1]=pt(i*30,RM), [x2,y2]=pt((i+1)*30,RM);
+    g += `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${RM} ${RM} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${col}" stroke-opacity=".14" stroke-width="${R1-R2}" fill="none"/>`;
+    const [tx,ty]=pt(i*30,R2), [tx2,ty2]=pt(i*30,R1);
+    g += `<line x1="${tx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${tx2.toFixed(1)}" y2="${ty2.toFixed(1)}" stroke="rgba(201,168,92,.3)" stroke-width="1"/>`;
+    const [gx,gy]=pt(i*30+15,RM);
+    g += `<text x="${gx.toFixed(1)}" y="${gy.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="14" fill="${col}" fill-opacity=".9">${GLY[i]}</text>`;
+  }
+  g += `<circle cx="${CX}" cy="${CY}" r="${R1}" fill="none" stroke="rgba(201,168,92,.4)" stroke-width="1"/>`;
+  g += `<circle cx="${CX}" cy="${CY}" r="${R2}" fill="none" stroke="rgba(201,168,92,.3)" stroke-width="1"/>`;
+  /* 内圈:五行能量星形(八字盘) */
+  const ELEMS = ['木','火','土','金','水'];
+  const maxV = Math.max(...ELEMS.map(k=>fe[k]||0)) || 1;
+  const spike = ELEMS.map((k,i)=>{ const ang=90-i*72, r=28+(fe[k]||0)/maxV*68;
+    const t=ang*Math.PI/180; return [CX + r*Math.cos(t), CY - r*Math.sin(t), k, r, ang]; });
+  g += `<polygon points="${spike.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="rgba(201,168,92,.13)" stroke="rgba(201,168,92,.5)" stroke-width="1"/>`;
+  for (const [x,y,k] of spike.map(p=>[p[0],p[1],p[2]])){
+    g += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5" fill="${ELEM_COLOR[k]}"/>`;
+    const lx = CX + (x-CX)*1.16, ly = CY + (y-CY)*1.16;
+    g += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="10" fill="${ELEM_COLOR[k]}">${k}</text>`;
+  }
+  /* 中宫:日主 */
+  g += `<text x="${CX}" y="${CY-5}" text-anchor="middle" dominant-baseline="central" font-size="26" font-family="Noto Serif SC,Songti SC,serif" font-weight="700" fill="${ELEM_COLOR[dm.element]}">${dm.stem}</text>`;
+  g += `<text x="${CX}" y="${CY+16}" text-anchor="middle" font-size="9" fill="#8f7a45" letter-spacing="1">日主·${dm.stem}${dm.element}</text>`;
+  /* 三要素标记:日/月/升(与中宫虚线相连 = 互证) */
+  const marks = [['☉︎', a.sun, '#E9D09A'], ['☽︎', a.moon, '#E8E4D8'], ['升', a.asc, '#B5472F']];
+  const placed = [];   // 同度/近度重叠避让:后画的标记向内退
+  for (const [ch, o, col] of marks){
+    if (!o || o.lon === undefined || o.sign === undefined) continue;
+    let inset = 0;
+    for (const pl of placed){
+      const d = Math.abs(((o.lon - pl.lon) % 360 + 540) % 360 - 180);
+      if (d < 8) inset = Math.max(inset, pl.inset + 22);
+    }
+    placed.push({ lon: o.lon, inset });
+    const [mx,my] = pt(o.lon, R2-13-inset);
+    const [lx,ly] = pt(o.lon, R2-24-inset);
+    g += `<line x1="${lx.toFixed(1)}" y1="${ly.toFixed(1)}" x2="${CX}" y2="${CY}" stroke="rgba(201,168,92,.18)" stroke-width="1" stroke-dasharray="3 4"/>`;
+    g += `<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="9" fill="#0E1220" stroke="${col}" stroke-width="1"/>`;
+    g += `<text x="${mx.toFixed(1)}" y="${my.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="${ch==='升'?9:11}" fill="${col}">${ch}</text>`;
+  }
+  return `<svg class="wheel" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="星盘与五行叠加图">${g}</svg>`;
+}
+
+function astroCard(c){
+  const a = c.astro || {};
+  if (!a.sun) return '';
+  const E2 = Explainer;
+  let rows = `<li>☉︎ 太阳·${a.sun.sign} —— 外显人格,印证「命局总览」</li>`;
+  if (a.moon && a.moon.sign) rows += `<li>☽︎ 月亮·${a.moon.sign}${a.moon.approx?'(按正午近似)':''} —— 情绪底色,印证「关系与协作」</li>`;
+  if (a.asc) rows += `<li>升 上升·${a.asc.sign} —— 示人剖面,印证「行动与决策」</li>`;
+  let body = `太阳${a.sun.sign}:${E2.SIGN_LINE[a.sun.sign]}。${E2.sunCross(a.sun.sign, c.dayMaster.element)}来源:星盘辅证·太阳${a.sun.sign}`;
+  if (a.moon && a.moon.sign) body += `\n\n月亮${a.moon.sign}:${E2.MOON_LINE[a.moon.sign]}。来源:星盘辅证·月亮${a.moon.sign}`;
+  if (a.asc) body += `\n\n上升${a.asc.sign}:${E2.RISE_LINE[a.asc.sign]}。来源:星盘辅证·上升${a.asc.sign}`;
+  body += `\n\n外圈是你出生那一刻的黄道十二宫,内圈是同一刻的五行能量形状——两张古老的底片,曝光的是同一个你。来源:双盘互证`;
+  const paras = body.split(/\n\n+/).map(t=>`<p>${esc(t)}</p>`).join('');
+  const notes = (a.notes||[]).map(n=>`<small class="note">${esc(n)}</small>`).join('');
+  return `<div class="card"><div class="chapviz"><img src="./img/astro.jpg" alt="" loading="lazy"></div><div class="pad">
+    <h2>星盘互证</h2><span class="src">来源 · 同刻天象(与四柱同源推算)</span>
+    ${wheelSVG(c)}<ul class="basis wheelkey">${rows}</ul>
+    <div class="body">${paras}</div>${notes}</div></div>`;
 }
 
 function guaCard(){
-  return `<div class="card"><div class="chapviz"><img src="./img/gua.jpg" alt=""></div><div class="pad">
+  return `<div class="card"><div class="chapviz"><img src="./img/gua.jpg" alt="" loading="lazy"></div><div class="pad">
     <h2>一问一卦</h2><span class="src">来源 · 卦象(独立交互)</span>
     <div class="row" style="margin-top:6px">
       <input type="text" id="q" placeholder="此刻心里的一个问题(不必说出口的部分也算)" style="flex:1;min-width:220px">
       <button id="cast" class="ghost">起 卦</button>
     </div>
     <div id="guaOut"></div>
-    <small class="note">时间起卦(公历近似 v0):以起卦当下的时刻与问题字数入卦,只解结构与当下侧重,不做吉凶断语。</small>
+    <small class="note">时间起卦:以起卦当下的时刻与问题字数入卦,只解结构与当下侧重,不做吉凶断语。</small>
   </div></div>`;
 }
 
@@ -211,18 +296,17 @@ function renderGua(g){
     <small class="note">${esc(g.rule)}</small>`;
 }
 
-function render(chart, sections, mode){
+function render(chart, sections){
   CHART = chart;
   let h = chartCard(chart);
   const order = ['overview','energy','skeleton','relation','action','phase'];
   for (const id of order){
     const s = sections.find(x=>x.id===id);
-    if (s) h += sectionCard(s, mode, chart);
+    if (s) h += sectionCard(s, chart);
+    if (id === 'overview') h += astroCard(chart);   // 星盘互证紧跟总览:先主轴,即印证
   }
-  h += sectionCard(astroSection(chart.input), '规则', chart);
   h += guaCard();
   $('out').innerHTML = h;
-  $('engv').textContent = chart.meta.engine + ' · ' + chart.meta.tz;
   $('cast').onclick = () => renderGua(Explainer.castGua(new Date(), $('q').value));
 }
 
@@ -237,14 +321,14 @@ function currentInput(){
 function generateRule(){
   const chart = BaziEngine.computeChart(currentInput());
   const sections = Explainer.validateSections(Explainer.buildSections(chart), chart)
-    .map(s => s.issues.length ? { ...s, body:'(模板输出未过自检,已隐藏)来源:校验器', issues:[] } : s);
-  render(chart, sections, '模板 v0');
+    .map(s => s.issues.length ? { ...s, body:'(本章内容整理中)来源:研究所', issues:[] } : s);
+  render(chart, sections);
 }
 $('go').onclick = generateRule;
 
 /* ---------- AI 直连(内测;正式版走后端) ---------- */
 const AI_SYS = `你是「知星·命盘研究所」的解读者。你收到一份由确定性程序排出的盘面 JSON,你的唯一职责是"解释",不是"推断命运"。
-硬规则:1)只解释盘面 JSON 中存在的事实,不得自行排盘或修改干支。2)每个自然段结尾标注来源,格式「来源:日主·壬水」。3)禁词:算命、测吉凶、改运、消灾、破财、血光、灾祸、克夫、克妻、寿命,以及对健康/生死/婚姻成败/官司输赢的断言。4)所有描述用「倾向/常见于/往往/容易」,禁止「一定/注定/必然」。5)语气:具体、略痛、不安抚不恐吓,禁止星座号式泛泛安抚。6)dayMasterStrength 是简化计分,表述为「本盘计分显示…(依据:…)」。7)boundaries 非空时 overview 第一段必须提示需精校。8)定位:个人发展/人格分析/文化研究。
+硬规则:1)只解释盘面 JSON 中存在的事实,不得自行排盘或修改干支。2)每个自然段结尾标注来源,格式「来源:日主·壬水」。3)禁词:算命、测吉凶、改运、消灾、破财、血光、灾祸、克夫、克妻、寿命,以及对健康/生死/婚姻成败/官司输赢的断言。4)所有描述用「倾向/常见于/往往/容易」,禁止「一定/注定/必然」。5)语气:具体、略痛、不安抚不恐吓,禁止星座号式泛泛安抚。6)dayMasterStrength 为简化读法,表述为「按得令、得地、得势三看,本盘日主偏X(依据:…)」,不出现数字分值。7)boundaries 非空时 overview 第一段必须提示需精校。8)定位:个人发展/人格分析/文化研究。9)chart.astro 含太阳/月亮/上升(西盘三要素,与四柱同刻同源):overview 末段织入太阳星座辅证,relation 末段织入月亮星座(astro.moon.approx 为 true 时注明按正午近似),action 末段织入上升星座(astro.asc 为 null 则略过);标注格式「来源:星盘辅证·太阳X座」;八字为主轴,星盘只做印证或反差,不单独立论。10)禁止出现任何工程或版本词汇(如 v0、V1、模板、计分、校验、引擎、字段名),用户只应读到解读本身。
 生成六章,id 依次为 overview(命局总览)、energy(五行能量图谱)、skeleton(性格骨架)、relation(关系与协作)、action(行动与决策)、phase(当前的进与收)。每章 body 为 2-3 段,每段≤120字,段间用两个换行分隔。`;
 
 const AI_SCHEMA = { type:'object', properties:{ sections:{ type:'array', items:{ type:'object',
@@ -292,9 +376,9 @@ $('ai').onclick = async () => {
       }
       return s;
     });
-    render(chart, checked, 'AI · claude-opus-4-8');
+    render(chart, checked);
   } catch (e) {
-    alert('AI 生成失败:' + e.message + '\n已展示模板版本');
+    alert('AI 生成失败:' + e.message + '\n已展示稳定版本');
     generateRule();
   } finally {
     $('aiLoading').style.display = 'none';
@@ -311,6 +395,7 @@ document.addEventListener('pointerdown', e => {
 /* ---------- 初始化:URL 参数 / 简版握手 / 默认样例 ---------- */
 (function init(){
   const q = new URLSearchParams(location.search);
+  if (q.get('lab') === '1') $('labPanel').style.display = 'block';   // AI 实验通道:仅内部入口可见
   let stash = null;
   try { stash = JSON.parse(localStorage.getItem('zx_input') || 'null'); } catch(_){}
   const d = q.get('d') || (stash && stash.d) || '1995-06-08';

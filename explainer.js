@@ -22,6 +22,23 @@ const TG = {
 };
 const ELEM_FLAVOR = { 木:'生长与展开', 火:'表达与照亮', 土:'承载与稳定', 金:'裁断与结构', 水:'流动与感知' };
 
+/* ---------- 星盘辅证语料(太阳=外显人格 / 月亮=情绪底色 / 上升=示人剖面) ---------- */
+const SIGN_LINE = { 白羊座:'第一反应永远是"上"', 金牛座:'认定之前很慢,认定之后极稳', 双子座:'好奇心过载的旁观者', 巨蟹座:'壳硬心软,记性太好', 狮子座:'可以累,不能狼狈', 处女座:'对自己的标准最狠', 天秤座:'替所有人着想,所以内耗', 天蝎座:'看穿不说穿', 射手座:'困住你的只有"没意思"', 摩羯座:'把野心藏进沉默', 水瓶座:'和谁都聊得来,不属于任何圈', 双鱼座:'别人的情绪会漫进身体' };
+const MOON_LINE = { 白羊座:'情绪来得快去得也快,气头上的话别当真', 金牛座:'安全感来自可预期,变动最先惊动你的胃', 双子座:'情绪要说出来才算数,憋着就发酵成焦虑', 巨蟹座:'记得所有人的好,也记得所有人的忘记', 狮子座:'需要被看见,被忽视比被反驳更伤', 处女座:'习惯用"没事"处理所有的事', 天秤座:'不舒服也先照顾场面,回家才算总账', 天蝎座:'信任只有全给和全收,没有中间档', 射手座:'难过的第一反应是逃向远方', 摩羯座:'把情绪当成本,能不动用就不动用', 水瓶座:'要先离开现场,才能承认自己有情绪', 双鱼座:'分不清是自己的情绪,还是替别人吸的' };
+const RISE_LINE = { 白羊座:'人群里最先动的那个', 金牛座:'稳到让人误以为没脾气', 双子座:'用聊天打开所有局面', 巨蟹座:'先确认安全,再决定进场', 狮子座:'人未到,气场先到', 处女座:'挑剔,是你的第一层认真', 天秤座:'分寸感好到让人看不出立场', 天蝎座:'安静,但没人敢造次', 射手座:'自来熟,先笑再说', 摩羯座:'端着,直到确认值得', 水瓶座:'疏离感是出厂设置', 双鱼座:'看起来好说话,其实在飘' };
+const SIGN_WEST = { 白羊座:'火',狮子座:'火',射手座:'火',金牛座:'土',处女座:'土',摩羯座:'土',双子座:'风',天秤座:'风',水瓶座:'风',巨蟹座:'水',天蝎座:'水',双鱼座:'水' };
+const WEST2WX = { 火:'火', 土:'土', 风:'木', 水:'水' };   // 风象取巽木之象(巽为风,属木)
+
+/* 太阳星座 × 日主:两盘交叉读法(同气/相生/张力) */
+function sunCross(sign, dmElem){
+  const w = SIGN_WEST[sign], e = WEST2WX[w], s2 = sign.slice(0, 2);
+  const tag = w === '风' ? `${s2}属风象,易理取巽木之象` : `${s2}属${w}象`;
+  if (e === dmElem) return `${tag},与你的日主${dmElem}同气——两套体系在这里互相点头:里外一套系统,你最省力的活法就是不装。`;
+  if (GEN5[e] === dmElem) return `${tag},五行上${e}生${dmElem}——外显的气质在给内核供能,越表达越有力气,这是双盘互证出的顺流。`;
+  if (GEN5[dmElem] === e) return `${tag},五行上${dmElem}生${e}——内核在给外显供血,人前发光,独处断电,记得给自己留一个充电位。`;
+  return `${tag},与日主${dmElem}之间有张力——你常被说"看不透",那不是伪装,是两套都真;这份反差,恰恰是双盘互证要你看见的部分。`;
+}
+
 function pick(tenGods, keys){
   const out = [];
   for (const k of ['year','month','hour']){
@@ -38,17 +55,20 @@ function buildSections(chart){
   const S = [];
   const gz = k => p[k] ? p[k].stem + p[k].branch : '—';
 
-  /* overview */
+  /* overview(太阳星座辅证织入) */
+  const ast = chart.astro;
   let ovBody = `${dm.stem}${dm.element}(${dm.yinyang})生于${p.month.branch}月,四柱 ${gz('year')} ${gz('month')} ${gz('day')} ${gz('hour')}。${dm.element}主${ELEM_FLAVOR[dm.element]},这是你能量的底色。来源:四柱·日主`;
+  if (ast && ast.sun)
+    ovBody += `\n\n同一时刻,天空给出了第二份档案:太阳落${ast.sun.sign}——${SIGN_LINE[ast.sun.sign]}。${sunCross(ast.sun.sign, dm.element)}来源:星盘辅证·太阳${ast.sun.sign}`;
   if (chart.boundaries.length) ovBody = `⚠ 你的出生时刻接近排盘边界(${chart.boundaries.map(b=>b.type).join('、')}),以下结论以精校排盘为准。来源:边界告警\n\n` + ovBody;
-  S.push({ id:'overview', title:'命局总览', source:'四柱+日主', body: ovBody });
+  S.push({ id:'overview', title:'命局总览', source:'四柱+日主+太阳星座', body: ovBody });
 
   /* energy */
   const ranked = Object.entries(fe.counts).sort((a,b)=>b[1]-a[1]);
   const [maxE, minE] = [ranked[0], ranked[ranked.length-1]];
   const st = fe.dayMasterStrength;
-  S.push({ id:'energy', title:'五行能量图谱', source:'五行计数+强弱依据',
-    body: `你盘中最厚的能量是${maxE[0]}(${maxE[1]}),最薄的是${minE[0]}(${minE[1]})——${ELEM_FLAVOR[maxE[0]]}是你的富矿,${ELEM_FLAVOR[minE[0]]}则往往需要刻意补位。来源:五行计数\n\n本盘计分显示日主${st.label}(${st.score}),依据:${st.basis.join(';')}。这不是定论,而是能量配置的一种读法。来源:强弱计分 v0` });
+  S.push({ id:'energy', title:'五行能量图谱', source:'五行分布+日主强弱',
+    body: `你盘中最厚的能量是${maxE[0]}(${maxE[1]}),最薄的是${minE[0]}(${minE[1]})——${ELEM_FLAVOR[maxE[0]]}是你的富矿,${ELEM_FLAVOR[minE[0]]}则往往需要刻意补位。来源:五行分布\n\n按传统"得令、得地、得势"三看,本盘日主${st.label}(${st.basis.join(';')})。这不是定论,而是能量配置的一种读法。来源:日主强弱` });
 
   /* skeleton */
   const mGod = tg.month && TG[tg.month.stem] ? tg.month.stem : null;
@@ -60,17 +80,21 @@ function buildSections(chart){
 
   /* relation */
   const relHits = pick(tg, ['正官','七杀','正印','偏印','比肩','劫财']).slice(0,2);
-  const relBody = relHits.length
+  let relBody = relHits.length
     ? relHits.map(x=>`${POS_CN[x.pos]}${x.god}:${TG[x.god].rel}`).join('。') + '。来源:十神·官杀印比'
     : `你的盘面官杀印比不显,关系里往往更依赖食伤财的方式——用做事和给予来表达在乎。来源:十神分布`;
-  S.push({ id:'relation', title:'关系与协作', source:'十神·官杀印比', body: relBody });
+  if (ast && ast.moon && ast.moon.sign)
+    relBody += `\n\n星盘把这一章的辅证交给月亮${ast.moon.approx ? '(按当日正午近似)' : ''}:月亮落${ast.moon.sign},${MOON_LINE[ast.moon.sign]}。太阳是你给世界看的,月亮才是关了门之后的——亲密关系里的你,更接近后者。来源:星盘辅证·月亮${ast.moon.sign}`;
+  S.push({ id:'relation', title:'关系与协作', source:'十神+月亮星座', body: relBody });
 
   /* action */
   const actHits = pick(tg, ['食神','伤官','偏财','正财']).slice(0,2);
-  const actBody = actHits.length
+  let actBody = actHits.length
     ? actHits.map(x=>`${POS_CN[x.pos]}${x.god}:${TG[x.god].act}`).join('。') + '。来源:十神·食伤财'
     : `食伤财在天干不显,你的行动力更常由${st.label==='偏强'?'比劫的冲劲':'印星的准备感'}驱动——想清楚才动,但动了就不轻易停。来源:十神分布`;
-  S.push({ id:'action', title:'行动与决策', source:'十神·食伤财', body: actBody });
+  if (ast && ast.asc)
+    actBody += `\n\n星盘辅证落在上升:上升${ast.asc.sign}——${RISE_LINE[ast.asc.sign]}。上升是你启动任何事情时最先亮起的那块界面,别人对你的第一印象,多半是它。来源:星盘辅证·上升${ast.asc.sign}`;
+  S.push({ id:'action', title:'行动与决策', source:'十神+上升星座', body: actBody });
 
   /* phase */
   const phaseMap = {
@@ -78,8 +102,8 @@ function buildSections(chart){
     偏弱: '能量偏收,更适合"收与养"——少揽不属于你的仗,把睡眠、独处和滋养你的人事往前排。',
     中和: '能量大体平衡,守中即可——别刻意补什么,重点在维持你已经跑通的节奏。'
   };
-  S.push({ id:'phase', title:'当前的进与收', source:'强弱计分(大运 V1.1 接入)',
-    body: `${phaseMap[st.label]}这只是静态盘的读法,叠加大运流年的时间轴是 V1.1 的事。来源:强弱计分 v0` });
+  S.push({ id:'phase', title:'当前的进与收', source:'日主强弱',
+    body: `${phaseMap[st.label]}这是本命静态盘的读法;叠上大运流年的时间轴之后,进与收还会有更细的刻度——那是完整版报告要讲的事。来源:日主强弱` });
 
   return S;
 }
@@ -130,8 +154,8 @@ function castGua(now, question){
   return {
     name, upper, lower, moving, lines,
     upperImg: TRI_IMG[upper], lowerImg: TRI_IMG[lower],
-    body: `得「${name}」:上${TRI_IMG[upper]}下${TRI_IMG[lower]},动在第${moving}爻。${relation}。卦象说的是当下这件事的结构与侧重,不是结局。来源:卦象·${name}(简化时间卦 v0)`,
-    rule: '起卦规则:(年支序+月+日)%8 为上卦,加时辰序与问题字数 %8 为下卦,总和 %6 为动爻(公历近似,V1 接农历精算)'
+    body: `得「${name}」:上${TRI_IMG[upper]}下${TRI_IMG[lower]},动在第${moving}爻。${relation}。卦象说的是当下这件事的结构与侧重,不是结局。来源:卦象·${name}`,
+    rule: '起卦规则(公开可复算):(年支序+月+日)除以八取余为上卦,再加时辰序与问题字数取余为下卦,总和除以六取余为动爻'
   };
 }
 
@@ -151,6 +175,6 @@ function validateSections(sections, chart){
   });
 }
 
-const Explainer = { buildSections, castGua, validateSections, TG };
+const Explainer = { buildSections, castGua, validateSections, TG, SIGN_LINE, MOON_LINE, RISE_LINE, SIGN_WEST, WEST2WX, sunCross };
 if (typeof module !== 'undefined' && module.exports) module.exports = Explainer;
 if (typeof window !== 'undefined') window.Explainer = Explainer;
