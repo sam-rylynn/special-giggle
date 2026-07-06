@@ -117,6 +117,9 @@
   .da-caveat{color:var(--mist);font-size:12px;margin-top:10px}
   .da-more{margin-top:16px;padding-top:12px;border-top:1px dashed rgba(201,168,92,.2);color:#b9c2d0;font-size:13px}
   .da-more b{color:var(--gold)}
+  /* 内测:key 直接放进问知星块(仅 ?lab=1 可见),避免与旧面板成两个通道 */
+  .deep-key{margin-top:10px;padding:10px 12px;background:rgba(201,168,92,.06);border:1px dashed rgba(201,168,92,.3);border-radius:8px}
+  .deep-key small{display:block;color:var(--mist);font-size:11px;margin-top:6px;line-height:1.6}
   .body p{margin-bottom:13px;text-align:justify;white-space:pre-wrap}
   .body p:last-child{margin-bottom:0}
   /* 重点句字效(渲染层,不改文案库):key=亮象牙粗体,hot=鎏金粗体(每段最锋利那句) */
@@ -237,6 +240,7 @@ const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', relatio
 
 let CHART = null;
 let GENDER = '';   // 大运顺逆需性别,由 URL(g) 或简版握手(zx_input.g)带入
+const LAB = new URLSearchParams(location.search).get('lab') === '1';   // 内测通道:问知星块内出现 key 栏,可直接出真答
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
@@ -686,6 +690,7 @@ function qianCard(){
     <div class="ai-block">
       <div class="ai-h">问知星 · 本命深问</div>
       <p>它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。<b style="color:var(--gold)">首次免费。</b></p>
+      ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
       <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
       <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
       <div id="deepEcho"></div>
@@ -931,9 +936,9 @@ async function askDeep(chart){
   if (useBackend && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
-    const keyEl = $('key');
+    const keyEl = $('deepKey') || $('key');              // 优先问知星块内的 key 栏(内测)
     key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
-    if (!key){ echo.innerHTML = deepTeaser(q); return; }
+    if (!key){ echo.innerHTML = LAB ? `<div class="deep-echo">内测:请先在上方粘贴 Anthropic Key(仅存本机),再点「问知星」。</div>` : deepTeaser(q); return; }
     localStorage.setItem('zx_api_key', key);
   }
   const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '推演中……';
@@ -959,7 +964,7 @@ document.addEventListener('pointerdown', e => {
 /* ---------- 初始化:URL 参数 / 简版握手 / 默认样例 ---------- */
 (function init(){
   const q = new URLSearchParams(location.search);
-  if (q.get('lab') === '1') $('labPanel').style.display = 'block';   // AI 实验通道:仅内部入口可见
+  if (q.get('lab') === '2') $('labPanel').style.display = 'block';   // 旧「整份报告 AI 重生成」实验工具,收进 ?lab=2,不与问知星抢镜;?lab=1 只在问知星块内出 key 栏
   let stash = null;
   try { stash = JSON.parse(localStorage.getItem('zx_input') || 'null'); } catch(_){}
   const d = q.get('d') || (stash && stash.d) || '1995-06-08';
