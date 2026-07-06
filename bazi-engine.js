@@ -292,6 +292,41 @@ function computeChart(input){
   const score = +(0.4 * seasonScore + 0.3 * rootScore + 0.3 * mateScore).toFixed(2);
   const label = score > 0.55 ? '偏强' : score < 0.45 ? '偏弱' : '中和';
 
+  /* ---------------- 大运(阳男阴女顺排,起运=到节气天数÷3) ---------------- */
+  let daYun = null;
+  const gender = input.gender;
+  if (hasTime && (gender === '男' || gender === '女')){
+    const gzIndex = (stem, branch) => {                 // 干支→六十甲子序 0..59
+      const s = STEMS.indexOf(stem), b = BRANCHES.indexOf(branch);
+      for (let i = 0; i < 60; i++) if (i % 10 === s && i % 12 === b) return i;
+      return 0;
+    };
+    const yangYear = STEM_YANG[yearP.stem];
+    const forward = (yangYear && gender === '男') || (!yangYear && gender === '女');
+    let prevJie = -Infinity, nextJie = Infinity;         // 出生前后最近的"节"
+    for (const tm of terms){
+      if (tm.ms <= birthUtc && tm.ms > prevJie) prevJie = tm.ms;
+      if (tm.ms > birthUtc && tm.ms < nextJie) nextJie = tm.ms;
+    }
+    const diffDays = (forward ? (nextJie - birthUtc) : (birthUtc - prevJie)) / 86400000;
+    const startAgeF = diffDays / 3;                       // 3 天折 1 岁
+    const startY = Math.floor(startAgeF);
+    const startM = Math.round((startAgeF - startY) * 12);
+    const mIdx = gzIndex(monthP.stem, monthP.branch);
+    const steps = [];
+    for (let k = 1; k <= 8; k++){
+      const idx = ((mIdx + (forward ? k : -k)) % 60 + 60) % 60;
+      const st = STEMS[idx % 10], br = BRANCHES[idx % 12];
+      const ageFrom = startY + (k - 1) * 10;
+      steps.push({ stem: st, branch: br, god: tenGod(dayStem, st) || '—',
+        ageFrom, ageTo: ageFrom + 9, yearFrom: y + ageFrom, yearTo: y + ageFrom + 9 });
+    }
+    daYun = { forward, gender,
+      startAge: +startAgeF.toFixed(1),
+      startText: startY + '岁' + (startM ? startM + '个月' : '') + '起运',
+      steps };
+  }
+
   return {
     input: { ...input },
     solar: hasTime ? {
@@ -314,6 +349,7 @@ function computeChart(input){
         model: '简化计分 v1(得令40%+得地30%+得势30%),供解释层引用,非断语'
       }
     },
+    daYun,
     boundaries, meta
   };
 }

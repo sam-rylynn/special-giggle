@@ -31,11 +31,15 @@
   .card h2::before,.card h2::after{content:"";flex:0 1 32px;min-width:8px;height:1px}
   .card h2::before{background:linear-gradient(90deg,transparent,rgba(201,168,92,.5))}
   .card h2::after{background:linear-gradient(90deg,rgba(201,168,92,.5),transparent)}
-  .chapviz{position:relative;height:150px;overflow:hidden}
-  .chapviz img{width:100%;height:100%;object-fit:cover;transition:transform 6s ease}
-  .card:hover .chapviz img{transform:scale(1.05)}
+  .chapviz{position:relative;height:220px;overflow:hidden}
+  /* 竖版配图:不放大,改缓慢上下平移(Ken Burns 竖扫),一个周期内从上扫到下,看全图与细节 */
+  .chapviz img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;animation:vpan 26s ease-in-out infinite alternate}
+  .card:nth-of-type(odd) .chapviz img{animation-direction:alternate-reverse}
+  @keyframes vpan{from{object-position:50% 6%}to{object-position:50% 94%}}
   .chapviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,34,51,0) 40%,var(--panel))}
-  .src{display:inline-block;font-size:10.5px;color:var(--gold);border:1px solid rgba(201,168,92,.4);border-radius:99px;padding:0 10px;letter-spacing:.08em;margin-bottom:10px}
+  .src{display:inline-block;font-size:9px;color:var(--gold-dim);border:1px solid rgba(201,168,92,.24);border-radius:99px;padding:0 8px;letter-spacing:.06em;margin-bottom:10px;opacity:.75}
+  /* 正文末尾「来源:…」弱化:更小更浅,不抢解读本身 */
+  .src-inline{font-size:10.5px;color:#5a6273;letter-spacing:.02em}
 
   /* 方法论开篇 */
   .manifesto p{margin-bottom:10px;text-align:justify}
@@ -43,12 +47,82 @@
   .manifesto .axiom{font-family:var(--serif);font-size:17px;color:var(--gold);text-align:center;letter-spacing:.3em;text-indent:.3em;margin:16px 0 4px}
   .manifesto .axiom-sub{text-align:center;color:var(--mist);font-size:12px;margin-bottom:0}
 
+  /* 报告导航 */
+  .secnav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
+  .secnav a{font-size:12px;color:var(--gold);border:1px solid rgba(201,168,92,.3);border-radius:99px;padding:5px 13px;
+    text-decoration:none;letter-spacing:.04em;transition:background .2s}
+  .secnav a:active{background:rgba(201,168,92,.14)}
+  .navedit{display:block;text-align:center;margin-top:12px;color:var(--mist);font-size:12px}
+  .navedit a{color:var(--gold-dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .card[id]{scroll-margin-top:14px}
+
   /* 星盘轮 */
   .wheel{display:block;width:min(100%,320px);margin:8px auto 4px}
   .wheelkey{margin:4px 0 12px;text-align:center}
   .wheelkey li{display:block}
-  .body p{margin-bottom:10px;text-align:justify;white-space:pre-wrap}
+
+  /* 星盘互证:三点深读 + 融合 */
+  .astro-item{padding:14px 0;border-top:1px dashed rgba(201,168,92,.16)}
+  .astro-item:first-child{border-top:none}
+  .astro-h{font-family:var(--serif);font-size:15px;color:var(--moon);margin-bottom:8px;display:flex;align-items:baseline;flex-wrap:wrap;gap:6px}
+  .astro-sym{color:var(--gold);font-size:15px}
+  .astro-role{font-size:10.5px;color:var(--gold-dim);font-family:var(--sans);letter-spacing:.02em}
+  .astro-approx{font-size:10px;color:var(--mist)}
+  .astro-cross{background:rgba(201,168,92,.07);border-left:2px solid rgba(201,168,92,.5);border-radius:0 6px 6px 0;padding:8px 12px;margin:8px 0!important}
+  .astro-tag{color:var(--gold);font-weight:700;margin-right:6px}
+  .astro-adv{color:#b9c2d0;font-size:13.5px}
+  .astro-close{color:var(--mist);font-size:13px;margin-top:6px!important;border-top:1px dashed rgba(201,168,92,.16);padding-top:12px}
+
+  /* 大运时间轴表 */
+  .dy-wrap{margin:8px 0 4px}
+  .dy-table{width:100%;border-collapse:collapse;text-align:center;font-family:var(--serif);font-size:13px}
+  .dy-table th{color:var(--gold-dim);font-weight:400;font-size:11px;padding:6px 2px;letter-spacing:.1em;border-bottom:1px solid rgba(201,168,92,.2)}
+  .dy-table td{padding:7px 2px;border-top:1px dashed rgba(201,168,92,.13);color:var(--moon)}
+  .dy-table .dy-gz{color:var(--gold);font-weight:700}
+  .dy-table tr.dy-now td{background:rgba(201,168,92,.13)}
+  .dy-table tr.dy-now .dy-gz{background:linear-gradient(180deg,#fff6dd,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .dy-meta{text-align:center;color:var(--gold-dim);font-size:11px;margin-top:6px;letter-spacing:.08em}
+  .dy-cur{margin-top:14px;background:rgba(201,168,92,.07);border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:14px 14px}
+  .dy-cur-h{font-family:var(--serif);color:var(--gold);font-size:14px;margin-bottom:8px}
+  .dy-cur-h b{background:linear-gradient(180deg,#fff6dd,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .dy-cur p{color:var(--moon);text-align:justify}
+  .dy-hint{color:var(--mist);font-size:13px;background:rgba(201,168,92,.06);border:1px dashed rgba(201,168,92,.3);border-radius:8px;padding:12px}
+
+  /* 本命签 */
+  .qian-intro{color:var(--mist);font-size:13.5px;text-align:center;margin-top:4px}
+  .qian-draw{margin-top:12px;text-align:center;animation:qfade .7s ease}
+  @keyframes qfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .qian-hex{font-family:var(--serif);font-size:30px;letter-spacing:.4em;text-indent:.4em;font-weight:700;
+    background:linear-gradient(180deg,#fff6dd,#e9d09a 45%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 18px rgba(201,168,92,.3))}
+  .qian-omen{font-family:var(--serif);color:var(--moon);font-size:14px;letter-spacing:.06em;margin-top:8px}
+  .qian-draw .body{text-align:justify}
+  .ai-block{margin-top:18px;border-top:1px dashed rgba(201,168,92,.2);padding-top:14px}
+  .ai-block .ai-h{font-family:var(--serif);color:var(--gold);font-size:14px;margin-bottom:8px}
+  .ai-block p{color:var(--mist);font-size:13px;text-align:justify}
+  .deep-echo{margin-top:10px;background:rgba(201,168,92,.07);border-radius:8px;padding:10px 12px;color:#b9c2d0;font-size:13px;line-height:1.8}
+  /* 本命深问 · 答复卡 */
+  .deep-ans{margin-top:12px;animation:qfade .5s ease}
+  .da-q{font-size:12.5px;color:var(--gold-dim);margin-bottom:10px;padding-left:10px;border-left:2px solid rgba(201,168,92,.4)}
+  .da-reply{font-family:var(--serif);font-size:15.5px;color:#f6efdb;line-height:1.85;margin-bottom:12px}
+  .da-part{margin:10px 0;padding:12px 14px;background:rgba(201,168,92,.05);border-radius:8px}
+  .da-label{display:inline-block;font-family:var(--serif);font-size:12px;color:var(--gold);letter-spacing:.12em;margin-bottom:6px}
+  .da-part p{text-align:justify;color:var(--moon)}
+  .da-part .src-inline{display:block;margin-top:6px}
+  .da-adv{margin:14px 0 6px}
+  .da-adv-h{font-family:var(--serif);color:var(--gold);font-size:13px;margin-bottom:6px}
+  .da-adv ul{list-style:none}
+  .da-adv li{color:var(--moon);font-size:14px;margin:7px 0;padding-left:18px;position:relative}
+  .da-adv li::before{content:"◇";position:absolute;left:0;color:var(--gold-dim)}
+  .da-caveat{color:var(--mist);font-size:12px;margin-top:10px}
+  .da-more{margin-top:16px;padding-top:12px;border-top:1px dashed rgba(201,168,92,.2);color:#b9c2d0;font-size:13px}
+  .da-more b{color:var(--gold)}
+  .body p{margin-bottom:13px;text-align:justify;white-space:pre-wrap}
   .body p:last-child{margin-bottom:0}
+  /* 重点句字效(渲染层,不改文案库):key=亮象牙粗体,hot=鎏金粗体(每段最锋利那句) */
+  .key{font-weight:600;color:#f6efdb}
+  .key-hot{font-weight:700;color:var(--gold);text-shadow:0 0 14px rgba(201,168,92,.22)}
+  .astro-adv .key,.astro-adv .key-hot,.dy-cur .key,.dy-cur .key-hot{text-shadow:none}
 
   .row{display:flex;gap:10px;flex-wrap:wrap}
   input,button,textarea{height:46px;border-radius:8px;border:1px solid rgba(232,228,216,.16);background:#10182a;color:var(--moon);
@@ -91,8 +165,8 @@
   @keyframes rp{from{width:10px;height:10px;opacity:.9}to{width:42vmin;height:42vmin;opacity:0}}
 
   .meta{color:#4b5563;font-size:11.5px;line-height:1.9;margin-top:24px;text-align:center}
-  .endviz{position:relative;height:170px;overflow:hidden;border-radius:12px;margin-top:22px}
-  .endviz img{width:100%;height:100%;object-fit:cover;object-position:50% 45%}
+  .endviz{position:relative;height:230px;overflow:hidden;border-radius:12px;margin-top:22px}
+  .endviz img{width:100%;height:100%;object-fit:cover;object-position:50% 42%}
   .endviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.15),rgba(14,18,32,.75))}
   .endviz .cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--serif);color:var(--moon);font-size:13px;letter-spacing:.24em;text-indent:.24em}
   small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
@@ -105,28 +179,29 @@
   <div class="tt">
     <span class="badge">内 测 · 抢 先 版</span>
     <h1>深度本命报告</h1>
-    <div class="sub">五行能量 · 星盘互证 · 一问一卦</div>
+    <div class="sub">五行能量 · 星盘互证 · 本命签</div>
   </div>
 </div>
 
 <div class="wrap">
   <div class="card"><div class="pad manifesto">
     <h2>以易理观己 · 以星盘为证</h2>
-    <p>这份报告同时动用两套彼此独立的古老体系,观测同一个对象——<b>你出生的那一刻</b>。八字把那一刻拆成天干地支,读的是你内在的能量配置;星盘把同一刻的天空原样存档,读的是这份配置向外的投影。</p>
-    <p>一个来自黄河流域,一个来自地中海,两千年互不通信,却不约而同选了同一个坐标:出生时刻。所以我们不混用、不互相代劳——<b>易理为主轴,星盘只做印证</b>。两套独立体系在同一个结论上相遇,那个结论才值得你认真对待;而它们彼此打架的地方,往往就是你身上最值得琢磨的张力。</p>
+    <p>这份报告同时动用两套彼此独立的古老体系,观测同一个对象——<b>你出生的那一刻</b>。八字把那一刻拆成天干地支,读的是你内在的能量配置;星盘把同一刻的宇宙星位原样存档,读的是这份配置向外的投影。</p>
+    <p>中华黄河流域传承与西古地中海神学,两千年互不通信,却不约而同选了同一个坐标:出生时刻。所以我们不混用、不互相代劳——<b>易理为主轴,星盘只做印证</b>。两套独立体系在同一个结论上相遇,那个结论才值得你认真对待;而它们彼此打架的地方,往往就是你身上最值得琢磨的张力。</p>
     <p class="axiom">孤证不立,双盘互证。</p>
     <p class="axiom-sub">下面每一条解读都标注了出处盘位,随时可以回头查证。</p>
   </div></div>
 
   <div class="card"><div class="pad">
-    <h2>出生信息</h2>
-    <div class="row">
+    <h2>报告导航</h2>
+    <nav class="secnav" id="secNav"></nav>
+    <small class="navedit">已按你的出生信息生成 · <a id="editLink">生辰有误?点此修改</a></small>
+    <div class="row" id="editRow" style="display:none;margin-top:12px">
       <input type="date" id="d" style="flex:1.2;min-width:150px">
       <input type="time" id="t" style="flex:1;min-width:110px">
       <input type="text" id="c" placeholder="城市" style="width:96px">
-      <button id="go">生 成</button>
+      <button id="go">重新生成</button>
     </div>
-    <small class="note">出生信息只在你自己的设备上完成计算,不上传、不存储;这份报告,只有你看得到。</small>
   </div></div>
 
   <div id="out"></div>
@@ -158,16 +233,328 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const ELEM_COLOR = { 木:'#7FA864', 火:'#C96A4A', 土:'#C9A85C', 金:'#D8D5CB', 水:'#5C82AE' };
-const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg' };
+const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', relation:'./img/relation.jpg', action:'./img/action.jpg', phase:'./img/phase.jpg' };
 
 let CHART = null;
+let GENDER = '';   // 大运顺逆需性别,由 URL(g) 或简版握手(zx_input.g)带入
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* ===== 重点句加粗(渲染层,不改文案库 explainer.js) =====
+ * EMPH.hot / EMPH.key 均为「原文逐字子串」清单,由选词工作流产出并经程序化核验。
+ * 每级已在构建期去重+去互相包含+长→短排序,故此处 split/join 逐字面替换即安全,不会嵌套。 */
+const EMPH = {
+  hot: [
+    '别人以为翻篇了,其实你还在原地',
+    '漫成想太多、拿不定、随波逐流',
+    '硬要它当下开满花,往往是透支',
+    '却在无形里得罪了本可借力的人',
+    '把\'不想吵\'过成了\'不解决\'',
+    '被舒适感牵着走,不是能力问题',
+    '变化来临时你往往最后一个松手',
+    '忽略你也会累、也需要人接一把',
+    '却让生人觉得你不好靠近、慢热',
+    '合伙与均分容易在后半程生嫌隙',
+    '人不是活在一张定格照片里的',
+    '它的功课是别自己给自己找补',
+    '把弦一直绷到极限,不给喘息',
+    '关键处总差一口独自扛的狠劲',
+    '在\'信不过\'里反复试探对方',
+    '用\'成绩\'来证明自己配活着',
+    '让亲近的人觉得隔着一层玻璃',
+    '聊了很多,却没碰到那个疼点',
+    '把认真的情绪用玩笑轻轻推开',
+    '让人觉得你难被推动、慢半拍',
+    '坑多半在\'讲义气\'三个字上',
+    '走到忘了自己是从哪冒出来的',
+    '总卡在\'还没开始\'那一步',
+    '把自己的意志当成唯一答案',
+    '你偏要自己硬啃一遍才安心',
+    '一到\'算账\'就容易生嫌隙',
+    '先把\'谁得什么\'讲在明处',
+    '稀释了那个最该被偏心的人',
+    '用付出换取不被离开的安心',
+    '自我太满、容不下别人的手',
+    '遇到需要熬的收尾就撂开手',
+    '等一个永远不够完美的时机',
+    '什么都沾一点,什么都不深',
+    '别人根本不知道发生了什么',
+    '随性、留不住、承诺打折扣',
+    '让人觉得你难融入、有点冷',
+    '好说话、可以将就的那一个',
+    '少了一个能拆自己台的对手',
+    '容易把你最值钱的松弛磨没',
+    '敢说敢改,绊也常在同一处',
+    '给着给着就忘了自己也要晒',
+    '是真的多余,还是本就是你',
+    '别把\'不偏\'活成\'不动\'',
+    '点子密、开头猛、爱牵头',
+    '存钱的计划一个都没落地',
+    '把很多想要活成了不敢要',
+    '先量给自己看,再谈别人',
+    '先动五分钟,别等有兴致',
+    '故意不按\'应该\'来一次',
+    '常在评估里把机会耗过期',
+    '拖延来自恋栈而非想不清',
+    '还在盯那百分之五的毛边',
+    '连你自己也常拖着不决定',
+    '耗到只剩别人、没了自己',
+    '你把最软的地方藏得最深',
+    '亲近的人常觉得暖不进来',
+    '什么都不当真,把你看轻',
+    '一旦失信代价往往拖很久',
+    '收是为了蓄,不是为了躺',
+    '怕的不是难,是白难一场',
+    '明知该拒绝却开不了口',
+    '样样能来却样样不极致',
+    '倒回来磨成脾气和内耗',
+    '把喜欢的东西煨出味来',
+    '是为了赢还是为了成事',
+    '压力越大,你越像自己',
+    '你先替这世界守着秩序',
+    '用外面的反馈打断内耗',
+    '先自己独立走完一小段',
+    '新鲜劲一过就想换靶子',
+    '怀疑自己是不是还值钱',
+    '晾着比骂着更让你难受',
+    '委屈了还替对方找理由',
+    '觉得你谁都好、没立场',
+    '别人常说你\'看不透\'',
+    '台面上一套、心里一套',
+    '你的运在\'慢慢变厚\'',
+    '养着的东西后面才值钱',
+    '缺一点滋养就先板结了',
+    '装到别人以为你没有底',
+    '心里有火却递不出去',
+    '一刀落定不拖泥带水',
+    '一个人硬扛久了就空',
+    '过成了\'回避难处\'',
+    '换成\'先问一个人\'',
+    '也忍不住说得比人狠',
+    '只认一份耕耘一份收',
+    '练习冒一次可控的险',
+    '不许自责的留白时间',
+    '你越往里走去找答案',
+    '有时是\'不需要我\'',
+    '会为他破一次例的你',
+    '遇阻不是绕而是硬顶',
+    '你怕冲突胜过怕委屈',
+    '被读成爱表现、要强',
+    '进场要猛、落袋要稳',
+    '不舍得等一个值得的',
+    '稳到没人问你累不累',
+    '能把一屋子人点亮',
+    '安全感总差一口气',
+    '遇到堵点只会硬顶',
+    '反复掂量到它凉了',
+    '现实里却一步没迈',
+    '在分利那一刻较真',
+    '就看你留不留得住',
+    '留下一小份不动它',
+    '也总想着被谁接住',
+    '反倒想要你松一松',
+    '留一堆开了头的事',
+    '急着让自己好起来',
+    '显得挑剔、难亲近',
+    '把人挡在客气之外',
+    '是内里在默默垫钱',
+    '别一个人硬扛到底',
+    '才不至于亮完就空',
+    '伤口愈合得最慢',
+    '把爱说成了要求',
+    '浑身别扭是对的',
+    '有没有被看见',
+    '读出错的意思',
+    '越推演越难动',
+    '委屈就自己咽',
+    '越难过越端着',
+    '但你耐得住黑',
+    '板结成固执',
+    '一起冒次险',
+    '不甘心收手',
+    '动得太散'
+  ],
+  key: [
+    '给决策设一个到点就必须动的期限',
+    '到点就把最小的一步交给现实去验',
+    '明明想拒绝却怕失了分寸而应下',
+    '对外客气有分寸,对内才卸防备',
+    '压力最大、也最能逼出你的一步',
+    '熬得住的人,后头才有资格谈燃',
+    '哪几步是顺风、哪几步是逆风',
+    '对\'我应得的那份\'格外敏感',
+    '却对该做不想做的事一拖再拖',
+    '非要给自己找个硬仗打才踏实',
+    '带着体温也带着火星的合伙人',
+    '允许自己带着不完美先动起来',
+    '告诉对方你此刻具体想要什么',
+    '我需要一点空间,晚点回来聊',
+    '主动多说一句关于自己的实话',
+    '答应人之前想一秒能不能兑现',
+    '露一点无伤大雅的松弛或自嘲',
+    '找一个和对方的共同点说出来',
+    '该说不的时候第一时间说出来',
+    '顺着这条线使力往往事半功倍',
+    '把大目标切成本周三件小事',
+    '攒得下钱却不敢投一次自己',
+    '主动扔掉一件舍不得的东西',
+    '把自我价值从掌声里挪出来',
+    '把选择权让出去以维持和气',
+    '接住别人的情绪当成自己的',
+    '情绪一来就是火,秒到峰值',
+    '把\'马上发作\'延后一分钟',
+    '一旦感到被冷落就往壳里缩',
+    '等着对方读懂你没说的那句',
+    '允许别人看见没整理好的你',
+    '分不清哪份难过是你自己的',
+    '越顺越要防着一根筋走到底',
+    '记得回头给自己那口井蓄水',
+    '别总做那块垫在底下的地基',
+    '别把心当成谁都能倒的江口',
+    '几条雷打不动的固定动作',
+    '提前写好几句拒绝的原话',
+    '先把自己续满,再谈发力',
+    '总留一块谁都进不来的地',
+    '看得比\'事情成了\'更重',
+    '过成了不肯长出自己的锋',
+    '被人当成理所当然的后盾',
+    '活成一台只问产出的机器',
+    '容易在钱和情上大手大脚',
+    '是出成果、出风格的十年',
+    '先认领你自己要的那束光',
+    '让里头那口气自己转过来',
+    '主动找活干、找场子站',
+    '维持你已经跑通的节奏',
+    '容易把自己关进脑子里',
+    '付出得猛,也隐隐记账',
+    '把\'我也怕\'压在心里',
+    '允许一件事停在80分',
+    '把情绪转成观点来处理',
+    '练一句完整的\'不行\'',
+    '用\'为你好\'表达在乎',
+    '别用\'都行\'提前投降',
+    '用沉默和试探去验对方',
+    '觉得示弱是给人添麻烦',
+    '允许自己在人前塌一次',
+    '你的示人剖面是冲在前',
+    '你的示人剖面自带排面',
+    '多把镜头分给别人一次',
+    '把\'不一样\'当护城河',
+    '把主动权收回自己手里',
+    '准备到几分就必须下场',
+    '往往就是在替你定成色',
+    '把\'完成\'定义清楚',
+    '哪十年适合猛踩油门',
+    '摊子铺得开却收得慢',
+    '自己给自己立的规矩',
+    '留一个能喊停你的人',
+    '把退缩换成一句实话',
+    '眼睛先看到哪里不对',
+    '只按\'我想要\'来定',
+    '先说一句纯粹的感受',
+    '用分析绕开真正的痛',
+    '我是担心,不是嫌你',
+    '积压成说不清的疏离',
+    '用坦白替换那套试探',
+    '把不属于你的还回去',
+    '活络、好聊、反应快',
+    '清爽、得体、有分寸',
+    '建立可复利的稳定盘',
+    '该守的承诺一个不破',
+    '给热一个固定出口',
+    '能量不该再往里囤',
+    '把独角戏改成合唱',
+    '与自己等身的标尺',
+    '对机会开着窗的网',
+    '我为你算好了一切',
+    '动手前先划一条线',
+    '让惯性替兴致兜底',
+    '给自己立一条主线',
+    '用掌控感换安全感',
+    '主动先亮一张真牌',
+    '还有更好的在别处',
+    '熬过想跑的那一刻',
+    '情绪一闷你就想跑',
+    '像块靠得住的石头',
+    '主动递一个小善意',
+    '先放一句轻松的话',
+    '亮一次明确的态度',
+    '星盘在替八字续力',
+    '话说满之前留三分',
+    '把劲收在鞘里养着',
+    '难在样样都想端平',
+    '像迟迟不发的芽',
+    '里子暖、面上冷',
+    '能在夹缝里找路',
+    '别当场把话说死',
+    '自带温度的慢火',
+    '不肯藏锋的才气',
+    '最怕没人磨的刀',
+    '标准高、容错低',
+    '冒进是它的底色',
+    '预留退路和缓冲',
+    '小步独立的练习',
+    '熬过第一波无聊',
+    '推翻它比登天难',
+    '聪明却抓不住你',
+    '往深里钻三个月',
+    '练习白白地存在',
+    '你消化情绪很慢',
+    '碰一下情绪本身',
+    '把感受变成分析',
+    '先问一句再动手',
+    '主动收一收话头',
+    '深、静、有压强',
+    '比实际年龄成熟',
+    '柔、飘、易亲近',
+    '是你独有的深度',
+    '真能托底的名单',
+    '旺时最难的是收',
+    '你身上有硬东西',
+    '像开春的枝条',
+    '睡一觉再拍板',
+    '敢于放大长板',
+    '认斤认两的秤',
+    '向内挖的深井',
+    '肯托底的厚土',
+    '认事不认权威',
+    '憋久了会变味',
+    '你出彩也扎人',
+    '把关系变资源',
+    '把爱过成责任',
+    '把心防得很严',
+    '我需要抱一下',
+    '我需要你哄我',
+    '别让稳变成拖',
+    '先给自己找水',
+    '先回一趟源头',
+    '别等灵感来',
+    '天生的地基',
+    '心里有把尺',
+    '先动手再想',
+    '温和带防备',
+    '会照顾场面',
+    '爽朗、开阔',
+    '少揽热闹'
+  ]
+};
+function wrapPhrase(html, phrase, cls){
+  if (!phrase) return html;
+  return html.split(phrase).join('<strong class="'+cls+'">'+phrase+'</strong>');
+}
+/* 在「已转义的纯文本」上作用(此刻还没有标签,不会碰到属性);hot 先于 key */
+function keyEmph(escaped){
+  for (const p of EMPH.hot) escaped = wrapPhrase(escaped, p, 'key-hot');
+  for (const p of EMPH.key) escaped = wrapPhrase(escaped, p, 'key');
+  return escaped;
+}
+/* 段落格式化:转义 → 重点加粗 → 把末尾「来源:…」包成弱化 span(缩小变浅) */
+function fmtBody(text){ return keyEmph(esc(text)).replace(/(来源[:：][^\n]*)$/m, '<span class="src-inline">$1</span>'); }
 
 function chartCard(c){
   const cols=['year','month','day','hour'], names={year:'年柱',month:'月柱',day:'日柱',hour:'时柱'};
   const p=c.pillars;
-  return `<div class="card"><div class="pad"><h2>盘面</h2><table>
+  return `<div class="card" id="sec-chart"><div class="pad"><h2>盘面</h2><table>
     <tr>${cols.map(k=>`<th>${names[k]}</th>`).join('')}</tr>
     <tr>${cols.map(k=>`<td class="gz">${p[k]?p[k].stem+p[k].branch:'—'}</td>`).join('')}</tr>
     <tr>${cols.map(k=>`<td class="tg">${p[k]?(c.tenGods[k].stem+'<br>'+(BaziEngine.HIDDEN[p[k].branch]||[]).join(' ')):'—'}</td>`).join('')}</tr></table>
@@ -189,12 +576,28 @@ function energyExtra(c){
 
 function sectionCard(s, c){
   const viz = CHAP_VIZ[s.id] ? `<div class="chapviz"><img src="${CHAP_VIZ[s.id]}" alt="" loading="lazy"></div>` : '';
-  const extra = s.id==='energy' ? energyExtra(c) : '';
-  const paras = s.body.split(/\n\n+/).map(t=>`<p>${esc(t)}</p>`).join('');
+  const extraBefore = s.id==='energy' ? energyExtra(c) : '';
+  const extraAfter  = s.id==='phase' ? phaseExtra(c) : '';
+  const paras = s.body.split(/\n\n+/).map(t=>`<p>${fmtBody(t)}</p>`).join('');
   const issue = s.issues && s.issues.length ? `<div class="warn">本章内容未通过自动校对,已展示稳定版本</div>` : '';
-  return `<div class="card">${viz}<div class="pad"><h2>${esc(s.title)}</h2>
+  return `<div class="card" id="sec-${s.id}">${viz}<div class="pad"><h2>${esc(s.title)}</h2>
     <span class="src">来源 · ${esc(s.source)}</span>
-    ${extra}<div class="body">${paras}</div>${issue}</div></div>`;
+    ${extraBefore}<div class="body">${paras}</div>${extraAfter}${issue}</div></div>`;
+}
+
+/* ---------- 大运时间轴表(进与收章尾) ---------- */
+function phaseExtra(c){
+  const dy = c.daYun;
+  if (!dy) return `<p class="dy-hint">补充出生性别后,这里会展开你的大运时间轴——每十年一步的进与收刻度。</p>`;
+  const D = Explainer.DAYUN_STRATEGY, PH = Explainer.PHASE;
+  const now = (new Date()).getFullYear();
+  let curStep = null;
+  const rows = dy.steps.map(s=>{ const cur = now>=s.yearFrom && now<=s.yearTo; if (cur) curStep=s;
+    return `<tr class="${cur?'dy-now':''}"><td>${s.ageFrom}–${s.ageTo}岁</td><td>${s.yearFrom}–${s.yearTo}</td><td class="dy-gz">${s.stem}${s.branch}</td><td>${s.god}</td></tr>`; }).join('');
+  const cur = curStep ? `<div class="dy-cur"><div class="dy-cur-h">你正走的这步 · <b>${curStep.stem}${curStep.branch}(${curStep.god})</b> · ${curStep.yearFrom}–${curStep.yearTo}</div><p>${keyEmph(esc(D[curStep.god]||''))}</p></div>` : '';
+  return `<div class="dy-wrap"><small class="note" style="margin:6px 0 10px">${esc(PH.caption)}</small>
+    <table class="dy-table"><tr><th>年龄</th><th>公历年</th><th>大运</th><th>当令</th></tr>${rows}</table>
+    <div class="dy-meta">${esc(dy.startText)} · ${dy.forward?'顺排':'逆排'}</div>${cur}</div>`;
 }
 
 /* ---------- 星盘互证:黄道轮(外圈西盘)× 五行星形(内圈八字)同图叠加 ---------- */
@@ -254,46 +657,50 @@ function wheelSVG(c){
 }
 
 function astroCard(c){
+  const readings = Explainer.astroReadings(c);
+  if (!readings) return '';
   const a = c.astro || {};
-  if (!a.sun) return '';
-  const E2 = Explainer;
-  let rows = `<li>☉︎ 太阳·${a.sun.sign} —— 外显人格,印证「命局总览」</li>`;
-  if (a.moon && a.moon.sign) rows += `<li>☽︎ 月亮·${a.moon.sign}${a.moon.approx?'(按正午近似)':''} —— 情绪底色,印证「关系与协作」</li>`;
-  if (a.asc) rows += `<li>升 上升·${a.asc.sign} —— 示人剖面,印证「行动与决策」</li>`;
-  let body = `太阳${a.sun.sign}:${E2.SIGN_LINE[a.sun.sign]}。${E2.sunCross(a.sun.sign, c.dayMaster.element)}来源:星盘辅证·太阳${a.sun.sign}`;
-  if (a.moon && a.moon.sign) body += `\n\n月亮${a.moon.sign}:${E2.MOON_LINE[a.moon.sign]}。来源:星盘辅证·月亮${a.moon.sign}`;
-  if (a.asc) body += `\n\n上升${a.asc.sign}:${E2.RISE_LINE[a.asc.sign]}。来源:星盘辅证·上升${a.asc.sign}`;
-  body += `\n\n外圈是你出生那一刻的黄道十二宫,内圈是同一刻的五行能量形状——两张古老的底片,曝光的是同一个你。来源:双盘互证`;
-  const paras = body.split(/\n\n+/).map(t=>`<p>${esc(t)}</p>`).join('');
+  const role = { 太阳:'外显人格 · 与「命局总览」互证', 月亮:'情绪底色 · 与「关系与协作」互证', 上升:'示人剖面 · 与「行动与决策」互证' };
+  let blocks = '';
+  for (const r of readings){
+    blocks += `<div class="astro-item"><div class="astro-h"><span class="astro-sym">${r.sym}</span>${r.label}·${r.sign}${r.approx?'<span class="astro-approx">(按正午近似)</span>':''}<span class="astro-role">${role[r.label]||''}</span></div>`
+      + `<p>${fmtBody(r.deep)}</p>`
+      + `<p class="astro-cross"><b class="astro-tag">${esc(r.tag)}</b>${fmtBody(r.cross)}</p>`
+      + `<p class="astro-adv">◇ ${keyEmph(esc(r.advice))}</p></div>`;
+  }
+  blocks += `<p class="astro-close">外圈是你出生那一刻的黄道十二宫,内圈是同一刻的五行能量形状——两套两千年互不通信的体系,叠在同一张图上,曝光的是同一个你。它们点头处,是你的确定;打架处,是你的深度。<span class="src-inline">来源:双盘互证</span></p>`;
   const notes = (a.notes||[]).map(n=>`<small class="note">${esc(n)}</small>`).join('');
-  return `<div class="card"><div class="chapviz"><img src="./img/astro.jpg" alt="" loading="lazy"></div><div class="pad">
+  return `<div class="card" id="sec-astro"><div class="chapviz"><img src="./img/astro.jpg" alt="" loading="lazy"></div><div class="pad">
     <h2>星盘互证</h2><span class="src">来源 · 同刻天象(与四柱同源推算)</span>
-    ${wheelSVG(c)}<ul class="basis wheelkey">${rows}</ul>
-    <div class="body">${paras}</div>${notes}</div></div>`;
+    ${wheelSVG(c)}
+    <div class="body astro-body">${blocks}</div>${notes}</div></div>`;
 }
 
-function guaCard(){
-  return `<div class="card"><div class="chapviz"><img src="./img/gua.jpg" alt="" loading="lazy"></div><div class="pad">
-    <h2>一问一卦</h2><span class="src">来源 · 卦象(独立交互)</span>
-    <div class="row" style="margin-top:6px">
-      <input type="text" id="q" placeholder="此刻心里的一个问题(不必说出口的部分也算)" style="flex:1;min-width:220px">
-      <button id="cast" class="ghost">起 卦</button>
+function qianCard(){
+  const U = Explainer.QIAN_UI;
+  return `<div class="card" id="sec-qian"><div class="chapviz"><img src="./img/gua.jpg" alt="" loading="lazy"></div><div class="pad">
+    <h2>本命签</h2><span class="src">来源 · 本命签(与你的日主五行绑定)</span>
+    <p class="qian-intro">${esc(U.intro)}</p>
+    <div style="text-align:center;margin:16px 0 4px"><button id="drawBtn">${esc(U.cta)}</button></div>
+    <div id="qianOut"></div>
+    <div class="ai-block">
+      <div class="ai-h">问知星 · 本命深问</div>
+      <p>它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。<b style="color:var(--gold)">首次免费。</b></p>
+      <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
+      <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
+      <div id="deepEcho"></div>
     </div>
-    <div id="guaOut"></div>
-    <small class="note">时间起卦:以起卦当下的时刻与问题字数入卦,只解结构与当下侧重,不做吉凶断语。</small>
   </div></div>`;
 }
 
-function renderGua(g){
-  /* 阴爻:两段;阳爻:一整段;动爻朱砂 */
-  const yao2 = g.lines.map((v,i)=>{
-    const cls = 'yao' + (i+1===g.moving ? ' mov' : '');
-    return v ? `<div class="${cls}"><i></i></div>` : `<div class="${cls}"><i></i><i style="opacity:0"></i><i></i></div>`;
-  }).join('');
-  $('guaOut').innerHTML = `<div class="hex">${yao2}</div>
-    <div class="hexname">${g.name}</div>
-    <div class="body" style="margin-top:10px"><p>${esc(g.body)}</p></div>
-    <small class="note">${esc(g.rule)}</small>`;
+function renderQian(chart){
+  const q = Explainer.drawQian(chart, new Date());
+  $('qianOut').innerHTML = `<div class="qian-draw">
+    <div class="qian-hex">${esc(q.hex)}</div>
+    <div class="qian-omen">${esc(q.omen)}</div>
+    <div class="body" style="margin-top:10px"><p>${fmtBody(q.guide)}</p></div>
+    <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不测吉凶、不断具体事。<span class="src-inline">来源:本命签</span></small>
+  </div>`;
 }
 
 function render(chart, sections){
@@ -305,9 +712,21 @@ function render(chart, sections){
     if (s) h += sectionCard(s, chart);
     if (id === 'overview') h += astroCard(chart);   // 星盘互证紧跟总览:先主轴,即印证
   }
-  h += guaCard();
+  h += qianCard();
   $('out').innerHTML = h;
-  $('cast').onclick = () => renderGua(Explainer.castGua(new Date(), $('q').value));
+  buildNav();
+  $('drawBtn').onclick = () => renderQian(chart);
+  $('deepAsk').onclick = () => askDeep(chart);
+}
+
+/* 报告导航:按渲染顺序抓各章节卡片,生成锚点跳转 */
+function buildNav(){
+  const nav = $('secNav'); if (!nav) return;
+  const cards = document.querySelectorAll('#out .card[id]');
+  nav.innerHTML = [...cards].map(c => {
+    const h2 = c.querySelector('h2'); const t = h2 ? h2.textContent.trim() : '';
+    return t ? `<a href="#${c.id}">${t}</a>` : '';
+  }).join('');
 }
 
 function currentInput(){
@@ -315,6 +734,7 @@ function currentInput(){
   const input = { y, m, d, city: $('c').value.trim() };
   const tv = $('t').value;
   if (tv){ input.hh = +tv.split(':')[0]; input.mm = +tv.split(':')[1]; }
+  if (GENDER) input.gender = GENDER;
   return input;
 }
 
@@ -325,6 +745,7 @@ function generateRule(){
   render(chart, sections);
 }
 $('go').onclick = generateRule;
+$('editLink').onclick = () => { const r=$('editRow'); r.style.display = (r.style.display==='none'||!r.style.display) ? 'flex' : 'none'; };
 
 /* ---------- AI 直连(内测;正式版走后端) ---------- */
 const AI_SYS = `你是「知星·命盘研究所」的解读者。你收到一份由确定性程序排出的盘面 JSON,你的唯一职责是"解释",不是"推断命运"。
@@ -385,6 +806,113 @@ $('ai').onclick = async () => {
   }
 };
 
+/* ---------- 本命深问(内测:浏览器直连;正式版走后端 + 计费) ----------
+ * 铁律:不让 AI 起卦/排盘,只把「已算好的确定性盘 + 今日本命签」交给它,针对具体问题给个人发展/决策参考。 */
+const DEEP_SYS = `你是「知星·命盘研究所」的本命顾问。你会收到三样东西:一份由确定性程序排出的盘面 JSON(八字四柱/十神/日主强弱/大运/星盘太阳月亮上升)、用户今日抽得的本命签、以及用户此刻要问的一件具体的事。你的职责是把这件事放回 TA 自己的命局里,给出「个人发展 / 决策参考」——不是算命,不预测结果,不替 TA 做决定。
+
+硬规则:
+1)只使用给定盘面与本命签里已有的事实,严禁自行排盘、起卦、编造卦象、干支或盘中没有的信息。
+2)每一部分(part)用 source 字段标注依据来源,例如「日主·壬水」「十神·七杀」「大运·当前步」「星盘·月亮天蝎」「本命签」。
+3)禁词:算命、测吉凶、改运、消灾、破财、血光、灾祸、克夫、克妻、寿命;禁止对健康、生死、婚姻成败、官司输赢、考试录取、具体金额与具体结果作出断言或预测。
+4)一律用「倾向 / 常见于 / 往往 / 容易 / 可以考虑 / 更适合」这类措辞,禁止「一定 / 注定 / 必然 / 必将 / 会成 / 会败」。
+5)只给决策视角与可执行建议,承认选择权在用户;不打包票、不吓唬、不迎合。
+6)语气:具体、落地、像一个真的懂 TA 的人在建议,略带痛感但不煽情,绝不写星座号那种放之四海的安抚话。
+7)主轴是八字:先从日主与这件事最相关的十神/强弱切入(本命怎么看这件事),再看大运落在哪个十神、眼下这十年是顺是逆(时机);星盘只用一句做印证或反差,不单独立论;易理层面借今日本命签点一句当下的心态,不另起卦。
+
+输出结构:
+- reply:先接住这件事的一句话(≤40字),让 TA 觉得被听懂,不评判。
+- parts:依次三块——{label:"本命怎么看"}{label:"眼下的时机"}{label:"星盘一瞥"};每块 body 60–120 字,body 里不要再写「来源」二字(来源放 source 字段)。
+- advice:2–3 条落到动作的建议,每条一句、可当天就做。
+- caveat:一句边界提醒(这是发展参考,不测吉凶,决定在你)。
+
+禁止出现任何工程或版本词汇。`;
+
+const DEEP_SCHEMA = { type:'object', additionalProperties:false, required:['reply','parts','advice'], properties:{
+  reply:{ type:'string' },
+  parts:{ type:'array', items:{ type:'object', additionalProperties:false, required:['label','body','source'],
+    properties:{ label:{type:'string'}, body:{type:'string'}, source:{type:'string'} } } },
+  advice:{ type:'array', items:{ type:'string' } },
+  caveat:{ type:'string' } } };
+
+const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|克妻|寿命|一定|注定|必然|必将|会成|会败/;
+
+async function callDeep(chart, question, key){
+  const qian = Explainer.drawQian(chart, new Date());
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-8',
+      max_tokens: 4000,
+      thinking: { type: 'adaptive' },
+      system: DEEP_SYS,
+      output_config: { format: { type: 'json_schema', schema: DEEP_SCHEMA } },
+      messages: [{ role: 'user', content:
+        '本命盘 JSON:\n' + JSON.stringify(chart) +
+        '\n\n今日本命签:\n' + JSON.stringify({ hex: qian.hex, omen: qian.omen, guide: qian.guide, bindElement: qian.bindElement, strength: qian.strength }) +
+        '\n\n我要问的事:\n' + question }]
+    })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + r.status));
+  if (data.stop_reason === 'refusal') throw new Error('请求被安全策略拒绝');
+  if (data.stop_reason === 'max_tokens') throw new Error('输出被截断,请重试');
+  const text = (data.content.find(b => b.type === 'text') || {}).text || '';
+  const ans = JSON.parse(text);
+  const all = (ans.reply || '') + ' ' + (ans.parts || []).map(p => p.body).join(' ') + ' ' + (ans.advice || []).join(' ') + ' ' + (ans.caveat || '');
+  if (DEEP_BANNED.test(all)) throw new Error('内容未过合规自检');
+  return ans;
+}
+
+function renderDeep(ans, q){
+  const parts = (ans.parts || []).map(p =>
+    `<div class="da-part"><span class="da-label">${esc(p.label || '')}</span><p>${fmtBody(String(p.body || ''))}</p>` +
+    (p.source ? `<span class="src-inline">来源:${esc(p.source)}</span>` : '') + `</div>`).join('');
+  const adv = (ans.advice || []).length
+    ? `<div class="da-adv"><div class="da-adv-h">可以先做的</div><ul>${ans.advice.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '';
+  return `<div class="deep-ans">
+    <div class="da-q">你问:${esc(q)}</div>
+    <div class="da-reply">${esc(ans.reply || '')}</div>
+    ${parts}${adv}
+    <div class="da-caveat">${esc(ans.caveat || '这是个人发展参考,不测吉凶,决定在你。')}</div>
+    ${deepUpsell()}
+  </div>`;
+}
+
+/* 免费首答之后的「继续问」引导(付费/后端就绪前先做占位预告,不硬拦) */
+function deepUpsell(){
+  return `<div class="da-more">这一问是免费的。要把职业、关系、眼下的坎<b>逐个问透</b>,或换一件事再问——<b>继续问</b>即将开放(按次 ¥8.8/3 问,或会员不限问)。</div>`;
+}
+/* 无 Key(未走内测通道 / 公开访问):优雅降级为预告,不暴露直连 */
+function deepTeaser(q){
+  return `<div class="deep-echo">已记下:「${esc(q)}」。<b style="color:var(--gold)">知星顾问</b>会把这件事放回你的整张盘(日主、十神、大运、星盘)来答——完整体验即将开放。当下,先把本命签给的方向拿稳。</div>`;
+}
+
+async function askDeep(chart){
+  const q = ($('deepQ').value || '').trim();
+  const echo = $('deepEcho');
+  if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
+  const keyEl = $('key');
+  const key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
+  if (!key){ echo.innerHTML = deepTeaser(q); return; }   // 公开访问走预告
+  localStorage.setItem('zx_api_key', key);               // 内测:面板粘了 key 即可直接深问
+  const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '推演中……';
+  echo.innerHTML = `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
+  try {
+    const ans = await callDeep(chart, q, key);
+    echo.innerHTML = renderDeep(ans, q);
+  } catch (e) {
+    echo.innerHTML = `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+}
+
 /* ---------- 首屏流光(与主应用同语言) ---------- */
 document.addEventListener('pointerdown', e => {
   const r = document.createElement('div'); r.className = 'rip';
@@ -401,6 +929,7 @@ document.addEventListener('pointerdown', e => {
   const d = q.get('d') || (stash && stash.d) || '1995-06-08';
   const t = q.get('t') || (stash && stash.t) || '14:30';
   const c = q.get('c') || (stash && stash.c) || '贵阳';
+  GENDER = q.get('g') || (stash && stash.g) || '';
   $('d').value = d; $('t').value = t; $('c').value = c;
   generateRule();
 })();
