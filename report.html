@@ -836,6 +836,36 @@ const DEEP_SCHEMA = { type:'object', additionalProperties:false, required:['repl
 
 const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|克妻|寿命|一定|注定|必然|必将|会成|会败/;
 
+/* 后端直答开关:部署 Cloudflare Worker 后把地址填这里,公开访问即出真答;
+ * 留空=公开走预告、内测走 ?lab=1 直连(现状),部署前端可安全先行。 */
+const DEEP_ENDPOINT = '';   // 例:'https://zhixing-deep.<你的子域>.workers.dev'
+const DEEP_FREE = 3;        // 每人每日免费深问次数(保护后端 API 预算)
+
+function deepQuota(){
+  const today = new Date().toISOString().slice(0,10);
+  let s = null; try { s = JSON.parse(localStorage.getItem('zx_deep_q') || 'null'); } catch(_){}
+  if (!s || s.d !== today) s = { d: today, n: 0 };
+  return s;
+}
+function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx_deep_q', JSON.stringify(s)); }
+
+/* 公开真答:走后端(key 只在后端,前端不碰) */
+async function callDeepBackend(chart, question){
+  const qian = Explainer.drawQian(chart, new Date());
+  const r = await fetch(DEEP_ENDPOINT, {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ chart, question, qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength } })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+  return data;
+}
+
+/* 免费额度用完 → 继续问付费墙(占位,接支付前先预告) */
+function deepPaywall(){
+  return `<div class="deep-echo">今天的免费深问用完了。要接着把职业、关系、眼下的坎<b style="color:var(--gold)">问透</b>——<b style="color:var(--gold)">继续问</b>即将开放(按次 ¥8.8/3 问,或会员不限问),明天还有免费额度。</div>`;
+}
+
 async function callDeep(chart, question, key){
   const qian = Explainer.drawQian(chart, new Date());
   const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -897,14 +927,20 @@ async function askDeep(chart){
   const q = ($('deepQ').value || '').trim();
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
-  const keyEl = $('key');
-  const key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
-  if (!key){ echo.innerHTML = deepTeaser(q); return; }   // 公开访问走预告
-  localStorage.setItem('zx_api_key', key);               // 内测:面板粘了 key 即可直接深问
+  const useBackend = !!DEEP_ENDPOINT;
+  if (useBackend && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
+  let key = '';
+  if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
+    const keyEl = $('key');
+    key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
+    if (!key){ echo.innerHTML = deepTeaser(q); return; }
+    localStorage.setItem('zx_api_key', key);
+  }
   const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '推演中……';
   echo.innerHTML = `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
   try {
-    const ans = await callDeep(chart, q, key);
+    const ans = useBackend ? await callDeepBackend(chart, q) : await callDeep(chart, q, key);
+    if (useBackend) deepQuotaBump();
     echo.innerHTML = renderDeep(ans, q);
   } catch (e) {
     echo.innerHTML = `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
