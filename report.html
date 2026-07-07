@@ -704,7 +704,7 @@ function renderQian(chart){
     <div class="qian-hex">${esc(q.hex)}</div>
     <div class="qian-omen">${esc(q.omen)}</div>
     <div class="body" style="margin-top:10px"><p>${fmtBody(q.guide)}</p></div>
-    <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不测吉凶、不断具体事。<span class="src-inline">来源:本命签</span></small>
+    <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不做结果判断、不断具体事。<span class="src-inline">来源:本命签</span></small>
   </div>`;
 }
 
@@ -828,7 +828,7 @@ const DEEP_SYS = `你是「知星·命盘研究所」的本命顾问。你会收
 - reply:先接住这件事的一句话(≤40字),让 TA 觉得被听懂,不评判。
 - parts:依次三块——{label:"本命怎么看"}{label:"眼下的时机"}{label:"星盘一瞥"};每块 body 60–120 字,body 里不要再写「来源」二字(来源放 source 字段)。
 - advice:2–3 条落到动作的建议,每条一句、可当天就做。
-- caveat:一句边界提醒(这是发展参考,不测吉凶,决定在你)。
+- caveat:一句边界提醒(这是个人发展参考,选择仍在你)。
 
 禁止出现任何工程或版本词汇。`;
 
@@ -841,11 +841,14 @@ const DEEP_SCHEMA = { type:'object', additionalProperties:false, required:['repl
 
 const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|克妻|寿命|一定|注定|必然|必将|会成|会败/;
 
-/* 后端直答开关:部署 Cloudflare Worker 后把地址填这里,公开访问即出真答;
+/* 后端直答开关:部署国内云 GPT 后端后把地址填这里,公开访问即出真答;
  * 留空=公开走预告、内测走 ?lab=1 直连(现状),部署前端可安全先行。 */
-const DEEP_ENDPOINT = '';   // 例:'https://zhixing-deep.<你的子域>.workers.dev'
+const DEEP_ENDPOINT = 'https://1451100549-43dsk5vbzp.ap-guangzhou.tencentscf.com';
 const DEEP_FREE = 3;        // 每人每日免费深问次数(保护后端 API 预算)
 
+function deepEndpoint(){
+  return new URLSearchParams(location.search).get('deep') || DEEP_ENDPOINT;
+}
 function deepQuota(){
   const today = new Date().toISOString().slice(0,10);
   let s = null; try { s = JSON.parse(localStorage.getItem('zx_deep_q') || 'null'); } catch(_){}
@@ -857,7 +860,7 @@ function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx
 /* 公开真答:走后端(key 只在后端,前端不碰) */
 async function callDeepBackend(chart, question){
   const qian = Explainer.drawQian(chart, new Date());
-  const r = await fetch(DEEP_ENDPOINT, {
+  const r = await fetch(deepEndpoint(), {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ chart, question, qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength } })
   });
@@ -914,7 +917,7 @@ function renderDeep(ans, q){
     <div class="da-q">你问:${esc(q)}</div>
     <div class="da-reply">${esc(ans.reply || '')}</div>
     ${parts}${adv}
-    <div class="da-caveat">${esc(ans.caveat || '这是个人发展参考,不测吉凶,决定在你。')}</div>
+    <div class="da-caveat">${esc(ans.caveat || '这是个人发展参考,选择仍在你。')}</div>
     ${deepUpsell()}
   </div>`;
 }
@@ -932,7 +935,7 @@ async function askDeep(chart){
   const q = ($('deepQ').value || '').trim();
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
-  const useBackend = !!DEEP_ENDPOINT;
+  const useBackend = !!deepEndpoint();
   if (useBackend && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
