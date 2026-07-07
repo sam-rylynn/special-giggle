@@ -252,8 +252,12 @@
 
 <script src="./bazi-engine.js"></script>
 <script src="./explainer.js"></script>
+<script src="./analytics.js"></script>
+<script src="./member.js"></script>
 <script>
 'use strict';
+const T = window.zxTrack || function(){};   // 埋点入口(analytics.js 未加载时降级为空操作)
+const V = window.zxVariant || function(){return '';};   // A/B 分桶;未做真实分流时先打桶,数据即可比
 const $ = id => document.getElementById(id);
 const ELEM_COLOR = { 木:'#7FA864', 火:'#C96A4A', 土:'#C9A85C', 金:'#D8D5CB', 水:'#5C82AE' };
 const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', relation:'./img/relation.jpg', action:'./img/action.jpg', phase:'./img/phase.jpg' };
@@ -708,11 +712,13 @@ function qianCard(){
     <div style="text-align:center;margin:16px 0 4px"><button id="drawBtn">${esc(U.cta)}</button></div>
     <div id="qianOut"></div>
     <div class="ai-block">
+      <div id="zxAccount"></div>
       <div class="ai-h">问知星 · 本命深问</div>
       <p>它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。<b style="color:var(--gold)">首次免费。</b></p>
       ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
       <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
       <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
+      <small class="note" style="display:block;margin-top:8px;line-height:1.55">点「问知星」即把你的命盘与本次问答内容(含追问上下文、当日本命签)发送至云端服务器,交由第三方大模型解读——仅用于生成这次回答,不留存、不作他用;你的姓名与联系方式我们从不收集。</small>
       <div id="deepEcho"></div>
     </div>
   </div></div>`;
@@ -728,11 +734,13 @@ function renderQian(chart){
     <div style="margin-top:16px"><button id="qianShareBtn" class="ghost" style="letter-spacing:.1em">分享这支签</button></div>
   </div>`;
   const sb = $('qianShareBtn');
-  if (sb) sb.onclick = () => { drawQianPoster(q); $('qianPosterLayer').style.display = 'block'; };
+  if (sb) sb.onclick = () => { T('qian_share_open', { v: V('qian_card') }); drawQianPoster(q); $('qianPosterLayer').style.display = 'block'; };
+  T('qian_shown', { hex: q.hex });
 }
 
 /* 抽签仪式:摇签 ~1.2s 再显签 */
 function drawQianRitual(chart){
+  T('qian_draw', { v: V('draw_ritual') });
   const btn = $('drawBtn'); if (btn) btn.disabled = true;
   $('qianOut').innerHTML = `<div class="qian-cast"><div class="tube">签</div><div class="txt">摇 签 中……</div></div>`;
   setTimeout(() => { if (btn) btn.disabled = false; renderQian(chart); }, 1200);
@@ -794,8 +802,10 @@ function render(chart, sections){
   $('out').innerHTML = h;
   buildNav();
   $('drawBtn').onclick = () => drawQianRitual(chart);
-  $('qianPosterClose').onclick = () => $('qianPosterLayer').style.display = 'none';
+  $('qianPosterClose').onclick = () => { T('qian_share_close'); $('qianPosterLayer').style.display = 'none'; };
   $('deepAsk').onclick = () => askDeep(chart);
+  T('report_generated');
+  if (window.zxMember && zxMember.render) zxMember.render();   // 账号控件挂到刚渲染出的 #zxAccount
 }
 
 /* 报告导航:按渲染顺序抓各章节卡片,生成锚点跳转 */
@@ -952,7 +962,10 @@ async function callDeepBackend(chart, question, history = []){
 
 /* 免费额度用完 → 继续问付费墙(占位,接支付前先预告) */
 function deepPaywall(){
-  return `<div class="deep-echo">今天的内测追问次数已到上限。先整理这一轮答案,明天可以继续测。</div>`;
+  const canOpen = !!(window.zxMember && zxMember.openPaywall);
+  return `<div class="deep-echo">今天的免费追问次数已用完。${canOpen
+    ? `<span style="color:var(--gold);cursor:pointer;text-decoration:underline" onclick="zxMember.openPaywall('quota')">开通会员 · 不限次深问 →</span>`
+    : '先整理这一轮答案,明天可以继续。'}</div>`;
 }
 
 async function callDeep(chart, question, key){
@@ -1031,14 +1044,16 @@ async function askDeep(chart){
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
   const useBackend = !!deepEndpoint();
-  if (useBackend && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
+  if (useBackend && deepQuota().n >= DEEP_FREE){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
     const keyEl = $('deepKey') || $('key');              // 优先问知星块内的 key 栏(内测)
     key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
-    if (!key){ echo.innerHTML = LAB ? `<div class="deep-echo">内测:请先在上方粘贴 Anthropic Key(仅存本机),再点「问知星」。</div>` : deepTeaser(q); return; }
+    if (!key){ T('deep_teaser'); echo.innerHTML = LAB ? `<div class="deep-echo">内测:请先在上方粘贴 Anthropic Key(仅存本机),再点「问知星」。</div>` : deepTeaser(q); return; }
     localStorage.setItem('zx_api_key', key);
   }
+  const mode = useBackend ? 'backend' : 'direct';
+  T('deep_ask', { mode, turn: deepTurns.length + 1 });
   const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '推演中……';
   const priorHtml = echo.querySelector('.deep-ans') ? echo.innerHTML : '';
   echo.innerHTML = priorHtml + `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
@@ -1046,10 +1061,12 @@ async function askDeep(chart){
     const ans = useBackend ? await callDeepBackend(chart, q, deepTurns) : await callDeep(chart, q, key);
     if (useBackend) deepQuotaBump();
     rememberDeepTurn(q, ans);
+    T('deep_answered', { mode, turn: deepTurns.length });
     echo.innerHTML = priorHtml + renderDeep(ans, q);
     $('deepQ').value = '';
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
+    T('deep_error', { mode, turn: deepTurns.length + 1 });
     echo.innerHTML = priorHtml + `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;
