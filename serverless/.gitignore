@@ -1,0 +1,10 @@
+# 密钥/凭证绝不入库(微信商户证书、私钥、本地环境变量)——一律走 SCF 环境变量
+node_modules/
+*.pem
+*.key
+*.p12
+apiclient_*.pem
+apiclient_*.p12
+.env
+.env.*
+*.local
