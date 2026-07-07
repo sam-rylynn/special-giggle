@@ -112,9 +112,24 @@
   #ritual .lines div.done{color:var(--gold-dim)}
   #ritual .lines div.done::after{content:" ·毕";color:var(--gold);font-size:12px}
   @media(prefers-reduced-motion:reduce){
-    .rot-zodiac,.rot-lodges,.rot-bagua,.tw,.rit-sweep,.rit-orbit,.rit-pulse,.hero-bg img,.rizhu-chars{animation:none}
+    .rot-zodiac,.rot-lodges,.rot-bagua,.tw,.rit-sweep,.rit-orbit,.rit-pulse,.hero-bg img,.rizhu-chars,.scroll-cue{animation:none}
     .rit-draw{animation:none;stroke-dashoffset:0}
   }
+
+  /* ---------- 首屏价值层:一屏说清「这是什么 / 你会得到什么 / 凭什么信」 ---------- */
+  .intro{margin-top:22px}
+  .intro-lead{font-family:var(--serif);font-size:16px;line-height:1.95;color:var(--moon);text-align:justify}
+  .intro-lead b{color:var(--gold);font-weight:700}
+  .gets{margin-top:20px;display:flex;flex-direction:column;gap:14px}
+  .get{display:flex;gap:14px;align-items:flex-start}
+  .get-n{flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;font-family:var(--serif);font-size:15px;color:var(--gold);border:1px solid rgba(201,168,92,.45);margin-top:2px}
+  .get h3{font-family:var(--serif);font-size:16px;color:var(--moon);letter-spacing:.02em;margin:0;font-weight:700}
+  .get h3 em{font-style:normal;font-size:11px;color:#241c0c;background:linear-gradient(180deg,#e9d09a,var(--gold));border-radius:99px;padding:1px 8px;margin-left:8px;vertical-align:middle;letter-spacing:.05em}
+  .get p{margin:4px 0 0;font-size:13.5px;color:var(--mist);line-height:1.7}
+  .why{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .why span{font-size:11.5px;color:var(--gold-dim);border:1px solid rgba(201,168,92,.25);border-radius:99px;padding:4px 11px;letter-spacing:.02em}
+  .scroll-cue{margin-top:22px;text-align:center;color:var(--gold);font-family:var(--serif);font-size:14px;letter-spacing:.1em;animation:cueBob 2.4s ease-in-out infinite;cursor:pointer}
+  @keyframes cueBob{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(4px);opacity:1}}
 
   /* ---------- 结果:日主为王 ---------- */
   #result{display:none}
@@ -297,6 +312,20 @@
       <div class="lead" aria-hidden="true"></div>
     </div>
   </header>
+
+  <!-- 首屏价值层:说清这是什么/得到什么/凭什么信 -->
+  <section class="intro">
+    <p class="intro-lead">输入你的出生时刻,排一张<b>天文级精确</b>的命盘——<b>东方八字</b>看你是谁、<b>西方星盘</b>来印证,AI 把它读成<b>具体、能用</b>的话。</p>
+    <div class="gets">
+      <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>一句古典物象,一句扎心真话——先照见你是哪块料。</p></div></div>
+      <div class="get"><span class="get-n">贰</span><div><h3>深度本命报告</h3><p>四柱全盘 · 五行能量 · 性格骨架 · 关系与行动 · 大运时间轴 · 星盘互证 · 本命签。</p></div></div>
+      <div class="get"><span class="get-n">叁</span><div><h3>问知星</h3><p>把你眼下具体的坎,放回你整张盘里答:职业、关系、要不要做某件事。</p></div></div>
+    </div>
+    <div class="why">
+      <span>排盘归程序 · 解释归 AI</span><span>算得准,不瞎编</span><span>不是泛泛星座号</span><span>东方为主 · 西方印证</span><span>个人发展 · 不测吉凶</span>
+    </div>
+    <div class="scroll-cue" id="scrollCue">↓ 先免费看你的日主</div>
+  </section>
 
   <section id="formCard" class="card">
     <h2>写下你来到世界的时刻</h2>
@@ -545,6 +574,9 @@ function dayPillar(y,m,d,hour){
 /* ============ 流程 ============ */
 const $=id=>document.getElementById(id);
 let CUR=null;
+
+/* 下滑引导 → 平滑滚到表单 */
+if($('scrollCue')) $('scrollCue').onclick=()=>$('formCard').scrollIntoView({behavior:'smooth',block:'start'});
 
 $('goBtn').onclick=()=>{
   if(!$('bDate').value){$('bDate').focus();$('bDate').style.borderColor='var(--cinnabar)';return}
