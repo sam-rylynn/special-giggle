@@ -844,7 +844,9 @@ const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|
 /* 后端直答开关:部署国内云 GPT 后端后把地址填这里,公开访问即出真答;
  * 留空=公开走预告、内测走 ?lab=1 直连(现状),部署前端可安全先行。 */
 const DEEP_ENDPOINT = 'https://1451100549-43dsk5vbzp.ap-guangzhou.tencentscf.com';
-const DEEP_FREE = 3;        // 每人每日免费深问次数(保护后端 API 预算)
+const DEEP_FREE = 30;       // 内测期放开连续追问;后端仍有 DAILY_LIMIT_PER_IP 兜底
+const DEEP_HISTORY_LIMIT = 4;
+let deepTurns = [];
 
 function deepEndpoint(){
   return new URLSearchParams(location.search).get('deep') || DEEP_ENDPOINT;
@@ -858,11 +860,16 @@ function deepQuota(){
 function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx_deep_q', JSON.stringify(s)); }
 
 /* 公开真答:走后端(key 只在后端,前端不碰) */
-async function callDeepBackend(chart, question){
+async function callDeepBackend(chart, question, history = []){
   const qian = Explainer.drawQian(chart, new Date());
   const r = await fetch(deepEndpoint(), {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ chart, question, qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength } })
+    body: JSON.stringify({
+      chart,
+      question,
+      history,
+      qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength }
+    })
   });
   const data = await r.json();
   if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
@@ -871,7 +878,7 @@ async function callDeepBackend(chart, question){
 
 /* 免费额度用完 → 继续问付费墙(占位,接支付前先预告) */
 function deepPaywall(){
-  return `<div class="deep-echo">今天的免费深问用完了。要接着把职业、关系、眼下的坎<b style="color:var(--gold)">问透</b>——<b style="color:var(--gold)">继续问</b>即将开放(按次 ¥8.8/3 问,或会员不限问),明天还有免费额度。</div>`;
+  return `<div class="deep-echo">今天的内测追问次数已到上限。先整理这一轮答案,明天可以继续测。</div>`;
 }
 
 async function callDeep(chart, question, key){
@@ -922,9 +929,23 @@ function renderDeep(ans, q){
   </div>`;
 }
 
-/* 免费首答之后的「继续问」引导(付费/后端就绪前先做占位预告,不硬拦) */
+function rememberDeepTurn(question, ans){
+  deepTurns.push({
+    question: String(question || '').slice(0, 160),
+    reply: String(ans.reply || '').slice(0, 160),
+    parts: (ans.parts || []).map(p => ({
+      label: String(p.label || '').slice(0, 20),
+      source: String(p.source || '').slice(0, 40),
+      body: String(p.body || '').slice(0, 180)
+    })),
+    advice: (ans.advice || []).map(a => String(a || '').slice(0, 120)).slice(0, 3)
+  });
+  if (deepTurns.length > DEEP_HISTORY_LIMIT) deepTurns = deepTurns.slice(-DEEP_HISTORY_LIMIT);
+}
+
+/* 内测期支持连续追问,下一问会带上最近几轮问答摘要 */
 function deepUpsell(){
-  return `<div class="da-more">这一问是免费的。要把职业、关系、眼下的坎<b>逐个问透</b>,或换一件事再问——<b>继续问</b>即将开放(按次 ¥8.8/3 问,或会员不限问)。</div>`;
+  return `<div class="da-more">可以继续追问。建议补一条具体背景,比如时间、对象、代价、你最纠结的点。</div>`;
 }
 /* 无 Key(未走内测通道 / 公开访问):优雅降级为预告,不暴露直连 */
 function deepTeaser(q){
@@ -945,13 +966,17 @@ async function askDeep(chart){
     localStorage.setItem('zx_api_key', key);
   }
   const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '推演中……';
-  echo.innerHTML = `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
+  const priorHtml = echo.querySelector('.deep-ans') ? echo.innerHTML : '';
+  echo.innerHTML = priorHtml + `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
   try {
-    const ans = useBackend ? await callDeepBackend(chart, q) : await callDeep(chart, q, key);
+    const ans = useBackend ? await callDeepBackend(chart, q, deepTurns) : await callDeep(chart, q, key);
     if (useBackend) deepQuotaBump();
-    echo.innerHTML = renderDeep(ans, q);
+    rememberDeepTurn(q, ans);
+    echo.innerHTML = priorHtml + renderDeep(ans, q);
+    $('deepQ').value = '';
+    $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
-    echo.innerHTML = `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
+    echo.innerHTML = priorHtml + `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
