@@ -97,6 +97,19 @@
     filter:drop-shadow(0 0 18px rgba(201,168,92,.3))}
   .qian-omen{font-family:var(--serif);color:var(--moon);font-size:14px;letter-spacing:.06em;margin-top:8px}
   .qian-draw .body{text-align:justify}
+  /* 抽签仪式(摇签) */
+  .qian-cast{margin:20px 0 6px;text-align:center}
+  .qian-cast .tube{display:inline-grid;place-items:center;width:66px;height:66px;margin:0 auto;border-radius:50%;
+    border:1px solid rgba(201,168,92,.5);font-family:var(--serif);font-size:26px;color:var(--gold);
+    filter:drop-shadow(0 0 16px rgba(201,168,92,.35));animation:qshake .55s ease-in-out infinite}
+  .qian-cast .txt{margin-top:12px;color:var(--gold-dim);font-family:var(--serif);letter-spacing:.3em;text-indent:.3em;font-size:13px}
+  @keyframes qshake{0%,100%{transform:translateY(0) rotate(-5deg)}25%{transform:translateY(-6px) rotate(4deg)}50%{transform:translateY(0) rotate(5deg)}75%{transform:translateY(-4px) rotate(-4deg)}}
+  /* 本命签分享卡层 */
+  #qianPosterLayer{display:none;position:fixed;inset:0;z-index:60;background:rgba(8,11,20,.92);overflow:auto;padding:24px 0}
+  .qp-inner{max-width:380px;margin:0 auto;padding:0 20px;text-align:center}
+  #qianCanvas{width:100%;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
+  .qp-tip{color:var(--mist);font-size:12.5px;margin:12px 0}
+  #qianPosterClose{margin:0 auto}
   .ai-block{margin-top:18px;border-top:1px dashed rgba(201,168,92,.2);padding-top:14px}
   .ai-block .ai-h{font-family:var(--serif);color:var(--gold);font-size:14px;margin-bottom:8px}
   .ai-block p{color:var(--mist);font-size:13px;text-align:justify}
@@ -173,7 +186,7 @@
   .endviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.15),rgba(14,18,32,.75))}
   .endviz .cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--serif);color:var(--moon);font-size:13px;letter-spacing:.24em;text-indent:.24em}
   small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
-  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt{animation:none;transition:none}}
+  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube{animation:none;transition:none}}
 </style>
 </head>
 <body>
@@ -208,6 +221,13 @@
   </div></div>
 
   <div id="out"></div>
+
+  <!-- 本命签分享卡 -->
+  <div id="qianPosterLayer"><div class="qp-inner">
+    <canvas id="qianCanvas" width="750" height="1000"></canvas>
+    <div class="qp-tip">长按图片保存 / 截图分享 —— 让朋友也来抽今日签</div>
+    <button id="qianPosterClose" class="ghost">关闭</button>
+  </div></div>
 
   <div id="labPanel" style="display:none"><div class="card"><div class="pad">
     <h2>AI 解读(内部实验通道)</h2>
@@ -705,7 +725,60 @@ function renderQian(chart){
     <div class="qian-omen">${esc(q.omen)}</div>
     <div class="body" style="margin-top:10px"><p>${fmtBody(q.guide)}</p></div>
     <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不做结果判断、不断具体事。<span class="src-inline">来源:本命签</span></small>
+    <div style="margin-top:16px"><button id="qianShareBtn" class="ghost" style="letter-spacing:.1em">分享这支签</button></div>
   </div>`;
+  const sb = $('qianShareBtn');
+  if (sb) sb.onclick = () => { drawQianPoster(q); $('qianPosterLayer').style.display = 'block'; };
+}
+
+/* 抽签仪式:摇签 ~1.2s 再显签 */
+function drawQianRitual(chart){
+  const btn = $('drawBtn'); if (btn) btn.disabled = true;
+  $('qianOut').innerHTML = `<div class="qian-cast"><div class="tube">签</div><div class="txt">摇 签 中……</div></div>`;
+  setTimeout(() => { if (btn) btn.disabled = false; renderQian(chart); }, 1200);
+}
+
+/* 本命签分享卡(750×1000 Canvas;二维码位待域名定后 drawImage 替换) */
+function qposWrap(x, text, cx, y, maxW, lh){
+  let line = '', yy = y;
+  for (const ch of [...text]){
+    if (x.measureText(line + ch).width > maxW && !/[。！?？，,、；;:：)）」』]/.test(ch)){ x.fillText(line, cx, yy); line = ch; yy += lh; }
+    else line += ch;   // 闭合标点不另起一行,避免孤字
+  }
+  if (line) x.fillText(line, cx, yy);
+  return yy;
+}
+function drawQianPoster(q){
+  const c = $('qianCanvas'), x = c.getContext('2d');
+  const W = 750, H = 1000, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
+  x.clearRect(0,0,W,H);
+  const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141c30'); bg.addColorStop(.5,'#0E1220'); bg.addColorStop(1,'#0a0d16');
+  x.fillStyle = bg; x.fillRect(0,0,W,H);
+  const glow = x.createRadialGradient(W/2,180,20,W/2,180,460); glow.addColorStop(0,'rgba(201,168,92,.18)'); glow.addColorStop(1,'rgba(201,168,92,0)');
+  x.fillStyle = glow; x.fillRect(0,0,W,600);
+  x.strokeStyle = 'rgba(201,168,92,.34)'; x.lineWidth = 1; x.strokeRect(18.5,18.5,W-37,H-37);
+  x.textAlign = 'center';
+  const d = new Date(), dstr = d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();
+  x.fillStyle = '#8f7a45'; x.font = '20px '+SERIF; x.fillText('今 日 本 命 签  ·  '+dstr, W/2, 124);
+  x.strokeStyle = 'rgba(201,168,92,.3)'; x.beginPath(); x.moveTo(W/2-56,152); x.lineTo(W/2+56,152); x.stroke();
+  const gg = x.createLinearGradient(0,250,0,430); gg.addColorStop(0,'#fff6dd'); gg.addColorStop(.5,'#e9d09a'); gg.addColorStop(1,'#C9A85C');
+  x.save(); x.fillStyle = gg; x.shadowColor = 'rgba(201,168,92,.4)'; x.shadowBlur = 32; x.font = '700 128px '+SERIF;
+  x.fillText([...q.hex].join('  '), W/2, 380); x.restore();
+  x.fillStyle = '#E8E4D8'; x.font = '25px '+SERIF; x.fillText(q.omen, W/2, 470);
+  const g1 = ((q.guide||'').split(/[。！?]/)[0]||'').trim() + '。';
+  x.fillStyle = '#b9c2d0'; x.font = '23px '+SERIF; qposWrap(x, g1, W/2, 556, 600, 40);
+  x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
+  x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
+  const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
+  const QS = 76, qx = W-44-QS, qy = 902;
+  x.strokeStyle = 'rgba(201,168,92,.2)'; x.lineWidth = 1; x.beginPath(); x.moveTo(44,930); x.lineTo(qx-18,930); x.stroke();
+  x.textAlign = 'left';
+  x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF; x.fillText('知 · 星  命盘研究所', 44, 966);
+  x.fillStyle = '#6B7280'; x.font = '14px '+SERIF; x.fillText('以易理观己 · 以星盘为证', 44, 988);
+  rr(qx,qy,QS,QS,8); x.fillStyle = 'rgba(232,228,216,.05)'; x.fill();
+  x.strokeStyle = 'rgba(201,168,92,.5)'; x.setLineDash([5,4]); x.lineWidth = 1.2; x.stroke(); x.setLineDash([]);
+  x.textAlign = 'center'; x.fillStyle = '#8f7a45'; x.font = '700 13px '+SERIF; x.fillText('扫码识别', qx+QS/2, qy+QS/2-3);
+  x.fillStyle = '#6B7280'; x.font = '11px '+SERIF; x.fillText('二维码待上线', qx+QS/2, qy+QS/2+16);
 }
 
 function render(chart, sections){
@@ -720,7 +793,8 @@ function render(chart, sections){
   h += qianCard();
   $('out').innerHTML = h;
   buildNav();
-  $('drawBtn').onclick = () => renderQian(chart);
+  $('drawBtn').onclick = () => drawQianRitual(chart);
+  $('qianPosterClose').onclick = () => $('qianPosterLayer').style.display = 'none';
   $('deepAsk').onclick = () => askDeep(chart);
 }
 

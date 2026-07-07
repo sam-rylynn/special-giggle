@@ -77,6 +77,11 @@
   .hint{margin-top:14px;text-align:center;color:var(--mist);font-size:12px}
 
   .card{background:var(--panel);border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:26px 22px;margin-top:26px}
+  /* 返回用户"继续这张盘"条 */
+  .resume-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    background:rgba(201,168,92,.08);border:1px solid rgba(201,168,92,.28);border-radius:8px;padding:9px 13px;margin:0 0 16px;font-size:13px;color:var(--mist)}
+  .resume-bar b{color:var(--moon);font-weight:600}
+  .resume-go{color:var(--gold);font-family:var(--serif);white-space:nowrap;cursor:pointer;letter-spacing:.04em}
   .card h2{font-family:var(--serif);font-size:19px;letter-spacing:.2em;color:var(--gold);margin-bottom:18px;
     display:flex;align-items:center;justify-content:center;gap:12px;text-indent:.2em;white-space:nowrap}
   .card h2::before,.card h2::after{content:"";flex:0 1 34px;min-width:10px;height:1px}
@@ -600,6 +605,22 @@ $('consentOk').onclick=()=>{
   scrollTo({top:0,behavior:'smooth'});
 };
 
+/* 返回用户:带出上次填写的盘,一键继续,不用重填(设备级;跨设备/会员待账号系统) */
+(function resumeLast(){
+  let last=null; try{last=JSON.parse(localStorage.getItem('zx_input')||'null')}catch(_){}
+  if(!last||!last.d) return;
+  if($('bDate')) $('bDate').value=last.d;
+  if($('bTime')&&last.t) $('bTime').value=last.t;
+  if($('bCity')&&last.c) $('bCity').value=last.c;
+  if($('bGender')&&last.g) try{$('bGender').value=last.g}catch(_){}
+  const fc=$('formCard'); if(!fc) return;
+  const bar=document.createElement('div');
+  bar.className='resume-bar';
+  bar.innerHTML='上次填过:<b>'+last.d+(last.c?' · '+last.c:'')+'</b><span class="resume-go">继续这张盘 →</span>';
+  fc.insertBefore(bar, fc.firstChild.nextSibling);   // 插在标题下
+  bar.querySelector('.resume-go').onclick=()=>$('goBtn').click();
+})();
+
 function showResult(){
   $('ritual').style.display='none';
   const {sign,dp,late}=CUR, S=STEM_LIB[dp.stem];
@@ -667,14 +688,28 @@ function drawPoster(){
   let kwLine=S.kw[0]+' · '+S.kw[1];
   x.font='700 30px '+SERIF;
   if(x.measureText(kwLine).width>676)x.font='700 26px '+SERIF;
-  x.fillStyle='#E8E4D8';x.fillText(kwLine,W/2,886);
-  x.fillStyle='#6B7280';x.font='19px '+SERIF;
-  x.fillText('星盘辅证 · 太阳'+sign+' · '+SIGN_KW[sign],W/2,922);
-  // 品牌
-  x.fillStyle='#C9A85C';x.font='700 21px '+SERIF;
-  x.fillText('知 · 星  命盘研究所',W/2,952);
-  x.fillStyle='#4b5563';x.font='13px '+SERIF;
-  x.fillText('以易理观己 · 以星盘为证',W/2,974);
+  x.fillStyle='#E8E4D8';x.fillText(kwLine,W/2,864);
+  x.fillStyle='#6B7280';x.font='18px '+SERIF;
+  x.fillText('星盘辅证 · 太阳'+sign+' · '+SIGN_KW[sign],W/2,896);
+  // ===== 底栏:左品牌 + 右二维码占位 =====
+  const rr=(X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
+  const QS=76, qx=W-44-QS, qy=902;
+  // 分隔线(止于二维码前)
+  x.strokeStyle='rgba(201,168,92,.2)';x.lineWidth=1;x.beginPath();x.moveTo(44,930);x.lineTo(qx-18,930);x.stroke();
+  // 左:品牌 + slogan(左对齐)
+  x.textAlign='left';
+  x.fillStyle='#C9A85C';x.font='700 22px '+SERIF;
+  x.fillText('知 · 星  命盘研究所',44,966);
+  x.fillStyle='#6B7280';x.font='14px '+SERIF;
+  x.fillText('以易理观己 · 以星盘为证',44,988);
+  // 右:二维码占位框(域名定后把这段替换成 drawImage(qrImg,qx,qy,QS,QS))
+  rr(qx,qy,QS,QS,8);
+  x.fillStyle='rgba(232,228,216,.05)';x.fill();
+  x.strokeStyle='rgba(201,168,92,.5)';x.setLineDash([5,4]);x.lineWidth=1.2;x.stroke();x.setLineDash([]);
+  x.textAlign='center';x.fillStyle='#8f7a45';x.font='700 13px '+SERIF;
+  x.fillText('扫码识别',qx+QS/2,qy+QS/2-3);
+  x.fillStyle='#6B7280';x.font='11px '+SERIF;
+  x.fillText('二维码待上线',qx+QS/2,qy+QS/2+16);
 }
 </script>
 </body>
