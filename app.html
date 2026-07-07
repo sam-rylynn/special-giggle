@@ -36,10 +36,9 @@
   /* 海报主视觉(静态底图):body.image-hero 生效,失败自动回退矢量罗经+文字 lockup。
      底图自带「命盘研究所/知·星/slogan」品牌字,故此模式隐藏 HTML lockup 免重复。 */
   .hero-poster{position:relative;left:calc(50% - 50vw);width:100vw;display:none;overflow:hidden;line-height:0;
-    aspect-ratio:1620/2380}   /* 裁掉底部多余深色地面,只留到 slogan 下方一点 */
-  /* 宽屏:收回内容列宽(抵消 .wrap 的 22px 内边距),不撑爆桌面 */
-  @media(min-width:540px){.hero-poster{left:auto;width:calc(100% + 44px);margin:0 -22px}}
-  .hero-poster img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 0}
+    aspect-ratio:1620/2880;max-height:84vh;background:var(--ink)}   /* 对齐真实图比例;满屏到底,宽视口也不留缝 */
+  /* 轻微放大裁掉图片自带的左右暗边(≈玄夜),更满;object-position 略下移取好构图 */
+  .hero-poster img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 12%;transform:scale(1.06);transform-origin:50% 30%}
   /* 底部融进玄夜底色,消除下缝 */
   .hero-poster::after{content:"";position:absolute;left:0;right:0;bottom:0;height:11%;pointer-events:none;
     background:linear-gradient(180deg,transparent,var(--ink))}
