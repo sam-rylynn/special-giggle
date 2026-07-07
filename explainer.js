@@ -59,7 +59,27 @@ const RISE_DEEP = {
   水瓶座: { deep:'上升水瓶,你的示人剖面是特别:第一面就带点与众不同的疏离感,让人好奇又不敢太近。你启动关系的姿态是先保持距离、先观察,把\'不一样\'当护城河。这层独立迷人,却也容易让人觉得你难融入、有点冷。', advice:'主动找一个和对方的共同点说出来,给独特之外留一个能被靠近的接口。' },
   双鱼座: { deep:'上升双鱼,你给人的第一印象是柔、飘、易亲近:温和不设防,让人想对你好。你启动关系的姿态是先感受气氛、先随和。这层柔软讨喜,却也容易让人拿捏你的边界,把你当成好说话、可以将就的那一个。', advice:'温柔归温柔,该说不的时候第一时间说出来,别让好脾气被当成没脾气。' },
 };
-const CROSS = { sameQi:'外显的这股气质和你内核同气,两套系统在此印证——里外一路,你怎么显人就怎么待己,少有拧巴,但也少了一个能拆自己台的对手,越顺越要防着一根筋走到底。', generateMe:'外显的这股气质正给你的内核供能,星盘在替八字续力——这是印证里的助推:你越是把外面这份劲用出去,内里越有底气,顺着这条线使力往往事半功倍。', iGenerate:'你的内核在给外显供血,八字反过来托着星盘——同样是印证,但方向朝外:你台面上那份从容,是内里在默默垫钱,别只顾着对外撑场,记得回头给自己那口井蓄水。', tension:'外显的这股气质和你的内核相克,这是反差=张力:台面上一套、心里一套,两股劲在你身上互相较着,别人才总说你\'看不透\'。这张力不是毛病,是你独有的深度,认下它、用起来,比强行抹平更值当。' };
+/* 互证文案按「太阳=外显人格 / 月亮=情绪底色 / 上升=示人剖面」分写:同一五行关系在三点上读法不同,不再重复 */
+const CROSS = {
+  太阳: {
+    sameQi:'——太阳是你外显的人格,和你内核同气:表里一路、少拧巴;但也少了个能拆你台的对手,越顺越要防一条道走到黑。',
+    generateMe:'——太阳是你外显的人格,正给你内核供能:你越把这份摆在台前的劲用出去(表达、领头、被看见),内里越有底气,顺着使力事半功倍。',
+    iGenerate:'——太阳是你外显的人格,由你内核在供血:台面上那份光鲜,是里子在默默垫钱;别只顾对外发光,记得回头给自己那口井蓄水。',
+    tension:'——太阳是你外显的人格,和你内核相克:你给人看的那一面和心里那套常不是一路,别人说你\'看不透\'——这份反差是你的深度,不是毛病。'
+  },
+  月亮: {
+    sameQi:'——月亮是你情绪的底色,和你内核同气:喜怒和你这个人一致、不内耗;但也少了情绪上的另一种声音,容易一种情绪走到底。',
+    generateMe:'——月亮是你情绪的底色,正给你内核供能:你在乎的东西、你的感受本身就是燃料;允许自己有情绪、去靠近在乎的人,内里反而更有劲。',
+    iGenerate:'——月亮是你情绪的底色,由你内核在兜底:你常用意志硬撑情绪;别总\'我没事\'地扛着,回头也让自己被好好接住一次。',
+    tension:'——月亮是你情绪的底色,和你内核相克:心里那股情绪和你这个人常较着劲,亲密关系里尤其明显——这不是问题,是你情感的深水区。'
+  },
+  上升: {
+    sameQi:'——上升是你示人的第一面,和你内核同气:初印象和真实的你对得上、不装可信;代价是初见就被看透,少了让人慢慢发现你的余味。',
+    generateMe:'——上升是你示人的第一面,正给你内核供能:你启动一件事、给人的第一印象本身就能替你开路;大胆用这份门面,它真能帮到你。',
+    iGenerate:'——上升是你示人的第一面,由你内核在撑着:那副得体的门面是里子在垫;撑场面很累,别把力气全花在\'让人第一眼舒服\'上,留一半给自己。',
+    tension:'——上升是你示人的第一面,和你内核相克:初印象和里子不是一路,别人常\'看走眼\'你——这份反差是你的层次感,用好了比强行一致更有味道。'
+  }
+};
 const ELEM_RICH = {
   木: { flavor:'生发向上', high:'木厚的人像开春的枝条,主意多、想往前冲,凡事先立个方向再说,天然有一股不服管、要生长的劲;显在生活里就是点子密、开头猛、爱牵头', low:'木薄则像迟迟不发的芽,方向感弱、决断慢,常等别人先动、自己再跟,遇事容易往回缩,想做的事总卡在\'还没开始\'那一步', thin:'木最薄时,别等灵感来,先用外部规矩替你生发:把大目标切成本周三件小事、写下来贴出去,用绿色、清晨、临水的空间给自己一点向上的势;多接触比你敢想的人,借他们的枝条把你的芽带出来。' },
   火: { flavor:'光热外显', high:'火旺的人自带温度,情绪来得快、表达直接,站在人前不怯场,能把一屋子人点亮,做事讲究个\'尽兴\';显在生活里是热络、有感染力、认死理时也烧得旺', low:'火薄则里子暖、面上冷,心里有火却递不出去,容易被人读成疏离或没兴致,遇到该表态、该争取的场合往往哑火,事后再懊恼自己没说', thin:'火最薄时,不必强行外向,而是给热一个固定出口:每天挑一件事认真表达一次立场,哪怕只是一句\'我更想这样\';靠近人多、光亮、有回应的场合,让别人的火先烘你一下,你的暖就递得出去了。' },
@@ -105,15 +125,20 @@ const WEST2WX = { 火:'火', 土:'土', 风:'木', 水:'水' };   // 风象取�
 const GEN5 = { 木:'火', 火:'土', 土:'金', 金:'水', 水:'木' };
 const POS_CN = { year:'年柱', month:'月柱', hour:'时柱' };
 const QIAN_MAP = { 木:{旺:0,弱:1}, 火:{旺:2,弱:3}, 土:{旺:4,弱:5}, 金:{旺:6,弱:7}, 水:{旺:8,弱:9} };  // 索引→QIAN_DRAWS
-const BRIDGE = { sameQi:'与你的日主同气,两套体系在此互相印证', generateMe:'外显在给你的内核供能,是双盘互证出的顺流', iGenerate:'你的内核在给外显供血,人前发光独处记得回头蓄水', tension:'与你的内核相克,正是你常被说"看不透"的那份张力' };
+const BRIDGE = {
+  太阳: { sameQi:'与你日主同气,里外一路', generateMe:'外显在给你内核供能,是双盘顺流', iGenerate:'你内核在给外显垫底,发光也记得回头蓄水', tension:'与你内核相克,正是你常被说"看不透"的那份张力' },
+  月亮: { sameQi:'与你日主同气,情绪和你一路', generateMe:'情绪在给你内核供能,越近越有劲', iGenerate:'你内核在替情绪兜底,别总硬撑说没事', tension:'与你内核相克,亲密里那份"看不透"就在这' },
+  上升: { sameQi:'与你日主同气,第一面就是真的你', generateMe:'第一印象在替你开路,是双盘顺流', iGenerate:'你内核在撑那副门面,别只顾对外舒服', tension:'与你内核相克,别人常"看走眼"你的那份张力' }
+};
 
 /* 星盘×八字:某星座落点与日主五行的关系(印证/反差) */
-function starCross(sign, dmElem){
+function starCross(sign, dmElem, lum){
   const w = SIGN_WEST[sign], e = WEST2WX[w];
   const key = (e===dmElem) ? 'sameQi' : (GEN5[e]===dmElem) ? 'generateMe' : (GEN5[dmElem]===e) ? 'iGenerate' : 'tension';
   const s2 = sign.slice(0,2);
   const tag = w==='风' ? (s2+'属风象(易理取巽木之象)') : (s2+'属'+w+'象');
-  return { key, wx:e, tag, cross: CROSS[key], bridge: BRIDGE[key] };
+  const L = CROSS[lum] ? lum : '太阳';                 // 按光体(太阳/月亮/上升)取对应读法,避免同关系重复
+  return { key, wx:e, tag, cross: CROSS[L][key], bridge: BRIDGE[L][key] };
 }
 
 function pick(tenGods, keys){
@@ -133,7 +158,7 @@ function buildSections(chart){
   /* 命局总览:物象定调 + 根干花果 + 太阳短桥融合 */
   let ov = `你是${STEM_IMG[dm.stem]}——${dm.stem}${dm.element}(${dm.yinyang}),${dm.element}主${ELEM_FLAVOR[dm.element]},这是你一生的能量底色。你生于${p.month.branch}月,四柱 ${gz('year')} ${gz('month')} ${gz('day')} ${gz('hour')};年柱是根、月柱是干、日柱是花、时柱是果,顺着这条时间轴,写着你从来处到晚景一路的气势起落。来源:四柱·日主`;
   if (ast && ast.sun){
-    const sc = starCross(ast.sun.sign, dm.element);
+    const sc = starCross(ast.sun.sign, dm.element, '太阳');
     ov += `\n\n同一刻的天空另存了一份档案:太阳落${ast.sun.sign}——${SIGN_LINE[ast.sun.sign]}。${sc.tag},${sc.bridge};更细的印证与反差,见下一章「星盘互证」。来源:星盘辅证·太阳${ast.sun.sign}`;
   }
   if (chart.boundaries.length) ov = `⚠ 你的出生时刻接近排盘边界(${chart.boundaries.map(b=>b.type).join('、')}),以下结论以精校排盘为准。来源:边界告警\n\n` + ov;
@@ -171,7 +196,7 @@ function buildSections(chart){
     relBody = `你的盘面官杀印比不显,关系里往往更靠食伤财的方式——用做事和给予来表达在乎,而不太用言语表忠心。来源:十神分布`;
   }
   if (ast && ast.moon && ast.moon.sign){
-    const mc = starCross(ast.moon.sign, dm.element);
+    const mc = starCross(ast.moon.sign, dm.element, '月亮');
     relBody += `\n\n星盘把这一章的辅证交给月亮${ast.moon.approx?'(按当日正午近似)':''}:${MOON_DEEP[ast.moon.sign].deep}太阳是你给世界看的,月亮才是关了门之后的——亲密关系里的你,更接近后者。${mc.bridge}。给你的一句:${MOON_DEEP[ast.moon.sign].advice}来源:星盘辅证·月亮${ast.moon.sign}`;
   }
   S.push({ id:'relation', title:'关系与协作', source:'十神+月亮星座', body: relBody });
@@ -187,7 +212,7 @@ function buildSections(chart){
     actBody = `食伤财在天干不显,你的行动力更常由${st.label==='偏强'?'比劫的冲劲':'印星的准备感'}驱动——想清楚才动,但动了就不轻易停。来源:十神分布`;
   }
   if (ast && ast.asc){
-    const rc = starCross(ast.asc.sign, dm.element);
+    const rc = starCross(ast.asc.sign, dm.element, '上升');
     actBody += `\n\n星盘辅证落在上升:${RISE_DEEP[ast.asc.sign].deep}上升是你启动任何事情时最先亮起的那块界面,别人对你的第一印象,多半是它。${rc.bridge}。给你的一句:${RISE_DEEP[ast.asc.sign].advice}来源:星盘辅证·上升${ast.asc.sign}`;
   }
   S.push({ id:'action', title:'行动与决策', source:'十神+上升星座', body: actBody });
@@ -205,7 +230,7 @@ function astroReadings(chart){
   const dm = chart.dayMaster.element;
   const mk = (label, sym, o, DEEP) => {
     if (!o || !o.sign) return null;
-    const sc = starCross(o.sign, dm);
+    const sc = starCross(o.sign, dm, label);
     return { label, sym, sign:o.sign, approx:!!o.approx, deep:DEEP[o.sign].deep, advice:DEEP[o.sign].advice,
       tag:sc.tag, key:sc.key, cross:sc.cross };
   };
