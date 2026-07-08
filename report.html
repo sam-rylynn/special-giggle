@@ -1044,7 +1044,15 @@ async function askDeep(chart){
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
   const useBackend = !!deepEndpoint();
-  if (useBackend && deepQuota().n >= DEEP_FREE){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
+  // 服务端会员/额度闸优先(不可绕过);不可用时回退前端额度
+  const gateHandled = useBackend && window.zxMember && zxMember.ready && zxMember.ready() && !!zxMember.deepConsume;
+  let gateConsumed = false;
+  if (gateHandled){
+    let gate = null;
+    try { gate = await zxMember.deepConsume(); } catch(_){ /* 闸不可用则放行,深问后端应作硬校验 */ }
+    if (gate && gate.allowed === false){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }
+    if (gate && gate.allowed && !gate.is_member) gateConsumed = true;   // 非会员真扣了额度 → 失败时退回
+  } else if (useBackend && deepQuota().n >= DEEP_FREE){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }   // 回退:前端额度
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
     const keyEl = $('deepKey') || $('key');              // 优先问知星块内的 key 栏(内测)
@@ -1059,7 +1067,7 @@ async function askDeep(chart){
   echo.innerHTML = priorHtml + `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
   try {
     const ans = useBackend ? await callDeepBackend(chart, q, deepTurns) : await callDeep(chart, q, key);
-    if (useBackend) deepQuotaBump();
+    if (useBackend && !gateHandled) deepQuotaBump();   // 服务端闸接管时不再动前端计数(否则会员也会被前端计数误墙)
     rememberDeepTurn(q, ans);
     T('deep_answered', { mode, turn: deepTurns.length });
     echo.innerHTML = priorHtml + renderDeep(ans, q);
@@ -1067,6 +1075,7 @@ async function askDeep(chart){
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
     T('deep_error', { mode, turn: deepTurns.length + 1 });
+    if (gateConsumed && window.zxMember && zxMember.deepRefund) zxMember.deepRefund();   // 失败退回已扣的免费额度
     echo.innerHTML = priorHtml + `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;

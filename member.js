@@ -91,6 +91,8 @@
     render: render,
     syncChart: function (payload) { return api('/charts/sync', { method: 'POST', body: { payload: payload } }); },
     loadChart: function () { return api('/charts').then(function (d) { return d.chart; }); },
+    deepConsume: function () { return api('/deep/consume', { method: 'POST' }); },   // 服务端问知星额度/会员闸
+    deepRefund: function () { return api('/deep/refund', { method: 'POST' }); },     // 深问失败退回额度
     openPaywall: function (r) { return showPaywall(r); },
     showPrivacy: function () { return showPrivacy(); },
     setCloudSync: function (on) {
@@ -159,11 +161,12 @@
   var BENEFITS = ['问知星 · 不限次深问', '优先体验后续会员功能'];   // 只列真会员权益(问知星不限次);其余待建再补
   var selPlan = 'year';
 
-  function modal(html) {
+  function modal(html, onClose) {
     injectStyle();
     var ov = document.createElement('div'); ov.className = 'zxm-ov';
     ov.innerHTML = '<div class="zxm-box">' + html + '<button class="zxm-x" type="button">关闭</button></div>';
-    function close() { ov.remove(); }
+    var closed = false;
+    function close() { if (closed) return; closed = true; ov.remove(); if (onClose) onClose(); }   // 任意关闭路径(X/点背景)都触发 onClose
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
     ov.querySelector('.zxm-x').onclick = close;
     document.body.appendChild(ov);
@@ -194,23 +197,64 @@
       if (window.zxTrack) zxTrack('plan_select', { plan: selPlan });
       refresh();
     };
-    m.el.querySelector('.zxp-go').onclick = function () { startCheckout(selPlan); };
+    m.el.querySelector('.zxp-go').onclick = function () { startCheckout(selPlan, m); };
     m.el.querySelector('.zxp-priv').onclick = function () { showPrivacy(); };
     return m;
   }
 
-  function startCheckout(plan) {
+  function startCheckout(plan, paywall) {
     if (window.zxTrack) zxTrack('pay_start', { plan: plan });
-    // Phase C:此处改为调 /order/create 拉起微信支付(Native/H5/JSAPI),成功回调再 zxTrack('pay_success')。
-    alert('已记下你的选择:' + PLANS[plan].label + '(¥' + PLANS[plan].price + ')。支付通道即将开放,开通后问知星不限次。');
+    if (!API_BASE) { alert('支付通道即将开放,敬请期待。'); return; }
+    api('/order/create', { method: 'POST', body: { plan: plan } })
+      .then(function (d) { showPayModal(d.code_url, d.out_trade_no, plan, paywall); })
+      .catch(function (e) {
+        if (/pay not configured|HTTP 503/.test(e.message)) alert('支付通道即将开放,敬请期待。');
+        else alert('下单失败:' + e.message);
+      });
+  }
+
+  // 微信扫码支付:展示 code_url(二维码渲染待接,先给可扫链接)+ 轮询订单状态,paid → pay_success
+  function showPayModal(codeUrl, outTradeNo, plan, paywall) {
+    var stopped = false;
+    var m = modal('<h3>微信扫码支付</h3>'
+      + '<p style="font-size:13px;color:#b9c2d0">开通 ' + PLANS[plan].label + ' · ¥' + PLANS[plan].price + '</p>'
+      + '<div style="text-align:center;margin:14px 0;padding:16px;border:1px dashed rgba(201,168,92,.4);border-radius:8px;font-size:12px;color:#8f7a45;word-break:break-all">二维码待接;支付链接:<br>' + codeUrl + '</div>'
+      + '<div id="zxpay-status" style="text-align:center;color:#9aa4b2;font-size:13px">等待支付…</div>',
+      function () { stopped = true; });   // 关闭(X/点背景)即停止轮询
+    var tries = 0;
+    (function poll() {
+      if (stopped) return;
+      if (++tries > 60) { var s0 = m.el.querySelector('#zxpay-status'); if (s0) s0.textContent = '已超时;若已支付,稍后刷新页面即可。'; return; }
+      api('/order/status?out_trade_no=' + encodeURIComponent(outTradeNo)).then(function (d) {
+        if (stopped) return;
+        if (d.status === 'paid') {
+          if (window.zxTrack) zxTrack('pay_success', { plan: plan });
+          var s = m.el.querySelector('#zxpay-status'); if (s) s.textContent = '✓ 支付成功,会员已开通';
+          if (paywall) paywall.close();   // 支付成功一并关掉底层会员墙,不再劝购
+          refresh(); setTimeout(m.close, 1500);
+        } else { setTimeout(poll, 3000); }
+      }).catch(function () { setTimeout(poll, 4000); });
+    })();
+  }
+
+  function deleteAccount() {
+    if (!API_BASE) return;
+    if (!confirm('确定注销账号并删除全部数据?此操作不可恢复。')) return;
+    api('/account', { method: 'DELETE' }).then(function () {
+      try { localStorage.removeItem('zx_token'); localStorage.removeItem('zx_bound'); localStorage.removeItem('zx_cloud_sync'); } catch (_) {}
+      state.bound = false; state.memberUntil = null;
+      alert('账号已注销,数据已删除。'); render();
+    }).catch(function (e) { alert('注销失败:' + e.message); });
   }
 
   function showPrivacy() {
-    modal('<h3>隐私说明</h3><div style="font-size:13px;line-height:1.75;color:#b9c2d0">'
+    var del = API_BASE ? '<div style="margin-top:16px;text-align:center"><span class="zxm-link zxp-del" style="color:#C96A4A">注销账号并删除全部数据</span></div>' : '';
+    var m = modal('<h3>隐私说明</h3><div style="font-size:13px;line-height:1.75;color:#b9c2d0">'
       + '<p><b>收集什么</b>:你填写的出生资料(日期/时间/城市)、一个随机匿名设备标识;若你微信登录,则含微信 openid。<b>从不收集姓名与联系方式。</b></p>'
       + '<p><b>发去哪</b>:①「问知星」——点击时把命盘与本次问答内容发往云端服务器、交第三方大模型解读,仅用于生成该次回答,不留存;②「云端同步」(需手动开启)——出生资料存到你的账号,用于换设备找回;③匿名埋点——仅记录行为事件与一个随机匿名标识(用于区分会话与去重),不含出生信息与问题原文,不采集 IP 与 User-Agent。</p>'
-      + '<p><b>留存与删除</b>:问知星回答不留存;云端同步的盘可在报告页关闭同步即删除;账号信息(随机设备标识、微信 openid、会员到期)会持续保留,暂未开放自助注销,如需删除请联系我们。</p>'
-      + '</div>');
+      + '<p><b>留存与删除</b>:问知星回答不留存;云端同步的盘可在报告页关闭同步即删除;账号信息(随机设备标识、微信 openid、会员到期)会持续保留,可随时在下方自助注销并删除全部数据。</p>'
+      + '</div>' + del);
+    var db = m.el.querySelector('.zxp-del'); if (db) db.onclick = function () { m.close(); deleteAccount(); };
   }
 
   init();
