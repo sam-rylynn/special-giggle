@@ -729,7 +729,8 @@ function renderQian(chart){
   $('qianOut').innerHTML = `<div class="qian-draw">
     <div class="qian-hex">${esc(q.hex)}</div>
     <div class="qian-omen">${esc(q.omen)}</div>
-    <div class="body" style="margin-top:10px"><p>${fmtBody(q.guide)}</p></div>
+    <div class="qian-yiji" style="margin-top:12px;font-size:14px;letter-spacing:.06em"><span style="color:#C9A85C">宜</span> <span style="color:#cdd3dd">${q.yi.join('　')}</span>　　<span style="color:#9aa4b2">忌</span> <span style="color:#8f95a3">${q.ji.join('　')}</span></div>
+    <div class="qian-line" style="margin-top:14px;font-family:var(--serif);font-size:17px;line-height:1.65;color:var(--moon)">${esc(q.line)}</div>
     <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不做结果判断、不断具体事。<span class="src-inline">来源:本命签</span></small>
     <div style="margin-top:16px"><button id="qianShareBtn" class="ghost" style="letter-spacing:.1em">分享这支签</button></div>
   </div>`;
@@ -773,8 +774,10 @@ function drawQianPoster(q){
   x.save(); x.fillStyle = gg; x.shadowColor = 'rgba(201,168,92,.4)'; x.shadowBlur = 32; x.font = '700 128px '+SERIF;
   x.fillText([...q.hex].join('  '), W/2, 380); x.restore();
   x.fillStyle = '#E8E4D8'; x.font = '25px '+SERIF; x.fillText(q.omen, W/2, 470);
-  const g1 = ((q.guide||'').split(/[。！?]/)[0]||'').trim() + '。';
-  x.fillStyle = '#b9c2d0'; x.font = '23px '+SERIF; qposWrap(x, g1, W/2, 556, 600, 40);
+  const g1 = q.line || '';   // 钩子(主分享文案)
+  x.fillStyle = '#e9d09a'; x.font = '24px '+SERIF; const gy = qposWrap(x, g1, W/2, 560, 620, 42);
+  x.fillStyle = '#8f7a45'; x.font = '19px '+SERIF;
+  x.fillText('宜  '+(q.yi||[]).join('  ')+'      忌  '+(q.ji||[]).join('  '), W/2, gy + 56);
   x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
   x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
   const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
@@ -952,7 +955,7 @@ async function callDeepBackend(chart, question, history = []){
       chart,
       question,
       history,
-      qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength }
+      qian: { hex:qian.hex, omen:qian.omen, line:qian.line, yi:qian.yi, ji:qian.ji, bindElement:qian.bindElement, strength:qian.strength }
     })
   });
   const data = await r.json();
@@ -986,7 +989,7 @@ async function callDeep(chart, question, key){
       output_config: { format: { type: 'json_schema', schema: DEEP_SCHEMA } },
       messages: [{ role: 'user', content:
         '本命盘 JSON:\n' + JSON.stringify(chart) +
-        '\n\n今日本命签:\n' + JSON.stringify({ hex: qian.hex, omen: qian.omen, guide: qian.guide, bindElement: qian.bindElement, strength: qian.strength }) +
+        '\n\n今日本命签:\n' + JSON.stringify({ hex: qian.hex, omen: qian.omen, line: qian.line, yi: qian.yi, ji: qian.ji, bindElement: qian.bindElement, strength: qian.strength }) +
         '\n\n我要问的事:\n' + question }]
     })
   });
