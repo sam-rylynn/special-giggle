@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS orders (
   wx_txn_id    VARCHAR(64)  NULL,                 -- 微信支付交易号
   created_at   BIGINT       NOT NULL,
   paid_at      BIGINT       NULL,
+  last_query_at BIGINT      NULL,                 -- 上次主动查单时间(限流用)
   INDEX idx_order_user (user_id),
   FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

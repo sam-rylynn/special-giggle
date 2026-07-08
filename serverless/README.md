@@ -26,6 +26,11 @@ serverless/
 | GET  | `/wx/callback` | 否(签名 state) | 换 openid → 存一次性 `bindcode` → 经 `#bindcode=` 回传前端(**不在此绑定**) |
 | POST | `/wx/claim` | Bearer | 凭本浏览器会话 token + bindcode 完成绑定/合并,返回新 token |
 | DELETE | `/charts` | Bearer | 删除云端已存的盘(关闭云端同步时调用) |
+| POST | `/order/create` | Bearer | `{plan}` → Native 下单,返回 `{out_trade_no, code_url}` |
+| GET | `/order/status` | Bearer | `?out_trade_no` → `{status}`(前端轮询) |
+| POST | `/wx/notify` | 否(平台签名) | 微信支付回调:验签 + 解密 + 幂等续会员期 |
+| DELETE | `/account` | Bearer | 注销账号,删除全部数据 |
+| POST | `/deep/consume` | Bearer | 问知星额度/会员闸 → `{allowed, is_member, remaining}` |
 | POST | `/collect` | 否 | 埋点收集(analytics.js 的端点,落函数日志/CLS,不记 IP/UA) |
 
 **Phase B 绑定/合并(防 OAuth 登录 CSRF)**:回调**不做绑定**,只换到 openid 并存一张一次性 `bindcode` 回传前端;真正绑定由前端凭「完成回调那台浏览器自己的会话 token」调 `/wx/claim` 完成 —— 绑定目标账号恒等于当前登录账号,签名 state 无法被钓鱼重放到受害者账号。合并:微信身份无账号→挂到当前账号;已有账号→把当前匿名账号的 devices/charts/orders 并入微信账号(charts 留较新者、会员期取较晚者),事务原子。前端「微信登录」需**认证服务号**并在公众号后台配网页授权域名。
@@ -38,6 +43,7 @@ serverless/
    - `TOKEN_SECRET` = 一段强随机(如 `openssl rand -hex 32`)
    - `DB_HOST` `DB_PORT` `DB_USER` `DB_PASS` `DB_NAME`(可选 `DB_POOL`,默认 4)
    - **微信绑定(Phase B)**:`WX_APPID` `WX_APPSECRET`(认证服务号)、`WX_REDIRECT`=部署后的 `/wx/callback` 完整 URL、`WX_APP_RETURN`=绑定后跳回的前端页(如 `https://你的站/report.html`)。未配置时 `/wx/login-url` 返回 503,前端登录按钮优雅降级。
+   - **微信支付(Phase C)**:`WX_PAY_MCHID`、`WX_PAY_SERIAL`(商户证书序列号)、`WX_PAY_PRIVATE_KEY`(商户 API 私钥 PEM)、`WX_PAY_APIV3_KEY`(32 字符)、`WX_PAY_PUBKEY`(微信支付**平台公钥** PEM,公钥模式验回调)、`WX_PAY_NOTIFY_URL`(=`/wx/notify` 完整 URL)、`WX_PAY_APPID`(缺省回退 `WX_APPID`)。未配置时 `/order/create` 返回 503。
 4. **网络**:若数据库在 VPC,给函数配同 VPC;否则用公网地址 + 白名单。
 5. **拿 URL**:复制函数「访问路径」(形如 `https://xxxx-xxxx.ap-guangzhou.tencentscf.com`)。
 6. **接前端**(两处):
@@ -58,4 +64,4 @@ serverless/
 ## 待接(后续 Phase)
 
 - **B(已实现)**:微信网页授权绑定 + 匿名账号合并 + 前端「云端同步」显式开关(出生数据仅开启后上传)。待你配 `WX_*` 环境变量 + 认证服务号即可启用。
-- **C**:`/order/create`(微信支付统一下单)+ `/wx/notify`(回调验签/解密/幂等/金额校验)+ 会员期续费 + 付费墙接线。**需先申请到企业微信支付商户号(mchid/APIv3密钥/证书)。**
+- **C(已实现代码,待商户号实测)**:`/order/create`(Native 统一下单)+ `/order/status` + `/wx/notify`(平台公钥验签 + APIv3-GCM 解密 + 幂等 + 金额以服务端为准 + 续会员期)。前端会员墙已接下单+轮询。`lib/wxpay.js` 用**微信支付公钥模式**验回调。**需企业微信支付商户号(mchid/APIv3 密钥/商户证书/平台公钥)才能实测**;订单金额在服务端 `PLAN_CFG` 权威定义(前端只传 plan)。

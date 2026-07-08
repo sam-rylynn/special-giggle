@@ -12,10 +12,14 @@ const crypto = require('crypto');
 const { json, noContent, readBody } = require('./lib/respond');
 const token = require('./lib/token');
 const wx = require('./lib/wx');
+const wxpay = require('./lib/wxpay');
 const { q, tx } = require('./lib/db');
 
 const DEVICE_RE = /^[a-z0-9]{6,64}$/i;
 const WX_RETURN = process.env.WX_APP_RETURN || '';   // 绑定完成后跳回的前端页(如 https://站点/report.html)
+// 套餐:金额(分)与时长,服务端权威 —— 前端只传 plan,绝不传价格
+const PLAN_CFG = { month: { fen: 1800, days: 30, desc: '知星会员 · 月卡' }, year: { fen: 9800, days: 365, desc: '知星会员 · 年卡' } };
+const DEEP_FREE_PER_DAY = 1;   // 免费问知星次数/天(可调;与前端「首次免费」文案一致)
 const now = () => Date.now();
 const ends = (path, suffix) => path === suffix || path.endsWith(suffix);
 const redirect = (res, target) => { res.writeHead(302, { Location: target }); res.end(); };
@@ -82,6 +86,20 @@ async function mergeBind(c, currentUid, openid, unionid) {
   }
 }
 
+// 订单置为已支付并续会员期(幂等 + 金额以服务端为准);回调与查单共用。返回是否本次真正入账。
+async function grantPaidOrder(c, outTradeNo, txnId, amountTotal) {
+  const [rows] = await c.execute('SELECT id, user_id, plan, amount, status FROM orders WHERE out_trade_no=? FOR UPDATE', [outTradeNo]);
+  const o = rows[0];
+  if (!o || o.status === 'paid') return false;                                     // 未知单 / 幂等:已入账
+  if (amountTotal != null && Number(amountTotal) !== Number(o.amount)) { console.error('amount mismatch', outTradeNo); return false; }
+  const cfg = PLAN_CFG[o.plan]; const addMs = (cfg ? cfg.days : 0) * 86400000;
+  await c.execute('UPDATE orders SET status=?, wx_txn_id=?, paid_at=? WHERE id=?', ['paid', txnId || null, now(), o.id]);
+  const [ur] = await c.execute('SELECT member_until FROM users WHERE id=? FOR UPDATE', [o.user_id]);
+  const base = Math.max((ur[0] && ur[0].member_until) || 0, now());               // 续期基于 max(现有到期, now),不吞未过期时长
+  await c.execute('UPDATE users SET member_until=?, updated_at=? WHERE id=?', [base + addMs, now(), o.user_id]);
+  return true;
+}
+
 async function handle(req, res) {
   if (req.method === 'OPTIONS') return noContent(res, 204);
   const url = new URL(req.url, 'http://x');
@@ -116,6 +134,23 @@ async function handle(req, res) {
     } catch (e) {
       console.error('wx callback', e && e.stack || e);
       return redirect(res, (WX_RETURN || '/') + '?bind=err');
+    }
+  }
+
+  // 微信支付回调(公开;微信服务器 POST)。验签(平台公钥)→ 解密 → 幂等续会员期。
+  if (req.method === 'POST' && ends(path, '/wx/notify')) {
+    const raw = await readBody(req, 20000);
+    if (!wxpay.verifyNotify(req.headers, raw)) return json(res, 401, { code: 'FAIL', message: 'sig' });
+    let evt; try { evt = JSON.parse(raw); } catch (_) { return json(res, 400, { code: 'FAIL', message: 'bad' }); }
+    try {
+      const data = wxpay.decryptResource(evt.resource);          // { out_trade_no, trade_state, transaction_id, amount:{total} }
+      if (data.trade_state === 'SUCCESS') {
+        await tx((c) => grantPaidOrder(c, data.out_trade_no, data.transaction_id, data.amount && data.amount.total));
+      }
+      return json(res, 200, { code: 'SUCCESS' });                // 必须回 SUCCESS,否则微信重推
+    } catch (e) {
+      console.error('wx notify', e && e.message);
+      return json(res, 500, { code: 'FAIL', message: 'error' });
     }
   }
 
@@ -195,6 +230,81 @@ async function handle(req, res) {
   // 关闭云端同步时调用:真正删除云端已存的盘,兑现「关闭即删除」的承诺
   if (req.method === 'DELETE' && ends(path, '/charts')) {
     await q('DELETE FROM charts WHERE user_id=?', [uid]);
+    return json(res, 200, { ok: true });
+  }
+
+  // 下单:plan → 服务端权威金额 → 微信支付 Native 统一下单,返回 code_url 供前端生成二维码
+  if (req.method === 'POST' && ends(path, '/order/create')) {
+    if (!wxpay.configured()) return json(res, 503, { error: 'pay not configured' });
+    let body; try { body = JSON.parse(await readBody(req)); } catch (_) { return json(res, 400, { error: 'bad json' }); }
+    const plan = String((body && body.plan) || '');
+    const cfg = PLAN_CFG[plan];
+    if (!cfg) return json(res, 400, { error: 'bad plan' });
+    const outTradeNo = 'zx' + Date.now().toString(36) + crypto.randomBytes(6).toString('hex');
+    await q('INSERT INTO orders (out_trade_no, user_id, plan, amount, status, created_at) VALUES (?,?,?,?,?,?)',
+      [outTradeNo, uid, plan, cfg.fen, 'pending', now()]);
+    try {
+      const r = await wxpay.nativeOrder({ outTradeNo: outTradeNo, description: cfg.desc, amountFen: cfg.fen });
+      return json(res, 200, { out_trade_no: outTradeNo, code_url: r.codeUrl });
+    } catch (e) {
+      console.error('order/create', e && e.message);
+      return json(res, 502, { error: 'create order failed' });
+    }
+  }
+
+  // 订单状态轮询;本地仍 pending 时【限流后】主动查单自愈(回调偶发漏收)
+  if (req.method === 'GET' && ends(path, '/order/status')) {
+    const otn = url.searchParams.get('out_trade_no') || '';
+    const rows = await q('SELECT status, created_at, last_query_at FROM orders WHERE out_trade_no=? AND user_id=?', [otn, uid]);
+    if (!rows.length) return json(res, 200, { status: 'unknown' });
+    let status = rows[0].status;
+    const age = now() - (rows[0].created_at || 0);
+    const sinceQuery = now() - (rows[0].last_query_at || 0);
+    // 仅在 pending、订单未过老(<15min)、距上次查单 >10s 时才真打微信,防刷查单额度
+    if (status === 'pending' && wxpay.configured() && age < 900000 && sinceQuery > 10000) {
+      await q('UPDATE orders SET last_query_at=? WHERE out_trade_no=?', [now(), otn]);
+      try {
+        const d = await wxpay.queryOrder(otn);
+        if (d.trade_state === 'SUCCESS') await tx((c) => grantPaidOrder(c, otn, d.transaction_id, d.amount && d.amount.total));
+      } catch (e) { console.error('order query', e && e.message); }
+      const r2 = await q('SELECT status FROM orders WHERE out_trade_no=? AND user_id=?', [otn, uid]);
+      status = r2.length ? r2[0].status : status;   // 反映 DB 真值:金额不符被拒时仍为 pending,不谎报 paid
+    }
+    return json(res, 200, { status: status });
+  }
+
+  // 账号注销:删除本账号及其全部数据(FK 顺序:子表先删)
+  if (req.method === 'DELETE' && ends(path, '/account')) {
+    await tx(async (c) => {
+      await c.execute('DELETE FROM charts WHERE user_id=?', [uid]);
+      await c.execute('DELETE FROM orders WHERE user_id=?', [uid]);
+      await c.execute('DELETE FROM deep_logs WHERE user_id=?', [uid]);
+      await c.execute('DELETE FROM devices WHERE user_id=?', [uid]);
+      await c.execute('DELETE FROM users WHERE id=?', [uid]);
+    });
+    return json(res, 200, { ok: true });
+  }
+
+  // 问知星额度/会员闸(服务端,替代可绕过的前端 localStorage 额度)。会员不限次;非会员按天计数。
+  if (req.method === 'POST' && ends(path, '/deep/consume')) {
+    const urow = (await q('SELECT member_until FROM users WHERE id=?', [uid]))[0];
+    if (urow && urow.member_until && urow.member_until > now()) return json(res, 200, { allowed: true, is_member: true, remaining: -1 });
+    const today = new Date().toISOString().slice(0, 10);
+    const out = await tx(async (c) => {
+      const [rows] = await c.execute('SELECT count FROM deep_logs WHERE user_id=? AND day=? FOR UPDATE', [uid, today]);
+      const cur = rows.length ? rows[0].count : 0;
+      if (cur >= DEEP_FREE_PER_DAY) return { allowed: false, remaining: 0 };
+      if (rows.length) await c.execute('UPDATE deep_logs SET count=count+1 WHERE user_id=? AND day=?', [uid, today]);
+      else await c.execute('INSERT INTO deep_logs (user_id, day, count) VALUES (?,?,1)', [uid, today]);
+      return { allowed: true, remaining: DEEP_FREE_PER_DAY - cur - 1 };
+    });
+    return json(res, 200, { allowed: out.allowed, is_member: false, remaining: out.remaining });
+  }
+
+  // 深问失败时退回已扣的免费额度(仅当天计数减一,floor 0)——避免一次失败白吞唯一免费额度
+  if (req.method === 'POST' && ends(path, '/deep/refund')) {
+    const today = new Date().toISOString().slice(0, 10);
+    await q('UPDATE deep_logs SET count = GREATEST(count - 1, 0) WHERE user_id=? AND day=?', [uid, today]);
     return json(res, 200, { ok: true });
   }
 

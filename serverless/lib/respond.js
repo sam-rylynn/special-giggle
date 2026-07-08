@@ -15,15 +15,17 @@ function noContent(res, code) {
   res.end();
 }
 
-// 读取请求体,带上限(防滥用)
+// 读取请求体,带上限(防滥用)。按 Buffer 累积、整块拼好再解码,
+// 避免多字节 UTF-8 被 TCP 分片切碎(回调验签依赖原始字节,勿逐块 toString)。
 function readBody(req, limit = 100000) {
   return new Promise((resolve, reject) => {
-    let b = '';
+    const chunks = []; let size = 0;
     req.on('data', c => {
-      b += c;
-      if (b.length > limit) { req.destroy(); reject(new Error('body too large')); }
+      size += c.length;
+      if (size > limit) { req.destroy(); reject(new Error('body too large')); return; }
+      chunks.push(c);
     });
-    req.on('end', () => resolve(b));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
     req.on('error', reject);
   });
 }
