@@ -735,7 +735,7 @@ function renderQian(chart){
     <div style="margin-top:16px"><button id="qianShareBtn" class="ghost" style="letter-spacing:.1em">分享这支签</button></div>
   </div>`;
   const sb = $('qianShareBtn');
-  if (sb) sb.onclick = () => { T('qian_share_open', { v: V('qian_card') }); drawQianPoster(q); $('qianPosterLayer').style.display = 'block'; };
+  if (sb) sb.onclick = () => { T('qian_share_open', { v: V('qian_card') }); drawQianPoster(q, chart); $('qianPosterLayer').style.display = 'block'; };
   T('qian_shown', { hex: q.hex });
 }
 
@@ -757,39 +757,202 @@ function qposWrap(x, text, cx, y, maxW, lh){
   if (line) x.fillText(line, cx, yy);
   return yy;
 }
-function drawQianPoster(q){
+
+function qianPosterKind(q){
+  const h = q.hex || '', e = q.bindElement || '';
+  if (/锋|刃|剑|金|铁|铜|钢|淬|铸|琢|钝|肃|器/.test(h)) return 'blade';     // C 符刻冷金
+  if (e === '土' || /枢|衡|土|山|石|基|丘|田|壤|载|承|厚|磐|尘|沙/.test(h)) return 'earth'; // 土-2 陶印篆意
+  if (e === '水' || e === '木' || /源|流|潮|潭|海|溪|渠|澜|润|萌|枝|叶|阳|荫|柯|根/.test(h)) return 'flow'; // B 水墨行楷
+  return 'blade';
+}
+
+function qianPosterFrame(x, W, H){
+  x.strokeStyle = 'rgba(201,168,92,.66)';
+  x.lineWidth = 1.2;
+  x.strokeRect(16.5,16.5,W-33,H-33);
+  x.strokeStyle = 'rgba(201,168,92,.22)';
+  x.strokeRect(25.5,25.5,W-51,H-51);
+  const corner = (sx, sy) => {
+    x.save();
+    x.translate(sx < 0 ? W : 0, sy < 0 ? H : 0);
+    x.scale(sx, sy);
+    x.beginPath(); x.moveTo(20,70); x.lineTo(20,20); x.lineTo(70,20);
+    x.moveTo(31,70); x.quadraticCurveTo(31,31,70,31);
+    x.stroke();
+    x.restore();
+  };
+  corner(1,1); corner(-1,1); corner(1,-1); corner(-1,-1);
+}
+
+function qianPosterLogo(x, SERIF){
+  x.save();
+  x.translate(66,930);
+  x.strokeStyle = 'rgba(201,168,92,.74)';
+  x.lineWidth = 1;
+  x.beginPath(); x.arc(0,0,22,0,Math.PI*2); x.stroke();
+  x.beginPath(); x.moveTo(-32,0); x.lineTo(32,0); x.moveTo(0,-32); x.lineTo(0,32); x.stroke();
+  x.fillStyle = '#C9A85C';
+  x.font = '700 22px '+SERIF;
+  x.textAlign = 'left';
+  x.fillText('知 · 星', 42, -5);
+  x.font = '15px '+SERIF;
+  x.fillText('命盘研究所', 136, -5);
+  x.fillStyle = '#8f7a45';
+  x.font = '13px '+SERIF;
+  x.fillText('以易理观己 · 以星盘为证', 42, 22);
+  x.restore();
+}
+
+function qianPosterQr(x, qx, qy, QS, seedText){
+  const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
+  x.save();
+  rr(qx,qy,QS,QS,8);
+  x.fillStyle = '#f2ead8'; x.fill();
+  x.strokeStyle = 'rgba(201,168,92,.68)'; x.lineWidth = 2; x.stroke();
+  const pad = 7, cell = (QS - pad*2) / 13;
+  x.fillStyle = '#101522';
+  const finder = (cx, cy) => {
+    x.fillRect(qx+pad+cx*cell,qy+pad+cy*cell,cell*3,cell*3);
+    x.fillStyle = '#f2ead8'; x.fillRect(qx+pad+(cx+.6)*cell,qy+pad+(cy+.6)*cell,cell*1.8,cell*1.8);
+    x.fillStyle = '#101522'; x.fillRect(qx+pad+(cx+1.1)*cell,qy+pad+(cy+1.1)*cell,cell*.8,cell*.8);
+  };
+  finder(0,0); finder(10,0); finder(0,10);
+  const seed = [...(seedText || '知星')].reduce((n,ch)=>n+ch.charCodeAt(0),0);
+  for (let i=0;i<13;i++) for (let j=0;j<13;j++){
+    if ((i<4&&j<4)||(i>8&&j<4)||(i<4&&j>8)) continue;
+    if (((i*7+j*11+seed)%5)<2) x.fillRect(qx+pad+i*cell,qy+pad+j*cell,cell*.76,cell*.76);
+  }
+  x.restore();
+}
+
+function qianPosterScene(x, W, q, kind){
+  x.save();
+  x.globalCompositeOperation = 'source-over';
+  const e = q.bindElement || '';
+  const water = e === '水' || kind === 'blade' || /源|流|潮|潭|海|溪|渠|澜/.test(q.hex || '');
+  if (water){
+    const rg = x.createRadialGradient(W/2,690,20,W/2,690,330);
+    rg.addColorStop(0,'rgba(201,168,92,.18)');
+    rg.addColorStop(.38,'rgba(24,44,58,.28)');
+    rg.addColorStop(1,'rgba(4,8,15,0)');
+    x.fillStyle = rg; x.fillRect(54,468,W-108,390);
+    x.strokeStyle = 'rgba(201,168,92,.15)';
+    for (let i=0;i<18;i++){
+      const yy = 628 + i*10, ww = 70 + i*25;
+      x.beginPath();
+      x.ellipse(W/2, yy, ww, 7+i*.7, 0, Math.PI*1.05, Math.PI*1.95);
+      x.stroke();
+    }
+  }
+  if (kind === 'blade'){
+    x.translate(W/2,690);
+    x.rotate(-0.035);
+    const metal = x.createLinearGradient(-18,-170,28,138);
+    metal.addColorStop(0,'rgba(38,33,28,.92)');
+    metal.addColorStop(.52,'rgba(7,10,14,.98)');
+    metal.addColorStop(.55,'rgba(247,211,126,.95)');
+    metal.addColorStop(.63,'rgba(28,25,24,.96)');
+    metal.addColorStop(1,'rgba(6,8,12,.9)');
+    x.fillStyle = metal;
+    x.beginPath();
+    x.moveTo(-34,145); x.quadraticCurveTo(-42,-120,-14,-198);
+    x.quadraticCurveTo(18,-120,35,145);
+    x.quadraticCurveTo(2,164,-34,145);
+    x.closePath(); x.fill();
+    x.strokeStyle = 'rgba(245,204,116,.72)'; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(17,-170); x.quadraticCurveTo(16,0,18,142); x.stroke();
+    x.strokeStyle = 'rgba(201,168,92,.18)'; x.lineWidth = 1;
+    x.beginPath(); x.moveTo(-22,-80); x.quadraticCurveTo(-2,-30,-14,92); x.stroke();
+    x.restore(); x.save();
+  } else if (kind === 'earth'){
+    x.translate(W/2,685);
+    const stone = x.createLinearGradient(-100,-145,100,160);
+    stone.addColorStop(0,'rgba(78,62,45,.6)');
+    stone.addColorStop(.55,'rgba(20,18,18,.92)');
+    stone.addColorStop(1,'rgba(8,10,14,.95)');
+    x.fillStyle = stone;
+    x.beginPath();
+    x.moveTo(-92,150); x.lineTo(-54,-132); x.quadraticCurveTo(0,-166,56,-132); x.lineTo(92,150); x.closePath(); x.fill();
+    x.strokeStyle = 'rgba(201,168,92,.36)'; x.lineWidth = 1.3; x.stroke();
+    x.strokeStyle = 'rgba(201,168,92,.13)';
+    for (let i=0;i<5;i++){ x.beginPath(); x.moveTo(-50+i*22,-98+i*18); x.lineTo(-18+i*24,118-i*16); x.stroke(); }
+    x.restore(); x.save();
+  } else {
+    x.translate(W/2,690);
+    x.strokeStyle = 'rgba(201,168,92,.42)';
+    x.lineWidth = 2;
+    x.beginPath(); x.moveTo(0,-150); x.bezierCurveTo(-62,-76,54,-8,-12,92); x.stroke();
+    x.strokeStyle = 'rgba(232,228,216,.20)'; x.lineWidth = 1.1;
+    x.beginPath(); x.moveTo(18,-130); x.bezierCurveTo(-26,-70,70,-20,8,120); x.stroke();
+    x.fillStyle = 'rgba(201,168,92,.28)';
+    x.beginPath(); x.arc(0,-154,5,0,Math.PI*2); x.fill();
+    x.restore(); x.save();
+  }
+  x.restore();
+}
+
+function qianPosterTitle(x, text, kind, cx, y, SERIF){
+  const font = kind === 'flow'
+    ? '700 150px "Kaiti SC","STKaiti",'+SERIF
+    : kind === 'earth'
+      ? '700 142px "Songti SC","STSong",'+SERIF
+      : '700 154px '+SERIF;
+  const grad = x.createLinearGradient(0,y-150,0,y+20);
+  grad.addColorStop(0,'#fff6dd'); grad.addColorStop(.42,'#e6c887'); grad.addColorStop(1,'#B88B3E');
+  x.save();
+  x.textAlign = 'center';
+  x.font = font;
+  x.fillStyle = grad;
+  x.shadowColor = kind === 'flow' ? 'rgba(201,168,92,.26)' : 'rgba(201,168,92,.5)';
+  x.shadowBlur = kind === 'earth' ? 12 : 28;
+  const titleText = text.length <= 2 ? [...text].join(' ') : text;
+  if (kind === 'blade'){
+    x.strokeStyle = 'rgba(255,246,221,.24)'; x.lineWidth = 1.4;
+    x.strokeText(titleText, cx, y);
+  } else if (kind === 'earth'){
+    x.strokeStyle = 'rgba(76,49,23,.45)'; x.lineWidth = 3;
+    x.strokeText(titleText, cx, y);
+  }
+  x.fillText(titleText, cx, y);
+  x.restore();
+}
+
+function qianPosterBindLabel(q, chart){
+  const dm = chart && chart.dayMaster ? chart.dayMaster.stem + chart.dayMaster.element : (q.dayMaster || q.bindLabel || q.bindElement || '');
+  return dm + ' · ' + (q.strength || '') + ' 而取  ·  同日同签  ·  隔日流转';
+}
+
+function drawQianPoster(q, chart){
   const c = $('qianCanvas'), x = c.getContext('2d');
   const W = 750, H = 1000, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
+  const kind = qianPosterKind(q);
   x.clearRect(0,0,W,H);
-  const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141c30'); bg.addColorStop(.5,'#0E1220'); bg.addColorStop(1,'#0a0d16');
+  const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#090f1b'); bg.addColorStop(.45,'#0E1220'); bg.addColorStop(1,'#060a12');
   x.fillStyle = bg; x.fillRect(0,0,W,H);
-  const glow = x.createRadialGradient(W/2,180,20,W/2,180,460); glow.addColorStop(0,'rgba(201,168,92,.18)'); glow.addColorStop(1,'rgba(201,168,92,0)');
-  x.fillStyle = glow; x.fillRect(0,0,W,600);
-  x.strokeStyle = 'rgba(201,168,92,.34)'; x.lineWidth = 1; x.strokeRect(18.5,18.5,W-37,H-37);
+  const topGlow = x.createRadialGradient(W/2,260,20,W/2,260,390); topGlow.addColorStop(0,'rgba(201,168,92,.13)'); topGlow.addColorStop(1,'rgba(201,168,92,0)');
+  x.fillStyle = topGlow; x.fillRect(0,0,W,520);
+  const imageGlow = x.createRadialGradient(W/2,675,10,W/2,675,330); imageGlow.addColorStop(0,'rgba(201,168,92,.10)'); imageGlow.addColorStop(1,'rgba(201,168,92,0)');
+  x.fillStyle = imageGlow; x.fillRect(40,430,W-80,440);
+  qianPosterFrame(x, W, H);
   x.textAlign = 'center';
   const d = new Date(), dstr = d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();
-  x.fillStyle = '#8f7a45'; x.font = '20px '+SERIF; x.fillText('今 日 本 命 签  ·  '+dstr, W/2, 124);
-  x.strokeStyle = 'rgba(201,168,92,.3)'; x.beginPath(); x.moveTo(W/2-56,152); x.lineTo(W/2+56,152); x.stroke();
-  const gg = x.createLinearGradient(0,250,0,430); gg.addColorStop(0,'#fff6dd'); gg.addColorStop(.5,'#e9d09a'); gg.addColorStop(1,'#C9A85C');
-  x.save(); x.fillStyle = gg; x.shadowColor = 'rgba(201,168,92,.4)'; x.shadowBlur = 32; x.font = '700 128px '+SERIF;
-  x.fillText([...q.hex].join('  '), W/2, 380); x.restore();
-  x.fillStyle = '#E8E4D8'; x.font = '25px '+SERIF; x.fillText(q.omen, W/2, 470);
-  const g1 = q.line || '';   // 钩子(主分享文案)
-  x.fillStyle = '#e9d09a'; x.font = '24px '+SERIF; const gy = qposWrap(x, g1, W/2, 560, 620, 42);
-  x.fillStyle = '#8f7a45'; x.font = '19px '+SERIF;
-  x.fillText('宜  '+(q.yi||[]).join('  ')+'      忌  '+(q.ji||[]).join('  '), W/2, gy + 56);
-  x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
-  x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
-  const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
-  const QS = 76, qx = W-44-QS, qy = 902;
-  x.strokeStyle = 'rgba(201,168,92,.2)'; x.lineWidth = 1; x.beginPath(); x.moveTo(44,930); x.lineTo(qx-18,930); x.stroke();
-  x.textAlign = 'left';
-  x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF; x.fillText('知 · 星  命盘研究所', 44, 966);
-  x.fillStyle = '#6B7280'; x.font = '14px '+SERIF; x.fillText('以易理观己 · 以星盘为证', 44, 988);
-  rr(qx,qy,QS,QS,8); x.fillStyle = 'rgba(232,228,216,.05)'; x.fill();
-  x.strokeStyle = 'rgba(201,168,92,.5)'; x.setLineDash([5,4]); x.lineWidth = 1.2; x.stroke(); x.setLineDash([]);
-  x.textAlign = 'center'; x.fillStyle = '#8f7a45'; x.font = '700 13px '+SERIF; x.fillText('扫码识别', qx+QS/2, qy+QS/2-3);
-  x.fillStyle = '#6B7280'; x.font = '11px '+SERIF; x.fillText('二维码待上线', qx+QS/2, qy+QS/2+16);
+  x.fillStyle = '#d7b86c'; x.font = '21px '+SERIF; x.fillText('◇  今 日 本 命 签  ·  '+dstr+'  ◇', W/2, 76);
+  qianPosterTitle(x, q.hex || '本命签', kind, W/2, 250, SERIF);
+  x.strokeStyle = 'rgba(201,168,92,.24)'; x.beginPath(); x.moveTo(W/2-92,314); x.lineTo(W/2+92,314); x.stroke();
+  x.fillStyle = '#dec58b'; x.font = '22px '+SERIF; x.fillText(q.omen || '', W/2, 356);
+  const hook = q.line || ((q.guide||'').split(/[。！?]/)[0]||'').trim() + '。';
+  x.fillStyle = '#E8E4D8'; x.font = '34px '+SERIF; qposWrap(x, hook, W/2, 432, 610, 52);
+  qianPosterScene(x, W, q, kind);
+  x.fillStyle = '#9b8248'; x.font = '15px '+SERIF;
+  x.fillText('宜  '+(q.yi||[]).join(' / ')+'     忌  '+(q.ji||[]).join(' / '), W/2, 808);
+  x.fillStyle = '#6B7280'; x.font = '14px '+SERIF;
+  x.fillText(qianPosterBindLabel(q, chart), W/2+86, 927);
+  const QS = 66, qx = W-78-QS, qy = 884;
+  x.strokeStyle = 'rgba(201,168,92,.24)'; x.lineWidth = 1; x.beginPath(); x.moveTo(58,870); x.lineTo(W-58,870); x.stroke();
+  x.strokeStyle = 'rgba(201,168,92,.22)'; x.beginPath(); x.moveTo(302,902); x.lineTo(302,948); x.stroke();
+  qianPosterLogo(x, SERIF);
+  qianPosterQr(x, qx, qy, QS, q.hex || '本命签');
+  x.textAlign = 'center'; x.fillStyle = '#8f7a45'; x.font = '700 11px '+SERIF; x.fillText('扫码抽你的本命签', qx+QS/2, qy+QS+25);
 }
 
 function render(chart, sections){
@@ -949,16 +1112,19 @@ function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx
 /* 公开真答:走后端(key 只在后端,前端不碰) */
 async function callDeepBackend(chart, question, history = []){
   const qian = Explainer.drawQian(chart, new Date());
+  let _tk = ''; try { _tk = localStorage.getItem('zx_token') || ''; } catch(_){}
   const r = await fetch(deepEndpoint(), {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       chart,
       question,
       history,
+      token: _tk,   // 账号 token 放 body(不加 header,避免跨域预检多要一个 authorization),供深问后端 A 方案权威校验
       qian: { hex:qian.hex, omen:qian.omen, line:qian.line, yi:qian.yi, ji:qian.ji, bindElement:qian.bindElement, strength:qian.strength }
     })
   });
   const data = await r.json();
+  if (data && data.paywall) { const _e = new Error('paywall'); _e.paywall = 1; throw _e; }   // A:深问后端权威闸判定超额 → 弹会员墙
   if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
   return data;
 }
@@ -1047,14 +1213,12 @@ async function askDeep(chart){
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
   const useBackend = !!deepEndpoint();
-  // 服务端会员/额度闸优先(不可绕过);不可用时回退前端额度
-  const gateHandled = useBackend && window.zxMember && zxMember.ready && zxMember.ready() && !!zxMember.deepConsume;
-  let gateConsumed = false;
+  // 前端只「预闸」不扣(deepPeek):超额直接弹墙、省一次深问调用;真正的扣减由深问后端拿 token 调 /deep/consume 权威执行(A 方案)
+  const gateHandled = useBackend && window.zxMember && zxMember.ready && zxMember.ready() && !!zxMember.deepPeek;
   if (gateHandled){
     let gate = null;
-    try { gate = await zxMember.deepConsume(); } catch(_){ /* 闸不可用则放行,深问后端应作硬校验 */ }
+    try { gate = await zxMember.deepPeek(); } catch(_){ /* 闸不可用则放行,深问后端仍会硬校验 */ }
     if (gate && gate.allowed === false){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }
-    if (gate && gate.allowed && !gate.is_member) gateConsumed = true;   // 非会员真扣了额度 → 失败时退回
   } else if (useBackend && deepQuota().n >= DEEP_FREE){ T('deep_paywall'); echo.innerHTML = deepPaywall(); return; }   // 回退:前端额度
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
@@ -1073,12 +1237,13 @@ async function askDeep(chart){
     if (useBackend && !gateHandled) deepQuotaBump();   // 服务端闸接管时不再动前端计数(否则会员也会被前端计数误墙)
     rememberDeepTurn(q, ans);
     T('deep_answered', { mode, turn: deepTurns.length });
+    if (window.zxMember && zxMember.isMember && zxMember.isMember() && zxMember.deepSave) zxMember.deepSave(q, ans).catch(()=>{});   // 会员:问答存档
     echo.innerHTML = priorHtml + renderDeep(ans, q);
     $('deepQ').value = '';
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
+    if (e && e.paywall){ T('deep_paywall'); echo.innerHTML = priorHtml + deepPaywall(); return; }   // 深问后端权威闸判超额
     T('deep_error', { mode, turn: deepTurns.length + 1 });
-    if (gateConsumed && window.zxMember && zxMember.deepRefund) zxMember.deepRefund();   // 失败退回已扣的免费额度
     echo.innerHTML = priorHtml + `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;

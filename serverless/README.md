@@ -30,7 +30,10 @@ serverless/
 | GET | `/order/status` | Bearer | `?out_trade_no` → `{status}`(前端轮询) |
 | POST | `/wx/notify` | 否(平台签名) | 微信支付回调:验签 + 解密 + 幂等续会员期 |
 | DELETE | `/account` | Bearer | 注销账号,删除全部数据 |
-| POST | `/deep/consume` | Bearer | 问知星额度/会员闸 → `{allowed, is_member, remaining}` |
+| POST | `/deep/consume` | Bearer | 问知星额度权威消费(供深问后端调)→ `{allowed, is_member, remaining}` |
+| POST | `/deep/peek` | Bearer | 只看不扣(前端预闸)→ `{allowed, is_member, remaining}` |
+| POST | `/deep/save` | Bearer(会员) | 存一条问答存档 → `{ok}` |
+| GET | `/deep/history` | Bearer | 本人问答存档(最近 50) |
 | POST | `/collect` | 否 | 埋点收集(analytics.js 的端点,落函数日志/CLS,不记 IP/UA) |
 
 **Phase B 绑定/合并(防 OAuth 登录 CSRF)**:回调**不做绑定**,只换到 openid 并存一张一次性 `bindcode` 回传前端;真正绑定由前端凭「完成回调那台浏览器自己的会话 token」调 `/wx/claim` 完成 —— 绑定目标账号恒等于当前登录账号,签名 state 无法被钓鱼重放到受害者账号。合并:微信身份无账号→挂到当前账号;已有账号→把当前匿名账号的 devices/charts/orders 并入微信账号(charts 留较新者、会员期取较晚者),事务原子。前端「微信登录」需**认证服务号**并在公众号后台配网页授权域名。

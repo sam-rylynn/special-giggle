@@ -19,7 +19,7 @@ const DEVICE_RE = /^[a-z0-9]{6,64}$/i;
 const WX_RETURN = process.env.WX_APP_RETURN || '';   // 绑定完成后跳回的前端页(如 https://站点/report.html)
 // 套餐:金额(分)与时长,服务端权威 —— 前端只传 plan,绝不传价格
 const PLAN_CFG = { month: { fen: 1800, days: 30, desc: '知星会员 · 月卡' }, year: { fen: 9800, days: 365, desc: '知星会员 · 年卡' } };
-const DEEP_FREE_PER_DAY = 1;   // 免费问知星次数/天(可调;与前端「首次免费」文案一致)
+const DEEP_FREE_PER_DAY = 30;   // 免费问知星次数/天(测试期暂定 30;可调)
 const now = () => Date.now();
 const ends = (path, suffix) => path === suffix || path.endsWith(suffix);
 const redirect = (res, target) => { res.writeHead(302, { Location: target }); res.end(); };
@@ -301,11 +301,40 @@ async function handle(req, res) {
     return json(res, 200, { allowed: out.allowed, is_member: false, remaining: out.remaining });
   }
 
+  // 只看不扣(前端预闸/展示会员墙用,不增计数);真正的扣减由深问后端拿 token 调 /deep/consume 权威执行
+  if (req.method === 'POST' && ends(path, '/deep/peek')) {
+    const urow = (await q('SELECT member_until FROM users WHERE id=?', [uid]))[0];
+    if (urow && urow.member_until && urow.member_until > now()) return json(res, 200, { allowed: true, is_member: true, remaining: -1 });
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = await q('SELECT count FROM deep_logs WHERE user_id=? AND day=?', [uid, today]);
+    const cur = rows.length ? rows[0].count : 0;
+    return json(res, 200, { allowed: cur < DEEP_FREE_PER_DAY, is_member: false, remaining: Math.max(0, DEEP_FREE_PER_DAY - cur) });
+  }
+
   // 深问失败时退回已扣的免费额度(仅当天计数减一,floor 0)——避免一次失败白吞唯一免费额度
   if (req.method === 'POST' && ends(path, '/deep/refund')) {
     const today = new Date().toISOString().slice(0, 10);
     await q('UPDATE deep_logs SET count = GREATEST(count - 1, 0) WHERE user_id=? AND day=?', [uid, today]);
     return json(res, 200, { ok: true });
+  }
+
+  // 问答存档(会员权益):保存一条问答;仅会员可存,每人保留最近 50 条
+  if (req.method === 'POST' && ends(path, '/deep/save')) {
+    const urow = (await q('SELECT member_until FROM users WHERE id=?', [uid]))[0];
+    if (!(urow && urow.member_until && urow.member_until > now())) return json(res, 403, { error: 'member only' });
+    let body; try { body = JSON.parse(await readBody(req, 40000)); } catch (_) { return json(res, 400, { error: 'bad json' }); }
+    const question = String((body && body.question) || '').slice(0, 500);
+    const answer = body && body.answer;
+    if (!question || !answer || typeof answer !== 'object') return json(res, 400, { error: 'bad payload' });
+    await q('INSERT INTO deep_answers (user_id, question, answer, created_at) VALUES (?,?,?,?)', [uid, question, JSON.stringify(answer), now()]);
+    await q('DELETE FROM deep_answers WHERE user_id=? AND id NOT IN (SELECT id FROM (SELECT id FROM deep_answers WHERE user_id=? ORDER BY id DESC LIMIT 50) t)', [uid, uid]);
+    return json(res, 200, { ok: true });
+  }
+
+  // 问答历史(会员权益):按新到旧列出本人存档
+  if (req.method === 'GET' && ends(path, '/deep/history')) {
+    const rows = await q('SELECT question, answer, created_at FROM deep_answers WHERE user_id=? ORDER BY id DESC LIMIT 50', [uid]);
+    return json(res, 200, { items: rows });
   }
 
   return json(res, 404, { error: 'not found' });

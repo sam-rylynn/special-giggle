@@ -64,3 +64,14 @@ CREATE TABLE IF NOT EXISTS wx_pending (
   unionid  VARCHAR(64) NULL,
   exp      BIGINT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 问知星问答存档(会员权益:换设备可查)
+CREATE TABLE IF NOT EXISTS deep_answers (
+  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id    BIGINT UNSIGNED NOT NULL,
+  question   VARCHAR(500) NOT NULL,
+  answer     JSON   NOT NULL,                   -- renderDeep 的答复对象
+  created_at BIGINT NOT NULL,
+  INDEX idx_da_user (user_id, id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

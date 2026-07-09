@@ -27,7 +27,10 @@
 | GET | `/order/status` | Bearer | `?out_trade_no` | `{status}` |
 | POST | `/wx/notify` | 平台签名 | 微信支付回调体 | `{code:'SUCCESS'}` |
 | DELETE | `/account` | Bearer | — | `{ok:true}`(注销账号删全部数据) |
-| POST | `/deep/consume` | Bearer | — | `{allowed, is_member, remaining}`(问知星额度/会员闸) |
+| POST | `/deep/consume` | Bearer | — | `{allowed, is_member, remaining}`(权威消费,供深问后端调) |
+| POST | `/deep/peek` | Bearer | — | `{allowed, is_member, remaining}`(只看不扣,前端预闸) |
+| POST | `/deep/save` | Bearer(会员) | `{question, answer}` | `{ok}`(问答存档) |
+| GET | `/deep/history` | Bearer | — | `{items[]}`(本人存档最近 50) |
 | POST | `/collect` | 否 | 埋点事件 JSON | 204 |
 
 - **鉴权**:`Authorization: Bearer <token>`。token = 自签 HMAC(`base64url(json{uid,did,exp}).sig`,secret=`TOKEN_SECRET`)。
@@ -40,7 +43,8 @@
 - `devices(device_id PK, user_id, created_at)` — 一账号多设备(先匿名后绑定的合并靠它)
 - `charts(id, user_id UNIQUE, payload JSON, updated_at)` — 跨设备盘(每用户一张,upsert)
 - `orders(...)` — 订单(Phase C 用)
-- `deep_logs(user_id, day, count)` — 问知星服务端额度(建了,**未接**)
+- `deep_logs(user_id, day, count)` — 问知星服务端额度
+- `deep_answers(user_id, question, answer JSON, created_at)` — 问答存档(会员权益,每人最近 50 条)
 - `wx_pending(code PK, init_uid, openid, unionid, exp)` — 微信绑定一次性凭据
 
 ### 环境变量(只在 SCF 配置,勿写进代码/勿入库)
@@ -78,7 +82,23 @@ WX_PAY_PUBKEY(平台公钥PEM,公钥模式验回调) WX_PAY_NOTIFY_URL(=/wx/noti
 ### 高优先
 
 - **微信支付(Phase C · 已实现代码,待商户号实测)**:`lib/wxpay.js` + `/order/create`(Native 统一下单)+ `/order/status` + `/wx/notify`(平台**公钥模式**验签 + APIv3-GCM 解密 + **幂等** + **金额以服务端 `PLAN_CFG` 为准** + 续 `member_until`)。前端会员墙已接下单+轮询+`pay_success` 埋点。**待你配 `WX_PAY_*`(商户号/APIv3密钥/商户私钥/平台公钥)才能真跑**——这段是密钥就位前无法实测的部分,联调时重点回归验签/解密/回调幂等。
-- **问知星额度 / 会员 gating —— 我方已做软闸,深问后端建议加硬校验**:本仓 `POST /deep/consume`(Bearer)已实现服务端额度(`deep_logs` 按天计数,`DEEP_FREE_PER_DAY` 可调)+ 会员不限次判断;前端 `askDeep` 已在调它,超额即弹会员墙,`localStorage` 额度降级为 UX 兜底。**但要硬性防绕过,现有深问后端**(已部署的 `...tencentscf.com`,不在本 repo)也需在收到请求时用**同一 `TOKEN_SECRET`** 验 `Authorization` token 取 uid → 查 `member_until` 与 `deep_logs`;否则用户绕过我方前端直接打深问函数仍可白嫖。这是把付费墙做到「不可绕过」的最后一环。
+- **问知星额度 / 会员 gating(A 方案 · 深问后端权威消费)—— 需深问后端加一段**:前端已改为「预闸不扣」:`askDeep` 调 `POST /deep/peek`(只看不扣)决定是否弹会员墙,并把账号 token 放进 `Authorization` 透传给**深问后端**。真正的扣减必须在深问后端做,否则绕过前端仍可白嫖。深问后端(已部署的 `...tencentscf.com`,**不在本 repo**)在生成答案前加:
+
+  ```js
+  // 深问后端 SCF · 生成答案前(A 方案权威校验)
+  const ACCT = 'https://<账号后端>.ap-guangzhou.tencentscf.com';   // 本仓 api 函数基址
+  const auth = 'Bearer ' + (body.token || '');                     // 前端透传的账号 token(放在【请求体 body.token】,不是 header)
+  const g = await (await fetch(ACCT + '/deep/consume', { method:'POST', headers:{ authorization: auth } })).json();
+  if (!g.allowed) return respond(200, { paywall: true });          // 前端见 paywall 即弹会员墙(已接)
+  try {
+    const answer = await 生成答案(...);                            // 原有逻辑
+    return respond(200, answer);
+  } catch (e) {
+    await fetch(ACCT + '/deep/refund', { method:'POST', headers:{ authorization: auth } });  // 生成失败退额度
+    throw e;
+  }
+  ```
+  这样额度/会员只在深问后端权威扣一次(会员不限次、非会员按 `deep_logs`),前端无法绕过。免费额度测试期暂定 `DEEP_FREE_PER_DAY=30`。
 
 ### 收尾
 

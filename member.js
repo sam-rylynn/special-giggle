@@ -17,6 +17,7 @@
 
   function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (_) { return null; } }
   function del(k) { try { localStorage.removeItem(k); } catch (_) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   function cid() { var v = ls('zx_cid'); if (!v) { v = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); ls('zx_cid', v); } return v; }
   function getTok() { return ls('zx_token') || ''; }
@@ -91,8 +92,11 @@
     render: render,
     syncChart: function (payload) { return api('/charts/sync', { method: 'POST', body: { payload: payload } }); },
     loadChart: function () { return api('/charts').then(function (d) { return d.chart; }); },
-    deepConsume: function () { return api('/deep/consume', { method: 'POST' }); },   // 服务端问知星额度/会员闸
+    deepPeek: function () { return api('/deep/peek', { method: 'POST' }); },          // 只看不扣(前端预闸)
+    deepConsume: function () { return api('/deep/consume', { method: 'POST' }); },   // 权威消费(供深问后端调,A 方案)
     deepRefund: function () { return api('/deep/refund', { method: 'POST' }); },     // 深问失败退回额度
+    deepSave: function (question, answer) { return api('/deep/save', { method: 'POST', body: { question: question, answer: answer } }); },   // 会员:问答存档
+    deepHistory: function () { return api('/deep/history').then(function (d) { return (d && d.items) || []; }); },
     openPaywall: function (r) { return showPaywall(r); },
     showPrivacy: function () { return showPrivacy(); },
     setCloudSync: function (on) {
@@ -144,6 +148,7 @@
     rows.push('<div class="zxa-note">开启后你的出生资料会保存到你的账号,仅用于换设备找回;关闭即停止上传并删除云端已存的盘。' + (state.bound ? '' : '建议先微信登录再开启。') + '</div>');
     if (M.isMember()) {
       rows.push('<div class="zxa-row zxa-ok" style="margin-top:10px">★ 会员有效期至 ' + new Date(state.memberUntil).toLocaleDateString() + '</div>');
+      rows.push('<div style="margin-top:4px"><span class="zxm-link zxa-hist">我的问答存档</span></div>');
     } else {
       rows.push('<div><span class="zxa-cta zxa-open">开通会员 · 问知星不限次 →</span></div>');
     }
@@ -153,12 +158,30 @@
     var cb = mount.querySelector('.zxa-sync input'); if (cb) cb.onchange = function () { if (window.zxTrack) zxTrack('cloud_sync_toggle', { on: cb.checked ? 1 : 0 }); M.setCloudSync(cb.checked); };
     var ob = mount.querySelector('.zxa-open'); if (ob) ob.onclick = function () { showPaywall('cta'); };
     var pb = mount.querySelector('.zxa-priv'); if (pb) pb.onclick = function () { showPrivacy(); };
+    var hb = mount.querySelector('.zxa-hist'); if (hb) hb.onclick = function () { showHistory(); };
+  }
+
+  // 会员:我的问答存档(列出本人历史问答)
+  function showHistory() {
+    var m = modal('<h3>我的问答存档</h3><div id="zxh-body" style="font-size:13px;color:#9aa4b2;max-height:52vh;overflow:auto">加载中…</div>');
+    M.deepHistory().then(function (items) {
+      var body = m.el.querySelector('#zxh-body'); if (!body) return;
+      if (!items.length) { body.innerHTML = '还没有存档的问答。开通后每次深问都会自动存下。'; return; }
+      body.innerHTML = items.map(function (it) {
+        var a = it.answer || {}, d = new Date(it.created_at);
+        var adv = (a.advice && a.advice.length) ? '<div style="color:#8f7a45;margin-top:4px">' + a.advice.map(function (x) { return '· ' + esc(x); }).join('<br>') + '</div>' : '';
+        return '<div style="padding:12px 0;border-top:1px solid rgba(201,168,92,.15)">'
+          + '<div style="color:#6B7280;font-size:11px">' + (d.getMonth() + 1) + '.' + d.getDate() + '</div>'
+          + '<div style="color:#cdd3dd;margin-top:2px">你问:' + esc(it.question) + '</div>'
+          + '<div style="color:#e9d09a;margin-top:4px">' + esc(a.reply || '') + '</div>' + adv + '</div>';
+      }).join('');
+    }).catch(function () { var b = m.el.querySelector('#zxh-body'); if (b) b.innerHTML = '加载失败,稍后再试。'; });
   }
 
   // ── Phase D:会员墙 / 定价 / 隐私说明(前端;支付通道 Phase C 接) ──
   // ⚠ 上线前把 PLANS 价格改成你的真实定价(单位:元)。
   var PLANS = { year: { price: 98, label: '年卡', per: '约 ¥8.2/月' }, month: { price: 18, label: '月卡', per: '' } };
-  var BENEFITS = ['问知星 · 不限次深问', '优先体验后续会员功能'];   // 只列真会员权益(问知星不限次);其余待建再补
+  var BENEFITS = ['问知星 · 不限次深问', '问答自动存档 · 换设备可查'];   // 先聚焦问答;每日签深读暂缓
   var selPlan = 'year';
 
   function modal(html, onClose) {
