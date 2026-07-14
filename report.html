@@ -223,18 +223,6 @@
   .endviz img{width:100%;height:100%;object-fit:cover;object-position:50% 42%}
   .endviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.15),rgba(14,18,32,.75))}
   .endviz .cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--serif);color:var(--moon);font-size:13px;letter-spacing:.24em;text-indent:.24em}
-  .story-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-  .story-seg button{height:38px;border-radius:999px;border:1px solid rgba(201,168,92,.28);background:rgba(201,168,92,.04);color:var(--gold);font:inherit;font-size:13px}
-  .story-seg button.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
-  body.story-open{overflow:hidden}
-  #storyRoot[hidden]{display:none}
-  #storyRoot{position:fixed;inset:0;z-index:80}
-  #storyRoot .zx-story-title{white-space:normal;overflow-wrap:anywhere}
-  .zx-clip-layer{position:fixed;inset:0;z-index:90;background:rgba(7,9,15,.92);display:grid;place-items:center;padding:18px}
-  .zx-clip-panel{width:min(360px,100%);max-height:100%;overflow:auto;text-align:center}
-  .zx-clip-canvas{width:min(100%,280px);border:1px solid rgba(201,168,92,.34);border-radius:8px;background:#0e1220}
-  .zx-clip-status{margin:10px 0;color:var(--mist);font-size:12px}
-  .zx-clip-actions{display:grid;gap:8px}
   small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
   @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
   @media(max-width:420px){
@@ -331,10 +319,6 @@ const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', relatio
 let CHART = null;
 let GENDER = '';   // 大运顺逆需性别,由 URL(g) 或简版握手(zx_input.g)带入
 const LAB = new URLSearchParams(location.search).get('lab') === '1';   // 内测通道:问知星块内出现 key 栏,可直接出真答
-const STORY_ENABLED = new URLSearchParams(location.search).get('story') === '1';
-let STORY_ASSETS_PROMISE = null;
-let STORY_COPY = null;
-let STORY_PLAYER = null;
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
@@ -672,128 +656,11 @@ function energyExtra(c){
        <ul class="basis">${fe.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
 }
 
-function storyEnergySelection(c){
-  const counts = c && c.fiveElements && c.fiveElements.counts;
-  if (!counts) return null;
-  const pairs = Object.entries(counts).map(([name,value]) => ({ name, value:Number(value) }));
-  if (!pairs.length || pairs.some(pair => !Number.isFinite(pair.value))) return null;
-  const ranked = pairs.sort((a,b)=>b.value-a.value);
-  const high = ranked[0], low = ranked[ranked.length-1];
-  return high && low && high.name !== low.name && high.value !== low.value ? { high:high.name, low:low.name } : null;
-}
-
 function selectedCurrentDaYunStep(c){
   const dy = c && c.daYun;
   if (!dy || !Array.isArray(dy.steps)) return null;
   const now = (new Date()).getFullYear();
   return dy.steps.find(s => now>=s.yearFrom && now<=s.yearTo) || null;
-}
-
-function loadStyleOnce(href){
-  if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = href;
-    l.onload = resolve; l.onerror = reject;
-    document.head.appendChild(l);
-  });
-}
-
-function loadScriptOnce(src){
-  if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-
-async function loadStoryAssets(){
-  if (!STORY_ENABLED) return null;
-  if (!STORY_ASSETS_PROMISE) {
-    STORY_ASSETS_PROMISE = (async () => {
-      await loadStyleOnce('./story/story-motion.css');
-      await loadScriptOnce('./story/story-motion.js');
-      await loadScriptOnce('./story/story-planner.js');
-      await loadScriptOnce('./story/story-player.js');
-      await loadScriptOnce('./story/share-clip.js');
-      const res = await fetch('./story/story-copy.json', { cache:'no-store' });
-      STORY_COPY = await res.json();
-      return STORY_COPY;
-    })();
-  }
-  return STORY_ASSETS_PROMISE;
-}
-
-function ensureStoryControls(){
-  let seg = document.getElementById('storySeg');
-  if (seg) return seg;
-  const nav = $('secNav'); if (!nav) return null;
-  seg = document.createElement('div');
-  seg.id = 'storySeg';
-  seg.className = 'story-seg';
-  seg.innerHTML = '<button type="button" data-story-read-mode class="on">阅读</button><button type="button" data-story-open-mode>观星</button>';
-  nav.insertAdjacentElement('afterend', seg);
-  return seg;
-}
-
-function ensureStoryRoot(){
-  let root = $('storyRoot');
-  if (root) return root;
-  root = document.createElement('div');
-  root.id = 'storyRoot';
-  root.hidden = true;
-  document.body.appendChild(root);
-  return root;
-}
-
-function hideStoryControls(){
-  const seg = $('storySeg');
-  if (seg) seg.remove();
-  if (STORY_PLAYER) { STORY_PLAYER.destroy(); STORY_PLAYER = null; }
-}
-
-async function setupStoryIfEnabled(chart){
-  if (!STORY_ENABLED) return;
-  const energy = storyEnergySelection(chart);
-  if (!energy || !chart.dayMaster || !chart.fiveElements || !chart.fiveElements.dayMasterStrength) { hideStoryControls(); return; }
-  try {
-    const copy = await loadStoryAssets();
-    const spec = window.ZXStoryPlanner.plan({
-      chart,
-      copy,
-      explainer: Explainer,
-      energyHigh: energy.high,
-      energyLow: energy.low,
-      currentDaYunStep: selectedCurrentDaYunStep(chart)
-    });
-    if (!spec) { hideStoryControls(); return; }
-    if (STORY_PLAYER) STORY_PLAYER.destroy();
-    const root = ensureStoryRoot();
-    STORY_PLAYER = window.ZXStoryPlayer.create({
-      root,
-      spec,
-      onClose(){
-        const seg = $('storySeg');
-        if (!seg) return;
-        seg.querySelector('[data-story-read-mode]').classList.add('on');
-        seg.querySelector('[data-story-open-mode]').classList.remove('on');
-      },
-      onReturnReading(){ window.scrollTo({ top: 0, behavior: 'smooth' }); },
-      onShare(storySpec){
-        window.ZXShareClip.open(storySpec, {
-          onEvent(event, scene, capability){ window.ZXStoryPlayer.recordEvent(event, scene, capability); }
-        });
-      }
-    });
-    const seg = ensureStoryControls();
-    const readBtn = seg.querySelector('[data-story-read-mode]');
-    const storyBtn = seg.querySelector('[data-story-open-mode]');
-    readBtn.onclick = () => { readBtn.classList.add('on'); storyBtn.classList.remove('on'); STORY_PLAYER.close('read'); };
-    storyBtn.onclick = () => { storyBtn.classList.add('on'); readBtn.classList.remove('on'); STORY_PLAYER.open(); };
-  } catch (_error) {
-    hideStoryControls();
-  }
 }
 
 function sectionCard(s, c){
@@ -1143,7 +1010,6 @@ function render(chart, sections){
   $('drawBtn').onclick = () => drawQianRitual(chart);
   $('qianPosterClose').onclick = () => $('qianPosterLayer').style.display = 'none';
   $('deepAsk').onclick = () => askDeep(chart);
-  setupStoryIfEnabled(chart);
 }
 
 const REPORT_NAV_GROUPS = [
