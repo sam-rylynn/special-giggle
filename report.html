@@ -47,14 +47,43 @@
   .manifesto .axiom{font-family:var(--serif);font-size:17px;color:var(--gold);text-align:center;letter-spacing:.3em;text-indent:.3em;margin:16px 0 4px}
   .manifesto .axiom-sub{text-align:center;color:var(--mist);font-size:12px;margin-bottom:0}
 
-  /* 报告导航 */
-  .secnav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
-  .secnav a{font-size:12px;color:var(--gold);border:1px solid rgba(201,168,92,.3);border-radius:99px;padding:5px 13px;
-    text-decoration:none;letter-spacing:.04em;transition:background .2s}
-  .secnav a:active{background:rgba(201,168,92,.14)}
+  /* 报告导航:阅读状态、核心工具、分组章节 */
+  .report-nav-card .pad{padding:20px 18px 16px}
+  .report-nav-card h2{font-size:18px;text-shadow:0 1px 12px rgba(201,168,92,.18)}
+  .nav-status{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:end;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(201,168,92,.16)}
+  .nav-current{min-width:0}
+  .nav-current span,.nav-progress-label{display:block;color:var(--mist);font-size:10.5px;line-height:1.4;letter-spacing:.08em}
+  .nav-current strong{display:block;margin-top:3px;color:#f6efdb;font-family:var(--serif);font-size:15px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
+  .nav-progress{text-align:right}
+  .nav-progress-track{height:4px;margin-top:8px;background:#10182a;overflow:hidden}
+  .nav-progress-fill{display:block;width:12.5%;height:100%;background:var(--gold);transition:width .25s ease}
+  .nav-tools-label{display:flex;align-items:center;gap:10px;margin:15px 0 10px;color:var(--gold-dim);font-family:var(--serif);font-size:12px;font-weight:600;line-height:1;letter-spacing:0}
+  .nav-tools-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,92,.3),transparent)}
+  .nav-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px}
+  .nav-tool{display:flex;align-items:center;justify-content:center;width:100%;height:50px;min-width:0;border:1px solid rgba(201,168,92,.34);border-radius:7px;
+    color:var(--gold);font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.04em;text-decoration:none;white-space:nowrap;transition:background .18s,color .18s,border-color .18s,transform .18s}
+  .nav-tool-primary{background:var(--gold);border-color:var(--gold);color:#241c0c}
+  .nav-tool-secondary{background:#10182a}
+  .nav-tool:hover{transform:translateY(-1px);border-color:rgba(240,214,149,.75)}
+  .nav-tool.active{box-shadow:inset 0 0 0 2px #f0d695}
+  .secnav{display:block;margin-top:4px;border-top:1px solid rgba(201,168,92,.12)}
+  .nav-group{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid rgba(201,168,92,.12)}
+  .nav-group-name{padding-top:8px;color:var(--gold-dim);font-family:var(--serif);font-size:12.5px;font-weight:600;line-height:1.5;letter-spacing:0}
+  .nav-group-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:4px 6px}
+  .nav-section-link{display:flex;align-items:center;min-width:0;min-height:38px;padding:4px 7px 4px 9px;border-left:2px solid transparent;
+    color:#c8cfda;font-family:var(--serif);font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:0;text-decoration:none;overflow-wrap:anywhere;
+    transition:background .18s,color .18s,border-color .18s,transform .18s}
+  .nav-label{min-width:0}
+  .nav-state-icon{display:inline-grid;place-items:center;flex:0 0 18px;width:18px;height:18px;margin-left:auto;color:var(--gold-dim);font-family:var(--sans);font-size:16px;font-weight:500;line-height:1}
+  .nav-state-icon::before{content:"›"}
+  .nav-section-link.visited:not(.active) .nav-state-icon::before{content:"✓";font-size:12px;font-weight:700}
+  .nav-section-link:hover{color:#f3e6bd;background:rgba(201,168,92,.055);transform:translateX(2px)}
+  .nav-section-link.active{color:var(--gold);background:rgba(201,168,92,.09);border-left-color:var(--gold)}
+  .nav-section-link.active .nav-state-icon{color:var(--gold)}
+  .nav-tool:focus-visible,.nav-section-link:focus-visible,.navedit a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
   .navedit{display:block;text-align:center;margin-top:12px;color:var(--mist);font-size:12px}
   .navedit a{color:var(--gold-dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
-  .card[id]{scroll-margin-top:14px}
+  .card[id]{scroll-margin-top:24px}
 
   /* 星盘轮 */
   .wheel{display:block;width:min(100%,320px);margin:8px auto 4px}
@@ -110,10 +139,19 @@
   #qianCanvas{width:100%;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
   .qp-tip{color:var(--mist);font-size:12.5px;margin:12px 0}
   #qianPosterClose{margin:0 auto}
-  .ai-block{margin-top:18px;border-top:1px dashed rgba(201,168,92,.2);padding-top:14px}
-  .ai-block .ai-h{font-family:var(--serif);color:var(--gold);font-size:14px;margin-bottom:8px}
-  .ai-block p{color:var(--mist);font-size:13px;text-align:justify}
+  .deep-intro{color:var(--mist);font-size:13px;text-align:justify}
+  .member-box{margin-top:10px;padding:10px 12px;border:1px solid rgba(201,168,92,.18);border-radius:8px;background:rgba(201,168,92,.055)}
+  .member-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .member-title{font-family:var(--serif);color:#f6efdb;font-size:13px}
+  .member-pill{flex:none;border:1px solid rgba(201,168,92,.35);border-radius:999px;padding:3px 8px;color:var(--gold);font-size:11px}
+  .member-copy{margin-top:7px;color:#b9c2d0;font-size:12px;line-height:1.75;text-align:justify}
+  .member-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .member-actions a,.member-actions span{display:inline-flex;align-items:center;height:30px;border-radius:999px;border:1px solid rgba(232,228,216,.14);padding:0 10px;font-size:12px;color:var(--gold);text-decoration:none}
+  .member-actions .disabled{color:var(--mist);opacity:.65;cursor:not-allowed}
   .deep-echo{margin-top:10px;background:rgba(201,168,92,.07);border-radius:8px;padding:10px 12px;color:#b9c2d0;font-size:13px;line-height:1.8}
+  .deep-notice{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(201,168,92,.42);background:rgba(201,168,92,.045)}
+  .deep-notice p{margin:0;color:#aeb8c7;font-size:12px;line-height:1.75}
+  .deep-notice p+p{margin-top:6px}
   /* 本命深问 · 答复卡 */
   .deep-ans{margin-top:12px;animation:qfade .5s ease}
   .da-q{font-size:12.5px;color:var(--gold-dim);margin-bottom:10px;padding-left:10px;border-left:2px solid rgba(201,168,92,.4)}
@@ -185,8 +223,27 @@
   .endviz img{width:100%;height:100%;object-fit:cover;object-position:50% 42%}
   .endviz::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,18,32,.15),rgba(14,18,32,.75))}
   .endviz .cap{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-family:var(--serif);color:var(--moon);font-size:13px;letter-spacing:.24em;text-indent:.24em}
+  .story-seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .story-seg button{height:38px;border-radius:999px;border:1px solid rgba(201,168,92,.28);background:rgba(201,168,92,.04);color:var(--gold);font:inherit;font-size:13px}
+  .story-seg button.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+  body.story-open{overflow:hidden}
+  #storyRoot[hidden]{display:none}
+  #storyRoot{position:fixed;inset:0;z-index:80}
+  #storyRoot .zx-story-title{white-space:normal;overflow-wrap:anywhere}
+  .zx-clip-layer{position:fixed;inset:0;z-index:90;background:rgba(7,9,15,.92);display:grid;place-items:center;padding:18px}
+  .zx-clip-panel{width:min(360px,100%);max-height:100%;overflow:auto;text-align:center}
+  .zx-clip-canvas{width:min(100%,280px);border:1px solid rgba(201,168,92,.34);border-radius:8px;background:#0e1220}
+  .zx-clip-status{margin:10px 0;color:var(--mist);font-size:12px}
+  .zx-clip-actions{display:grid;gap:8px}
   small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
-  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube{animation:none;transition:none}}
+  @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+  @media(max-width:420px){
+    .nav-status{grid-template-columns:minmax(0,1fr) 104px}
+    .nav-tools{gap:8px}
+    .nav-tool{font-size:13px;letter-spacing:.04em}
+    .nav-group{grid-template-columns:42px minmax(0,1fr);gap:8px}
+  }
+  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube{animation:none;transition:none}.nav-progress-fill,.nav-tool,.nav-section-link{transition:none;transform:none}}
 </style>
 </head>
 <body>
@@ -208,9 +265,21 @@
     <p class="axiom-sub">下面每一条解读都标注了出处盘位,随时可以回头查证。</p>
   </div></div>
 
-  <div class="card"><div class="pad">
+  <div class="card report-nav-card"><div class="pad">
     <h2>报告导航</h2>
-    <nav class="secnav" id="secNav"></nav>
+    <div class="nav-status" aria-live="polite">
+      <div class="nav-current"><span>当前阅读章节</span><strong id="navCurrent">盘面</strong></div>
+      <div class="nav-progress">
+        <span class="nav-progress-label" id="navProgressText">已浏览 1 / 8</span>
+        <div class="nav-progress-track" id="navProgressTrack" role="progressbar" aria-label="报告阅读进度" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1"><span class="nav-progress-fill" id="navProgressFill"></span></div>
+      </div>
+    </div>
+    <nav class="secnav" id="secNav" aria-label="报告章节"></nav>
+    <div class="nav-tools-label">报告工具</div>
+    <div class="nav-tools" aria-label="核心功能">
+      <a class="nav-tool nav-tool-primary" href="#sec-deep" data-nav-target="sec-deep">问知星</a>
+      <a class="nav-tool nav-tool-secondary" href="#sec-qian" data-nav-target="sec-qian">本命签</a>
+    </div>
     <small class="navedit">已按你的出生信息生成 · <a id="editLink">生辰有误?点此修改</a></small>
     <div class="row" id="editRow" style="display:none;margin-top:12px">
       <input type="date" id="d" style="flex:1.2;min-width:150px">
@@ -250,6 +319,7 @@
 
 <div id="aiLoading"><img src="./img/altar.jpg" alt=""><div class="inner"><div class="txt">正在推演整张盘……</div></div></div>
 
+<script src="./member.js"></script>
 <script src="./bazi-engine.js"></script>
 <script src="./explainer.js"></script>
 <script>
@@ -261,6 +331,10 @@ const CHAP_VIZ = { energy:'./img/energy.jpg', skeleton:'./img/card.jpg', relatio
 let CHART = null;
 let GENDER = '';   // 大运顺逆需性别,由 URL(g) 或简版握手(zx_input.g)带入
 const LAB = new URLSearchParams(location.search).get('lab') === '1';   // 内测通道:问知星块内出现 key 栏,可直接出真答
+const STORY_ENABLED = new URLSearchParams(location.search).get('story') === '1';
+let STORY_ASSETS_PROMISE = null;
+let STORY_COPY = null;
+let STORY_PLAYER = null;
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
@@ -598,6 +672,130 @@ function energyExtra(c){
        <ul class="basis">${fe.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
 }
 
+function storyEnergySelection(c){
+  const counts = c && c.fiveElements && c.fiveElements.counts;
+  if (!counts) return null;
+  const pairs = Object.entries(counts).map(([name,value]) => ({ name, value:Number(value) }));
+  if (!pairs.length || pairs.some(pair => !Number.isFinite(pair.value))) return null;
+  const ranked = pairs.sort((a,b)=>b.value-a.value);
+  const high = ranked[0], low = ranked[ranked.length-1];
+  return high && low && high.name !== low.name && high.value !== low.value ? { high:high.name, low:low.name } : null;
+}
+
+function selectedCurrentDaYunStep(c){
+  const dy = c && c.daYun;
+  if (!dy || !Array.isArray(dy.steps)) return null;
+  const now = (new Date()).getFullYear();
+  return dy.steps.find(s => now>=s.yearFrom && now<=s.yearTo) || null;
+}
+
+function loadStyleOnce(href){
+  if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.href = href;
+    l.onload = resolve; l.onerror = reject;
+    document.head.appendChild(l);
+  });
+}
+
+function loadScriptOnce(src){
+  if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function loadStoryAssets(){
+  if (!STORY_ENABLED) return null;
+  if (!STORY_ASSETS_PROMISE) {
+    STORY_ASSETS_PROMISE = (async () => {
+      await loadStyleOnce('./story/story-motion.css');
+      await loadScriptOnce('./story/story-motion.js');
+      await loadScriptOnce('./story/story-planner.js');
+      await loadScriptOnce('./story/story-player.js');
+      await loadScriptOnce('./story/share-clip.js');
+      const res = await fetch('./story/story-copy.json', { cache:'no-store' });
+      STORY_COPY = await res.json();
+      return STORY_COPY;
+    })();
+  }
+  return STORY_ASSETS_PROMISE;
+}
+
+function ensureStoryControls(){
+  let seg = document.getElementById('storySeg');
+  if (seg) return seg;
+  const nav = $('secNav'); if (!nav) return null;
+  seg = document.createElement('div');
+  seg.id = 'storySeg';
+  seg.className = 'story-seg';
+  seg.innerHTML = '<button type="button" data-story-read-mode class="on">阅读</button><button type="button" data-story-open-mode>观星</button>';
+  nav.insertAdjacentElement('afterend', seg);
+  return seg;
+}
+
+function ensureStoryRoot(){
+  let root = $('storyRoot');
+  if (root) return root;
+  root = document.createElement('div');
+  root.id = 'storyRoot';
+  root.hidden = true;
+  document.body.appendChild(root);
+  return root;
+}
+
+function hideStoryControls(){
+  const seg = $('storySeg');
+  if (seg) seg.remove();
+  if (STORY_PLAYER) { STORY_PLAYER.destroy(); STORY_PLAYER = null; }
+}
+
+async function setupStoryIfEnabled(chart){
+  if (!STORY_ENABLED) return;
+  const energy = storyEnergySelection(chart);
+  if (!energy || !chart.dayMaster || !chart.fiveElements || !chart.fiveElements.dayMasterStrength) { hideStoryControls(); return; }
+  try {
+    const copy = await loadStoryAssets();
+    const spec = window.ZXStoryPlanner.plan({
+      chart,
+      copy,
+      explainer: Explainer,
+      energyHigh: energy.high,
+      energyLow: energy.low,
+      currentDaYunStep: selectedCurrentDaYunStep(chart)
+    });
+    if (!spec) { hideStoryControls(); return; }
+    if (STORY_PLAYER) STORY_PLAYER.destroy();
+    const root = ensureStoryRoot();
+    STORY_PLAYER = window.ZXStoryPlayer.create({
+      root,
+      spec,
+      onClose(){
+        const seg = $('storySeg');
+        if (!seg) return;
+        seg.querySelector('[data-story-read-mode]').classList.add('on');
+        seg.querySelector('[data-story-open-mode]').classList.remove('on');
+      },
+      onReturnReading(){ window.scrollTo({ top: 0, behavior: 'smooth' }); },
+      onShare(storySpec){
+        window.ZXShareClip.open(storySpec, {
+          onEvent(event, scene, capability){ window.ZXStoryPlayer.recordEvent(event, scene, capability); }
+        });
+      }
+    });
+    const seg = ensureStoryControls();
+    const readBtn = seg.querySelector('[data-story-read-mode]');
+    const storyBtn = seg.querySelector('[data-story-open-mode]');
+    readBtn.onclick = () => { readBtn.classList.add('on'); storyBtn.classList.remove('on'); STORY_PLAYER.close('read'); };
+    storyBtn.onclick = () => { storyBtn.classList.add('on'); readBtn.classList.remove('on'); STORY_PLAYER.open(); };
+  } catch (_error) {
+    hideStoryControls();
+  }
+}
+
 function sectionCard(s, c){
   const viz = CHAP_VIZ[s.id] ? `<div class="chapviz"><img src="${CHAP_VIZ[s.id]}" alt="" loading="lazy"></div>` : '';
   const extraBefore = s.id==='energy' ? energyExtra(c) : '';
@@ -614,9 +812,8 @@ function phaseExtra(c){
   const dy = c.daYun;
   if (!dy) return `<p class="dy-hint">补充出生性别后,这里会展开你的大运时间轴——每十年一步的进与收刻度。</p>`;
   const D = Explainer.DAYUN_STRATEGY, PH = Explainer.PHASE;
-  const now = (new Date()).getFullYear();
-  let curStep = null;
-  const rows = dy.steps.map(s=>{ const cur = now>=s.yearFrom && now<=s.yearTo; if (cur) curStep=s;
+  const curStep = selectedCurrentDaYunStep(c);
+  const rows = dy.steps.map(s=>{ const cur = curStep === s;
     return `<tr class="${cur?'dy-now':''}"><td>${s.ageFrom}–${s.ageTo}岁</td><td>${s.yearFrom}–${s.yearTo}</td><td class="dy-gz">${s.stem}${s.branch}</td><td>${s.god}</td></tr>`; }).join('');
   const cur = curStep ? `<div class="dy-cur"><div class="dy-cur-h">你正走的这步 · <b>${curStep.stem}${curStep.branch}(${curStep.god})</b> · ${curStep.yearFrom}–${curStep.yearTo}</div><p>${keyEmph(esc(D[curStep.god]||''))}</p></div>` : '';
   return `<div class="dy-wrap"><small class="note" style="margin:6px 0 10px">${esc(PH.caption)}</small>
@@ -700,6 +897,92 @@ function astroCard(c){
     <div class="body astro-body">${blocks}</div>${notes}</div></div>`;
 }
 
+function deepMemberBox(){
+  return `<div id="deepMemberBox" class="member-box" aria-live="polite"></div>`;
+}
+
+const ACCOUNT_PAGE_AVAILABLE = false;
+const MEMBER_ACTIVE_BODY = '会员可不限次使用问知星，并默认保存最近 50 个问答轮次。';
+const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
+const MEMBER_POLICY = MEMBER_ACTIVE_BODY + MEMBER_ARCHIVE_TAIL;
+const MODEL_PROCESSING_NOTICE = '提问会发送盘面摘要、本次问题、最近几轮对话摘要和当日本命签，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
+const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
+const QUOTA_UNAVAILABLE = {
+  title: '当前可用次数已用完',
+  body: '你仍可查看本命报告与本命签。'
+};
+
+function memberSnapshot(){
+  if (!window.zxMember || !zxMember.snapshot) return { configured:false, ready:false, memberUntil:null, cloudSyncEnabled:false };
+  const s = zxMember.snapshot();
+  return {
+    configured: !!(zxMember.configured && zxMember.configured()),
+    ready: !!s.ready,
+    memberUntil: s.memberUntil || null,
+    cloudSyncEnabled: !!s.cloudSyncEnabled
+  };
+}
+
+function formatMemberUntil(v){
+  if (!v) return '';
+  const d = new Date(typeof v === 'number' ? v : String(v));
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('zh-CN');
+}
+
+function renderMemberStatus(){
+  const box = $('deepMemberBox'); if (!box) return;
+  const s = memberSnapshot();
+  const untilText = formatMemberUntil(s.memberUntil);
+  const isMember = !!(s.memberUntil && new Date(typeof s.memberUntil === 'number' ? s.memberUntil : String(s.memberUntil)).getTime() > Date.now());
+  let title = '会员服务暂未接通';
+  let pill = '未配置';
+  let copy = '当前仍可查看本命报告与本命签。会员与账号服务接通后，可在这里查看权益状态。';
+  if (s.configured && !s.ready) {
+    title = '正在读取会员状态';
+    pill = '加载中';
+    copy = '读取完成前，你仍可查看本命报告与本命签。';
+  } else if (s.configured && isMember) {
+    title = untilText ? `会员有效至 ${untilText}` : '会员已开通';
+    pill = '会员';
+    copy = MEMBER_ACTIVE_BODY;
+  } else if (s.configured) {
+    title = '当前未开通会员';
+    pill = '非会员';
+    copy = '你可以继续使用问知星的基础体验。';
+  }
+  const account = s.configured && ACCOUNT_PAGE_AVAILABLE
+    ? `<a href="./account.html">账号</a>`
+    : `<span class="disabled">账号入口待接通</span>`;
+  const policy = copy === MEMBER_ACTIVE_BODY ? MEMBER_ARCHIVE_TAIL : MEMBER_POLICY;
+  box.innerHTML = `<div class="member-row"><div class="member-title">${esc(title)}</div><div class="member-pill">${esc(pill)}</div></div>
+    <div class="member-copy">${esc(copy)} ${esc(policy)}</div>
+    <div class="member-actions">${account}</div>`;
+}
+
+function watchMemberStatus(){
+  renderMemberStatus();
+  let n = 0;
+  const timer = setInterval(() => {
+    renderMemberStatus();
+    n += 1;
+    const s = memberSnapshot();
+    if (!s.configured || s.ready || n > 20) clearInterval(timer);
+  }, 500);
+}
+
+function deepCard(){
+  return `<div class="card" id="sec-deep"><div class="pad">
+    <h2>问知星 · 本命深问</h2>
+    <p class="deep-intro">它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。</p>
+    ${deepMemberBox()}
+    ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
+    <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p></div>
+    <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
+    <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
+    <div id="deepEcho"></div>
+  </div></div>`;
+}
+
 function qianCard(){
   const U = Explainer.QIAN_UI;
   return `<div class="card" id="sec-qian"><div class="chapviz"><img src="./img/gua.jpg" alt="" loading="lazy"></div><div class="pad">
@@ -707,38 +990,45 @@ function qianCard(){
     <p class="qian-intro">${esc(U.intro)}</p>
     <div style="text-align:center;margin:16px 0 4px"><button id="drawBtn">${esc(U.cta)}</button></div>
     <div id="qianOut"></div>
-    <div class="ai-block">
-      <div class="ai-h">问知星 · 本命深问</div>
-      <p>它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。<b style="color:var(--gold)">首次免费。</b></p>
-      ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
-      <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
-      <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
-      <div id="deepEcho"></div>
-    </div>
   </div></div>`;
 }
 
-function renderQian(chart){
-  const q = Explainer.drawQian(chart, new Date());
-  $('qianOut').innerHTML = `<div class="qian-draw">
-    <div class="qian-hex">${esc(q.hex)}</div>
-    <div class="qian-omen">${esc(q.omen)}</div>
-    <div class="body" style="margin-top:10px"><p>${fmtBody(q.guide)}</p></div>
-    <small class="note">此签依你的日主(${esc(q.bindElement)}·${esc(q.strength)})取,同日同签、隔日流转;只照本命方向,不做结果判断、不断具体事。<span class="src-inline">来源:本命签</span></small>
-    <div style="margin-top:16px"><button id="qianShareBtn" class="ghost" style="letter-spacing:.1em">分享这支签</button></div>
-  </div>`;
-  const sb = $('qianShareBtn');
-  if (sb) sb.onclick = () => { drawQianPoster(q); $('qianPosterLayer').style.display = 'block'; };
+let shareCardManifestPromise = null;
+function loadShareCardManifest(){
+  if (!shareCardManifestPromise){
+    shareCardManifestPromise = fetch('./img/share/share-card-assets.json', { cache:'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .catch(() => null);
+  }
+  return shareCardManifestPromise;
 }
 
-/* 抽签仪式:摇签 ~1.2s 再显签 */
+function loadQianPosterImage(src){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/* 抽签仪式:摇签 ~1.2s 后直接出图,不提前铺开签文 */
 function drawQianRitual(chart){
   const btn = $('drawBtn'); if (btn) btn.disabled = true;
   $('qianOut').innerHTML = `<div class="qian-cast"><div class="tube">签</div><div class="txt">摇 签 中……</div></div>`;
-  setTimeout(() => { if (btn) btn.disabled = false; renderQian(chart); }, 1200);
+  setTimeout(async () => {
+    try {
+      const q = Explainer.drawQian(chart, new Date());
+      $('qianOut').innerHTML = '';
+      await drawQianPoster(q);
+      $('qianPosterLayer').style.display = 'block';
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }, 1200);
 }
 
-/* 本命签分享卡(750×1000 Canvas;二维码位待域名定后 drawImage 替换) */
+/* 本命签分享卡:定稿图优先，资源失败时保留 750×1000 Canvas 回退。 */
 function qposWrap(x, text, cx, y, maxW, lh){
   let line = '', yy = y;
   for (const ch of [...text]){
@@ -748,9 +1038,63 @@ function qposWrap(x, text, cx, y, maxW, lh){
   if (line) x.fillText(line, cx, yy);
   return yy;
 }
-function drawQianPoster(q){
+async function drawQianPoster(q){
+  const c = $('qianCanvas');
+  try {
+    const manifest = await loadShareCardManifest();
+    const item = manifest && (manifest.qianCards || []).find(card => card.id === q.assetId && card.status === 'ready');
+    const filename = item && String(item.targetFile || '').split('/').pop();
+    if (filename && /^[a-z0-9-]+\.webp$/.test(filename)){
+      const img = await loadQianPosterImage('./img/share/qian/' + filename);
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const x = c.getContext('2d');
+      x.clearRect(0, 0, c.width, c.height);
+      x.drawImage(img, 0, 0);
+      const posterDate = drawQianPosterDateOverlay(x, c.width);
+      c.dataset.renderMode = 'asset';
+      c.dataset.assetId = q.assetId;
+      c.dataset.posterDate = posterDate;
+      return 'asset';
+    }
+  } catch (_) {
+    // 资源不可读时继续使用已有 Canvas，不阻断抽签。
+  }
+  const posterDate = qianPosterDateText();
+  drawQianPosterFallback(q, posterDate);
+  c.dataset.renderMode = 'canvas';
+  c.dataset.assetId = q.assetId || '';
+  c.dataset.posterDate = posterDate;
+  return 'canvas';
+}
+
+function qianPosterDateText(date = new Date()){
+  return date.getFullYear()+'.'+(date.getMonth()+1)+'.'+date.getDate();
+}
+
+function drawQianPosterDateOverlay(x, width, date = new Date()){
+  const scale = width / 750;
+  const posterDate = qianPosterDateText(date);
+  const shade = x.createLinearGradient(110*scale, 0, 640*scale, 0);
+  shade.addColorStop(0, 'rgba(5,8,13,0)');
+  shade.addColorStop(.14, 'rgba(5,8,13,.98)');
+  shade.addColorStop(.86, 'rgba(5,8,13,.98)');
+  shade.addColorStop(1, 'rgba(5,8,13,0)');
+  x.save();
+  x.fillStyle = shade;
+  x.fillRect(110*scale, 42*scale, 530*scale, 64*scale);
+  x.textAlign = 'center';
+  x.fillStyle = '#C9A85C';
+  x.font = (20*scale)+'px "Noto Serif SC","Songti SC","STSong",serif';
+  x.fillText('◇ 今 日 本 命 签 · '+posterDate+' ◇', width/2, 84*scale);
+  x.restore();
+  return posterDate;
+}
+
+function drawQianPosterFallback(q, posterDate){
   const c = $('qianCanvas'), x = c.getContext('2d');
   const W = 750, H = 1000, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
+  c.width = W; c.height = H;
   x.clearRect(0,0,W,H);
   const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141c30'); bg.addColorStop(.5,'#0E1220'); bg.addColorStop(1,'#0a0d16');
   x.fillStyle = bg; x.fillRect(0,0,W,H);
@@ -758,15 +1102,16 @@ function drawQianPoster(q){
   x.fillStyle = glow; x.fillRect(0,0,W,600);
   x.strokeStyle = 'rgba(201,168,92,.34)'; x.lineWidth = 1; x.strokeRect(18.5,18.5,W-37,H-37);
   x.textAlign = 'center';
-  const d = new Date(), dstr = d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();
-  x.fillStyle = '#8f7a45'; x.font = '20px '+SERIF; x.fillText('今 日 本 命 签  ·  '+dstr, W/2, 124);
+  x.fillStyle = '#8f7a45'; x.font = '20px '+SERIF; x.fillText('今 日 本 命 签  ·  '+(posterDate || qianPosterDateText()), W/2, 124);
   x.strokeStyle = 'rgba(201,168,92,.3)'; x.beginPath(); x.moveTo(W/2-56,152); x.lineTo(W/2+56,152); x.stroke();
   const gg = x.createLinearGradient(0,250,0,430); gg.addColorStop(0,'#fff6dd'); gg.addColorStop(.5,'#e9d09a'); gg.addColorStop(1,'#C9A85C');
   x.save(); x.fillStyle = gg; x.shadowColor = 'rgba(201,168,92,.4)'; x.shadowBlur = 32; x.font = '700 128px '+SERIF;
   x.fillText([...q.hex].join('  '), W/2, 380); x.restore();
   x.fillStyle = '#E8E4D8'; x.font = '25px '+SERIF; x.fillText(q.omen, W/2, 470);
-  const g1 = ((q.guide||'').split(/[。！?]/)[0]||'').trim() + '。';
-  x.fillStyle = '#b9c2d0'; x.font = '23px '+SERIF; qposWrap(x, g1, W/2, 556, 600, 40);
+  const g1 = q.line || q.guide || '';
+  x.fillStyle = '#e9d09a'; x.font = '24px '+SERIF; const gy = qposWrap(x, g1, W/2, 560, 620, 42);
+  x.fillStyle = '#8f7a45'; x.font = '19px '+SERIF;
+  x.fillText('宜  '+(q.yi||[]).join('  ')+'      忌  '+(q.ji||[]).join('  '), W/2, gy + 56);
   x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
   x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
   const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
@@ -790,22 +1135,93 @@ function render(chart, sections){
     if (s) h += sectionCard(s, chart);
     if (id === 'overview') h += astroCard(chart);   // 星盘互证紧跟总览:先主轴,即印证
   }
+  h += deepCard();
   h += qianCard();
   $('out').innerHTML = h;
   buildNav();
+  watchMemberStatus();
   $('drawBtn').onclick = () => drawQianRitual(chart);
   $('qianPosterClose').onclick = () => $('qianPosterLayer').style.display = 'none';
   $('deepAsk').onclick = () => askDeep(chart);
+  setupStoryIfEnabled(chart);
 }
 
-/* 报告导航:按渲染顺序抓各章节卡片,生成锚点跳转 */
+const REPORT_NAV_GROUPS = [
+  { label:'看盘', items:[['sec-chart','盘面'],['sec-overview','命局总览']] },
+  { label:'互证', items:[['sec-astro','星盘互证'],['sec-energy','五行能量图谱'],['sec-skeleton','性格骨架']] },
+  { label:'落地', items:[['sec-relation','关系与协作'],['sec-action','行动与决策'],['sec-phase','当前的进与收']] }
+];
+const REPORT_READING_IDS = REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item[0]));
+const REPORT_NAV_TITLES = Object.fromEntries(REPORT_NAV_GROUPS.flatMap(group => group.items).concat([
+  ['sec-deep','问知星 · 本命深问'],['sec-qian','本命签']
+]));
+let REPORT_NAV_OBSERVER = null;
+let REPORT_NAV_SCROLL_HANDLER = null;
+let REPORT_VISITED = new Set();
+
+function setReportNavActive(id){
+  if (!REPORT_NAV_TITLES[id]) return;
+  if (REPORT_READING_IDS.includes(id)) REPORT_VISITED.add(id);
+  document.querySelectorAll('[data-nav-target]').forEach(link => {
+    const active = link.dataset.navTarget === id;
+    link.classList.toggle('active', active);
+    if (active) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+  document.querySelectorAll('.nav-section-link[data-nav-target]').forEach(link => {
+    link.classList.toggle('visited', REPORT_VISITED.has(link.dataset.navTarget));
+  });
+  const current = $('navCurrent');
+  if (current) current.textContent = REPORT_NAV_TITLES[id];
+  const count = REPORT_VISITED.size;
+  const text = $('navProgressText');
+  const fill = $('navProgressFill');
+  const track = $('navProgressTrack');
+  if (text) text.textContent = `已浏览 ${count} / ${REPORT_READING_IDS.length}`;
+  if (fill) fill.style.width = `${count / REPORT_READING_IDS.length * 100}%`;
+  if (track) track.setAttribute('aria-valuenow', String(count));
+}
+
+/* 报告导航:固定核心工具,普通章节按阅读任务分组,滚动时更新状态。 */
 function buildNav(){
   const nav = $('secNav'); if (!nav) return;
-  const cards = document.querySelectorAll('#out .card[id]');
-  nav.innerHTML = [...cards].map(c => {
-    const h2 = c.querySelector('h2'); const t = h2 ? h2.textContent.trim() : '';
-    return t ? `<a href="#${c.id}">${t}</a>` : '';
-  }).join('');
+  if (REPORT_NAV_OBSERVER) REPORT_NAV_OBSERVER.disconnect();
+  if (REPORT_NAV_SCROLL_HANDLER) window.removeEventListener('scroll', REPORT_NAV_SCROLL_HANDLER);
+  REPORT_NAV_OBSERVER = null;
+  REPORT_NAV_SCROLL_HANDLER = null;
+  REPORT_VISITED = new Set([REPORT_READING_IDS[0]]);
+  nav.innerHTML = REPORT_NAV_GROUPS.map(group => `<div class="nav-group">
+    <div class="nav-group-name">${group.label}</div>
+    <div class="nav-group-links">${group.items.map(([id,title]) => `<a class="nav-section-link" href="#${id}" data-nav-target="${id}"><span class="nav-label">${title}</span><span class="nav-state-icon" aria-hidden="true"></span></a>`).join('')}</div>
+  </div>`).join('');
+
+  const targets = [...REPORT_READING_IDS, 'sec-deep', 'sec-qian'];
+  const sections = targets.map(id => $(id)).filter(Boolean);
+  document.querySelectorAll('[data-nav-target]').forEach(link => {
+    link.addEventListener('click', () => setReportNavActive(link.dataset.navTarget));
+  });
+  setReportNavActive(REPORT_READING_IDS[0]);
+
+  if ('IntersectionObserver' in window){
+    REPORT_NAV_OBSERVER = new IntersectionObserver(entries => {
+      const visible = entries.filter(entry => entry.isIntersecting);
+      if (!visible.length) return;
+      const marker = Math.max(24, innerHeight * .18);
+      visible.sort((a,b) => Math.abs(a.boundingClientRect.top-marker) - Math.abs(b.boundingClientRect.top-marker));
+      setReportNavActive(visible[0].target.id);
+    }, { rootMargin:'-16% 0px -72% 0px', threshold:0 });
+    sections.forEach(section => REPORT_NAV_OBSERVER.observe(section));
+  } else {
+    REPORT_NAV_SCROLL_HANDLER = () => {
+      const marker = innerHeight * .22;
+      const current = sections.reduce((best, section) => {
+        const distance = Math.abs(section.getBoundingClientRect().top - marker);
+        return !best || distance < best.distance ? { section, distance } : best;
+      }, null);
+      if (current) setReportNavActive(current.section.id);
+    };
+    window.addEventListener('scroll', REPORT_NAV_SCROLL_HANDLER, { passive:true });
+  }
 }
 
 function currentInput(){
@@ -922,8 +1338,25 @@ const DEEP_FREE = 30;       // 内测期放开连续追问;后端仍有 DAILY_LI
 const DEEP_HISTORY_LIMIT = 4;
 let deepTurns = [];
 
+function isLocalDebugHost(hostname){
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+function isLocalDebugPage(){
+  return location.protocol === 'file:' || isLocalDebugHost(location.hostname);
+}
+function localDebugUrlParam(name){
+  const raw = new URLSearchParams(location.search).get(name);
+  if (!raw || !isLocalDebugPage()) return '';
+  try {
+    const u = new URL(raw, location.href);
+    return /^https?:$/.test(u.protocol) && isLocalDebugHost(u.hostname) ? u.href : '';
+  } catch (_) {
+    return '';
+  }
+}
 function deepEndpoint(){
-  return new URLSearchParams(location.search).get('deep') || DEEP_ENDPOINT;
+  const localEndpoint = localDebugUrlParam('deep');
+  return localEndpoint || (isLocalDebugPage() ? '' : DEEP_ENDPOINT);
 }
 function deepQuota(){
   const today = new Date().toISOString().slice(0,10);
@@ -932,27 +1365,31 @@ function deepQuota(){
   return s;
 }
 function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx_deep_q', JSON.stringify(s)); }
+function deepAccountToken(){ try { return localStorage.getItem('zx_token') || ''; } catch(_){ return ''; } }
 
 /* 公开真答:走后端(key 只在后端,前端不碰) */
 async function callDeepBackend(chart, question, history = []){
   const qian = Explainer.drawQian(chart, new Date());
+  const accountToken = deepAccountToken();
   const r = await fetch(deepEndpoint(), {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       chart,
       question,
       history,
+      token: accountToken,
       qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength }
     })
   });
   const data = await r.json();
+  if (data && data.paywall) { const e = new Error('paywall'); e.paywall = 1; throw e; }
   if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
   return data;
 }
 
-/* 免费额度用完 → 继续问付费墙(占位,接支付前先预告) */
+/* 免费额度用完:只提示真实状态,不展示未接通的支付入口 */
 function deepPaywall(){
-  return `<div class="deep-echo">今天的内测追问次数已到上限。先整理这一轮答案,明天可以继续测。</div>`;
+  return `<div class="deep-echo"><b style="color:var(--gold)">${esc(QUOTA_UNAVAILABLE.title)}</b><br>${esc(QUOTA_UNAVAILABLE.body)}</div>`;
 }
 
 async function callDeep(chart, question, key){
@@ -1031,7 +1468,8 @@ async function askDeep(chart){
   const echo = $('deepEcho');
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
   const useBackend = !!deepEndpoint();
-  if (useBackend && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
+  const hasServerAccount = !!deepAccountToken();
+  if (useBackend && !hasServerAccount && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
     const keyEl = $('deepKey') || $('key');              // 优先问知星块内的 key 栏(内测)
@@ -1044,13 +1482,14 @@ async function askDeep(chart){
   echo.innerHTML = priorHtml + `<div class="deep-echo">正把这件事放回你的整张盘里推演……</div>`;
   try {
     const ans = useBackend ? await callDeepBackend(chart, q, deepTurns) : await callDeep(chart, q, key);
-    if (useBackend) deepQuotaBump();
+    if (useBackend && !hasServerAccount) deepQuotaBump();
     rememberDeepTurn(q, ans);
     echo.innerHTML = priorHtml + renderDeep(ans, q);
     $('deepQ').value = '';
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
-    echo.innerHTML = priorHtml + `<div class="deep-echo">推演没接上(${esc(e.message)})。先把本命签给的方向拿稳,稍后再问。</div>`;
+    if (e && e.paywall){ echo.innerHTML = priorHtml + deepPaywall(); return; }
+    echo.innerHTML = priorHtml + `<div class="deep-echo">推演暂时没有接上，请稍后再试。你也可以先把本命签给的方向拿稳。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
