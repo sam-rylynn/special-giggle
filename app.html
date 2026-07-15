@@ -36,10 +36,20 @@
   /* 海报主视觉(静态底图):body.image-hero 生效,失败自动回退矢量罗经+文字 lockup。
      底图自带「命盘研究所/知·星/slogan」品牌字,故此模式隐藏 HTML lockup 免重复。 */
   .hero-poster{position:relative;left:calc(50% - 50vw);width:100vw;display:none;overflow:hidden;line-height:0;
-    aspect-ratio:1620/2880;max-height:84vh;background:var(--ink)}   /* 手机按原比例满宽;宽屏以完整竖版居中,两侧由玄夜承接 */
-  .hero-poster img{display:block;width:100%;height:100%;object-fit:contain;object-position:50% 50%}
+    aspect-ratio:1620/2880;max-height:84vh;background:var(--ink)}
+  .hero-poster-main{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;object-position:50% 50%}
+  .hero-poster-ambient{display:none}
+  /* 桌面端固定为“全宽环境层 + 完整海报层”:填满横向视野,同时不裁掉竖版海报里的品牌信息。 */
+  @media(min-width:720px){
+    /* 海报原高保留给主图,容器只展示前 5/6:裁掉品牌信息之后的纯场景留白。 */
+    .hero-poster{aspect-ratio:auto;height:min(70vh,148.15vw);max-height:none}
+    .hero-poster-ambient{position:absolute;z-index:0;inset:-3%;display:block;width:106%;height:106%;
+      object-fit:cover;object-position:50% 43%;filter:blur(18px) brightness(.5) saturate(.82);transform:scale(1.035)}
+    .hero-poster-main{position:absolute;top:0;left:50%;width:auto;height:min(84vh,177.78vw);max-width:none;
+      transform:translateX(-50%);filter:drop-shadow(0 0 34px rgba(5,8,16,.72))}
+  }
   /* 底部融进玄夜底色,消除下缝 */
-  .hero-poster::after{content:"";position:absolute;left:0;right:0;bottom:0;height:11%;pointer-events:none;
+  .hero-poster::after{content:"";position:absolute;z-index:2;left:0;right:0;bottom:0;height:11%;pointer-events:none;
     background:linear-gradient(180deg,transparent,var(--ink))}
   body.image-hero .hero-poster{display:block}
   body.image-hero header{padding:0 0 8px}            /* 图齐顶、下方只留极小间距,去黑边 */
@@ -251,7 +261,10 @@
     </svg>
 
     <!-- 海报主视觉:知星·地图星盘底图(USE_IMAGE_HERO 控制;含太极,合规渠道置 false 回退罗经+文字) -->
-    <div class="hero-poster"><img id="heroPoster" src="./media/hero-taiji-poster.jpg" alt="知星·命盘研究所 — 以易理观己,以星盘为证"></div>
+    <div class="hero-poster">
+      <img class="hero-poster-ambient" src="./media/hero-taiji-poster.jpg" alt="" aria-hidden="true">
+      <img class="hero-poster-main" id="heroPoster" src="./media/hero-taiji-poster.jpg" alt="知星·命盘研究所 — 以易理观己,以星盘为证">
+    </div>
 
     <!-- 星盘罗经 · 浑天层环 -->
     <div class="orrery">
