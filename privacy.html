@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1220">
+<title>隐私与资料说明｜知星</title>
+<style>
+  :root{--night:#0e1220;--panel:#1a2233;--line:rgba(201,168,92,.2);--gold:#c9a85c;--moon:#e8e4d8;--mist:#8992a3;--serif:"Songti SC","STSong","Noto Serif CJK SC",serif;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  *{box-sizing:border-box}
+  html{background:var(--night);color-scheme:dark}
+  body{margin:0;background:var(--night);color:var(--moon);font-family:var(--sans);font-size:15px;line-height:1.8}
+  a{color:var(--gold);text-underline-offset:3px}a:focus-visible{outline:2px solid #f0d695;outline-offset:4px}
+  .shell{width:min(100% - 32px,720px);margin:0 auto;padding:22px 0 max(48px,env(safe-area-inset-bottom))}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px;margin-bottom:28px;border-bottom:1px solid var(--line)}
+  .brand{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700}.back{display:inline-flex;align-items:center;min-height:38px;color:var(--mist);font-size:13px;text-decoration:none}
+  .state{padding:28px 24px;border:1px solid rgba(201,168,92,.28);background:var(--panel);border-radius:12px}
+  .badge{display:inline-flex;border:1px solid rgba(201,168,92,.35);border-radius:999px;padding:2px 9px;color:var(--gold);font-size:10px}
+  h1{margin:14px 0 10px;font-family:var(--serif);font-size:clamp(25px,6vw,34px)}.state>p{margin:0;color:#bcc4d0}
+  main{margin-top:20px;border-top:1px solid var(--line)}section{padding:23px 2px;border-bottom:1px solid rgba(201,168,92,.14)}
+  h2{margin:0 0 10px;color:var(--gold);font-family:var(--serif);font-size:17px}p{margin:0 0 10px;color:#b8c0cd}p:last-child{margin-bottom:0}
+  .boundary{margin-top:20px;padding:14px 16px;border-left:2px solid var(--gold);background:rgba(201,168,92,.06);color:#d6d3c9}
+  footer{padding-top:26px;color:#646e80;font-size:11px;text-align:center}
+  @media(max-width:480px){.shell{width:min(100% - 28px,720px);padding-top:14px}.topbar{margin-bottom:20px}.state{padding:23px 19px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="topbar" aria-label="页面导航"><span class="brand">知星 · 命盘研究所</span><a class="back" id="backLink" href="./index.html">返回知星</a></nav>
+  <header class="state">
+    <span class="badge">暂不可用</span>
+    <h1>隐私政策页尚未开放</h1>
+    <p>正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</p>
+  </header>
+
+  <main aria-label="当前测试通道资料说明">
+    <section><h2>当前资料用途</h2><p>你填写的出生日期、出生时间、出生城市和性别，会用于生成盘面结构、基础报告和问知星上下文。未开启云端同步时，资料可保存在当前浏览器，用于返回继续查看。</p></section>
+    <section><h2>第三方大模型处理</h2><p>使用问知星时，盘面摘要、本次问题、最近几轮对话摘要和当日本命签会经知星后端发送给第三方大模型服务处理，用于生成本次答复。</p><p>请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。</p></section>
+    <section><h2>随机设备标识</h2><p>为了记录免费次数并保障账号安全，知星会在当前设备生成一个随机设备标识。它不读取硬件序列号，不使用浏览器指纹，不用于广告或跨应用追踪。</p></section>
+    <section><h2>年龄门槛</h2><p>本服务暂不向不满 14 周岁的用户提供。请不要为不满 14 周岁的用户提交出生资料或创建账号。</p></section>
+  </main>
+
+  <div class="boundary">知星依据确定性程序生成盘面结构，并用传统文化框架提供个人发展参考。内容不替代医疗、心理、法律、投资等专业服务；涉及重要决定时，请结合现实信息自行判断。</div>
+  <footer>知星 · 命盘研究所</footer>
+</div>
+<script>
+  (function(){
+    var sourceTree=/\/web\/privacy\.html$/.test(location.pathname);
+    document.getElementById('backLink').href=sourceTree?'./index.html':'./app.html';
+  })();
+</script>
+</body>
+</html>

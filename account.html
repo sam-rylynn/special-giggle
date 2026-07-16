@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1220">
+<title>账号与资料｜知星</title>
+<style>
+  :root{--night:#0e1220;--panel:#1a2233;--panel-2:#131a29;--line:rgba(201,168,92,.2);--gold:#c9a85c;--gold-dim:#9f874f;--moon:#e8e4d8;--mist:#8992a3;--danger:#d67b68;--serif:"Songti SC","STSong","Noto Serif CJK SC",serif;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html{background:var(--night);color-scheme:dark;scroll-behavior:smooth}
+  body{margin:0;background:var(--night);color:var(--moon);font-family:var(--sans);font-size:14px;line-height:1.75}
+  button,input{font:inherit}
+  a{color:var(--gold);text-underline-offset:3px}
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  .shell{width:min(100% - 32px,820px);margin:0 auto;padding:22px 0 max(56px,env(safe-area-inset-bottom))}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px;margin-bottom:26px;border-bottom:1px solid var(--line)}
+  .brand{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700}
+  .back{display:inline-flex;align-items:center;min-height:38px;color:var(--mist);font-size:13px;text-decoration:none}
+  header{padding:4px 0 22px}
+  h1{margin:0;font-family:var(--serif);font-size:clamp(26px,5vw,36px);letter-spacing:0}
+  .lead{max-width:650px;margin:10px 0 0;color:#aeb7c6}
+  .account-grid{display:grid;grid-template-columns:1fr;gap:14px}
+  .panel{padding:20px;background:var(--panel);border:1px solid rgba(201,168,92,.18);border-radius:8px;scroll-margin-top:18px}
+  .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
+  .eyebrow{margin-bottom:3px;color:var(--gold-dim);font-size:11px}
+  h2{margin:0;color:#f1ead8;font-family:var(--serif);font-size:18px;letter-spacing:0}
+  .badge{flex:none;min-width:58px;padding:3px 8px;border:1px solid rgba(201,168,92,.34);border-radius:999px;color:var(--gold);font-size:11px;text-align:center}
+  .state-title{margin:0 0 5px;color:#e8e4d8;font-family:var(--serif);font-size:15px;font-weight:700}
+  .state-body{margin:0;color:#adb7c6;overflow-wrap:anywhere}
+  .policy{margin:12px 0 0;padding:11px 12px;border-left:2px solid var(--gold);background:rgba(201,168,92,.055);color:#bdc5d1;font-size:12px}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 15px;border:1px solid rgba(201,168,92,.38);border-radius:6px;background:transparent;color:var(--gold);text-decoration:none;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+  .btn:hover{background:rgba(201,168,92,.08);border-color:rgba(240,214,149,.75);transform:translateY(-1px)}
+  .btn.primary{background:var(--gold);border-color:var(--gold);color:#241c0c;font-weight:700}
+  .btn.danger{border-color:rgba(214,123,104,.5);color:#efb0a3}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .archive-list{display:grid;gap:10px;margin-top:14px}
+  .archive-item{padding:14px;background:var(--panel-2);border-left:2px solid rgba(201,168,92,.38)}
+  .archive-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px;color:#707b8d;font-size:11px}
+  .archive-question{margin:0;color:#e4dfd2;font-family:var(--serif);font-size:14px;font-weight:700;overflow-wrap:anywhere}
+  .archive-answer{display:-webkit-box;margin:7px 0 0;color:#aeb7c6;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+  .archive-item .btn{min-height:34px;margin-top:10px;padding:0 11px;font-size:12px}
+  .live{min-height:20px;margin-top:10px;color:var(--gold-dim);font-size:12px}
+  .privacy-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 2px;color:var(--mist)}
+  dialog{width:min(calc(100% - 32px),430px);padding:0;border:1px solid rgba(201,168,92,.38);border-radius:8px;background:var(--panel);color:var(--moon);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+  dialog::backdrop{background:rgba(6,9,16,.82)}
+  .dialog-body{padding:22px}
+  .dialog-body h2{margin-bottom:9px;color:var(--gold)}
+  .dialog-copy{margin:0;color:#b5becb}
+  .confirm-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;padding:11px;background:#111827;color:#c8ced7;font-size:13px;cursor:pointer}
+  .confirm-check input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold)}
+  .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+  .dialog-actions .btn{width:100%}
+  @media(min-width:760px){.account-grid{grid-template-columns:1fr 1fr}.panel-wide{grid-column:1/-1}}
+  @media(max-width:480px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.privacy-row{align-items:flex-start;flex-direction:column;gap:6px}.dialog-actions{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none;transform:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="topbar" aria-label="页面导航">
+    <span class="brand">知星 · 命盘研究所</span>
+    <a class="back" id="reportLink" href="../v1/report.html">返回本命报告</a>
+  </nav>
+
+  <header>
+    <h1>账号与资料</h1>
+    <p class="lead">账号服务尚未开放。当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。</p>
+  </header>
+
+  <main class="account-grid">
+    <section class="panel" id="account-status">
+      <div class="panel-head">
+        <div><div class="eyebrow">账号</div><h2>当前状态</h2></div>
+        <span class="badge" id="accountBadge">加载中</span>
+      </div>
+      <h3 class="state-title" id="accountTitle">正在读取账号状态</h3>
+      <p class="state-body" id="accountBody">读取完成前，你仍可查看当前页面。</p>
+      <div class="actions" id="accountActions"></div>
+    </section>
+
+    <section class="panel" id="membership-status">
+      <div class="panel-head">
+        <div><div class="eyebrow">会员</div><h2>权益状态</h2></div>
+        <span class="badge" id="memberBadge">加载中</span>
+      </div>
+      <h3 class="state-title" id="memberTitle">正在读取会员状态</h3>
+      <p class="state-body" id="memberBody">读取完成前，你仍可查看本命报告与本命签。</p>
+      <p class="policy" id="memberPolicy" hidden>会员可不限次使用问知星，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
+      <div class="actions" id="memberActions"></div>
+    </section>
+
+    <section class="panel panel-wide" id="cloud-sync">
+      <div class="panel-head">
+        <div><div class="eyebrow">资料管理</div><h2>本命盘云端同步</h2></div>
+        <span class="badge" id="cloudBadge">加载中</span>
+      </div>
+      <h3 class="state-title" id="cloudTitle">正在读取账号状态</h3>
+      <p class="state-body" id="cloudBody">读取完成前，你仍可查看当前页面。</p>
+      <div class="actions" id="cloudActions"></div>
+      <div class="live" id="cloudLive" aria-live="polite"></div>
+    </section>
+
+    <section class="panel panel-wide" id="qa-archive">
+      <div class="panel-head">
+        <div><div class="eyebrow">问知星</div><h2>问答存档</h2></div>
+        <span class="badge" id="archiveBadge">加载中</span>
+      </div>
+      <h3 class="state-title" id="archiveTitle">正在读取问答存档</h3>
+      <p class="state-body" id="archiveBody">请稍候。</p>
+      <div class="actions" id="archiveActions"></div>
+      <div class="live" id="archiveLive" aria-live="polite"></div>
+      <div class="archive-list" id="archiveList"></div>
+    </section>
+
+    <section class="panel panel-wide" id="delete-account">
+      <div class="panel-head">
+        <div><div class="eyebrow">账号与安全</div><h2>注销账号</h2></div>
+        <span class="badge" id="deleteBadge" hidden></span>
+      </div>
+      <h3 class="state-title" id="deleteTitle">注销账号</h3>
+      <p class="state-body" id="deleteBody">注销后，云端盘面和问知星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。</p>
+      <div class="actions" id="deleteActions"></div>
+      <div class="live" id="deleteLive" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="privacy-row">
+    <span>隐私政策页尚未开放</span>
+    <span>正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</span>
+  </div>
+</div>
+
+<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+  <div class="dialog-body">
+    <h2 id="confirmTitle">确认操作</h2>
+    <p class="dialog-copy" id="confirmBody"></p>
+    <label class="confirm-check" id="confirmCheckWrap" hidden>
+      <input type="checkbox" id="confirmCheck">
+      <span id="confirmCheckLabel"></span>
+    </label>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="confirmCancel">取消</button>
+      <button class="btn danger" type="button" id="confirmPrimary">确认</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+'use strict';
+(function(){
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const ARCHIVE_GRACE_MS = 30 * DAY_MS;
+  const sourceTree = /\/web\/account\.html$/.test(location.pathname);
+  const memberScriptPath = sourceTree ? '../member.js' : './member.js';
+  const reportPath = sourceTree ? '../v1/report.html' : './report.html';
+  document.getElementById('reportLink').href = reportPath;
+
+  const COPY = {
+    account: {
+      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。'},
+      loading:{title:'正在读取账号状态',badge:'加载中',body:'读取完成前，你仍可查看当前页面。'},
+      guest:{title:'当前设备',badge:'未登录',body:'你可以继续使用基础功能。登录后，可查看账号下的会员状态；确认云同步后，可跨设备查看本命盘。'},
+      error:{title:'暂时无法读取账号状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。',action:'重新读取'}
+    },
+    member: {
+      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。'},
+      loading:{title:'正在读取会员状态',badge:'加载中',body:'读取完成前，你仍可查看本命报告与本命签。'},
+      nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以继续使用问知星的基础体验。'},
+      active:{title:'会员有效至',badge:'会员',body:'会员可不限次使用问知星，并默认保存最近 50 个问答轮次。'},
+      grace:{title:'会员已到期',badge:'存档保留中',body:'问答存档仍可查看至 {date}。超过该日期后，存档将自动删除且无法恢复。'},
+      removed:{title:'存档保留期已结束',badge:'已结束',body:'原会员问答存档已删除，无法恢复。'},
+      error:{title:'暂时无法读取会员状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。'}
+    },
+    cloud: {
+      off:{title:'本命盘云端同步未开启',body:'当前盘面只保存在本机。开启后，可在登录同一账号的设备上继续查看。',action:'开启云端同步'},
+      confirmEnable:{title:'开启本命盘云端同步',body:'开启后，你的出生资料与盘面会保存到账户后端，用于跨设备查看和报告更新。会员问答会按会员存档规则单独保存。你可以随时关闭同步并删除云端盘面。',check:'我已了解本命盘云端同步会保存出生资料与盘面',primary:'确认开启',secondary:'暂不开启'},
+      enabling:{title:'正在开启云端同步',body:'请保持当前页面打开。'},
+      on:{title:'本命盘云端同步已开启',body:'出生资料与盘面已保存到账户后端，可在登录同一账号的设备上继续查看。',action:'关闭云端同步'},
+      confirmDisable:{title:'关闭本命盘云端同步',body:'关闭后，新的出生资料和盘面不再上传，已有云端盘面会从账号中删除；当前浏览器内已保存的盘面不受影响。会员问答仍按会员存档规则保存。',primary:'关闭并删除云端盘面',secondary:'继续同步'},
+      disabling:{title:'正在关闭云端同步',body:'请保持当前页面打开。'},
+      disabled:{title:'云端同步已关闭',body:'已有云端盘面已从账号中删除；当前浏览器内已保存的盘面不受影响。'},
+      error:{title:'云端同步状态没有更新',body:'请稍后重试。若状态仍未变化，可前往账号与安全查看。',action:'重试'}
+    },
+    archive: {
+      memberOnly:{title:'问答存档',body:'会员问答会默认保存最近 50 个问答轮次，方便跨设备回看和继续追问。'},
+      loading:{title:'正在读取问答存档',body:'请稍候。'},
+      emptyActive:{title:'还没有保存的问答',body:'成功完成一次问知星问答后，记录会显示在这里。',action:'去问知星'},
+      emptyGrace:{title:'当前没有可查看的问答存档',body:'你的会员已到期，存档查看期至 {date}。'},
+      ready:{title:'问答存档',body:'已保存 {count} / 50 个问答轮次。一次提问和一次完整答复计为一个轮次。',action:'清空全部'},
+      loadError:{title:'暂时无法读取问答存档',body:'你的存档没有因此被删除，请稍后重试。',action:'重新读取'},
+      grace:{title:'会员已到期',body:'问答存档可查看至 {date}。你仍可删除单条、清空全部或注销账号；超过该日期后，存档将自动删除且无法恢复。'},
+      removed:{title:'问答存档已删除',body:'会员到期后的 30 天查看期已结束，原存档无法恢复。'},
+      confirmDelete:{title:'删除这个问答轮次',body:'删除后，这个问答轮次会立即从账号存档和后续追问上下文中移除，无法恢复。此操作不会影响你的本命盘和会员状态。',primary:'删除',secondary:'取消'},
+      deleting:{title:'正在删除问答',body:'请保持当前页面打开。'},
+      deleted:{title:'问答已删除',body:'这条记录已从账号存档和后续追问上下文中移除。'},
+      confirmClear:{title:'清空全部问答存档',body:'清空后，账号中的问知星存档会立即全部移除，无法恢复；本命盘和会员状态不受影响。',primary:'清空全部',secondary:'取消'},
+      clearing:{title:'正在清空问答存档',body:'请保持当前页面打开。'},
+      cleared:{title:'问答存档已清空',body:'账号中已没有问知星存档。'},
+      mutationError:{title:'操作没有完成',body:'当前存档未发生变化，请稍后重试。',action:'重试'}
+    },
+    deletion: {
+      confirm:{title:'注销账号',body:'注销后，云端盘面和问知星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。',check:'我已了解注销后账号资料和会员权益无法恢复',primary:'确认注销',secondary:'取消'},
+      deleting:{title:'正在注销账号',body:'请保持当前页面打开。'},
+      success:{title:'账号已注销',body:'云端盘面和问知星存档已从账号中移除。'},
+      error:{title:'账号注销没有完成',body:'账号资料未发生变化，请稍后重试。',action:'重试'}
+    }
+  };
+
+  const $ = id => document.getElementById(id);
+  let memberState = { configured:false, ready:false, memberUntil:null, cloudSyncEnabled:false };
+  let memberMode = 'loading';
+  let archiveData = null;
+  let accountDeleted = false;
+  let confirmAction = null;
+
+  function addMemberScript(){
+    return new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = memberScriptPath;
+      script.onload = resolve;
+      script.onerror = resolve;
+      document.head.appendChild(script);
+    });
+  }
+
+  function setState(prefix, title, body, badge){
+    $(prefix + 'Title').textContent = title;
+    $(prefix + 'Body').textContent = body;
+    if (badge !== undefined) $(prefix + 'Badge').textContent = badge;
+  }
+
+  function button(label, onClick, className){
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'btn' + (className ? ' ' + className : '');
+    el.textContent = label;
+    el.addEventListener('click', onClick);
+    return el;
+  }
+
+  function linkButton(label, href, className){
+    const el = document.createElement('a');
+    el.className = 'btn' + (className ? ' ' + className : '');
+    el.textContent = label;
+    el.href = href;
+    return el;
+  }
+
+  function replaceActions(id, items){
+    const wrap = $(id);
+    wrap.replaceChildren(...items);
+  }
+
+  function timestamp(value){
+    if (value === null || value === undefined || value === '') return null;
+    const numeric = Number(value);
+    const date = new Date(Number.isFinite(numeric) ? numeric : String(value));
+    return Number.isNaN(date.getTime()) ? null : date.getTime();
+  }
+
+  function formatDate(value){
+    const time = timestamp(value);
+    return time === null ? '' : new Date(time).toLocaleDateString('zh-CN');
+  }
+
+  function archiveDeleteAt(){
+    const expiry = timestamp(memberState.memberUntil);
+    return expiry === null ? null : expiry + ARCHIVE_GRACE_MS;
+  }
+
+  function classifyMember(){
+    const expiry = timestamp(memberState.memberUntil);
+    if (expiry === null) return 'non-member';
+    if (expiry > Date.now()) return 'active';
+    if (expiry + ARCHIVE_GRACE_MS > Date.now()) return 'grace';
+    return 'removed';
+  }
+
+  function snapshot(){
+    if (!window.zxMember || !zxMember.configured || !zxMember.snapshot) return { configured:false,ready:false,memberUntil:null,cloudSyncEnabled:false };
+    const data = zxMember.snapshot();
+    return { configured:!!zxMember.configured(),ready:!!data.ready,memberUntil:data.memberUntil || null,cloudSyncEnabled:!!data.cloudSyncEnabled };
+  }
+
+  function renderUnavailable(){
+    const account = COPY.account.unavailable;
+    const member = COPY.member.unavailable;
+    setState('account', account.title, account.body, account.badge);
+    setState('member', member.title, member.body, member.badge);
+    setState('cloud', account.title, account.body, '未配置');
+    setState('archive', account.title, account.body, '未配置');
+    setState('delete', account.title, account.body, '未配置');
+    replaceActions('accountActions', []);
+    replaceActions('memberActions', []);
+    replaceActions('cloudActions', []);
+    replaceActions('archiveActions', []);
+    replaceActions('deleteActions', []);
+    $('memberPolicy').hidden = true;
+    $('archiveList').replaceChildren();
+  }
+
+  function renderLoading(){
+    setState('account', COPY.account.loading.title, COPY.account.loading.body, COPY.account.loading.badge);
+    setState('member', COPY.member.loading.title, COPY.member.loading.body, COPY.member.loading.badge);
+    setState('cloud', COPY.account.loading.title, COPY.account.loading.body, '加载中');
+    setState('archive', COPY.archive.loading.title, COPY.archive.loading.body, '加载中');
+  }
+
+  function renderError(){
+    const retry = button(COPY.account.error.action, initializePage);
+    setState('account', COPY.account.error.title, COPY.account.error.body, COPY.account.error.badge);
+    setState('member', COPY.member.error.title, COPY.member.error.body, COPY.member.error.badge);
+    setState('cloud', COPY.cloud.error.title, COPY.cloud.error.body, '读取失败');
+    setState('archive', COPY.archive.loadError.title, COPY.archive.loadError.body, '读取失败');
+    setState('delete', COPY.account.error.title, COPY.account.error.body, '读取失败');
+    replaceActions('accountActions', [retry]);
+    replaceActions('memberActions', []);
+    replaceActions('cloudActions', []);
+    replaceActions('archiveActions', []);
+    replaceActions('deleteActions', []);
+  }
+
+  function renderReady(){
+    memberMode = classifyMember();
+    const account = COPY.account.guest;
+    $('memberPolicy').hidden = memberMode !== 'active' && memberMode !== 'grace';
+    setState('account', account.title, account.body, account.badge);
+    replaceActions('accountActions', []);
+
+    if (memberMode === 'active') {
+      const end = formatDate(memberState.memberUntil);
+      setState('member', end ? COPY.member.active.title + ' ' + end : COPY.member.active.title, COPY.member.active.body, COPY.member.active.badge);
+      replaceActions('memberActions', [linkButton('查看问答存档', '#qa-archive')]);
+    } else if (memberMode === 'grace') {
+      const end = formatDate(archiveDeleteAt());
+      setState('member', COPY.member.grace.title, COPY.member.grace.body.replace('{date}', end), COPY.member.grace.badge);
+      replaceActions('memberActions', [linkButton('查看问答存档', '#qa-archive')]);
+    } else if (memberMode === 'removed') {
+      setState('member', COPY.member.removed.title, COPY.member.removed.body, COPY.member.removed.badge);
+      replaceActions('memberActions', []);
+    } else {
+      setState('member', COPY.member.nonMember.title, COPY.member.nonMember.body, COPY.member.nonMember.badge);
+      replaceActions('memberActions', []);
+    }
+    renderCloud();
+    renderDeleteAccount();
+  }
+
+  function renderCloud(){
+    if (memberState.cloudSyncEnabled) {
+      setState('cloud', COPY.cloud.on.title, COPY.cloud.on.body, '已开启');
+      replaceActions('cloudActions', [button(COPY.cloud.on.action, confirmDisableCloud)]);
+      return;
+    }
+    setState('cloud', COPY.cloud.off.title, COPY.cloud.off.body, '未开启');
+    const actions = memberMode === 'active' ? [button(COPY.cloud.off.action, confirmEnableCloud, 'primary')] : [];
+    replaceActions('cloudActions', actions);
+  }
+
+  function renderDeleteAccount(){
+    if (accountDeleted) {
+      setState('delete', COPY.deletion.success.title, COPY.deletion.success.body, '已注销');
+      replaceActions('deleteActions', []);
+      return;
+    }
+    setState('delete', COPY.deletion.confirm.title, COPY.deletion.confirm.body, '受保护');
+    replaceActions('deleteActions', [button(COPY.deletion.confirm.title, confirmDeleteAccount, 'danger')]);
+  }
+
+  function renderArchiveItem(item){
+    const article = document.createElement('article');
+    article.className = 'archive-item';
+    const meta = document.createElement('div');
+    meta.className = 'archive-meta';
+    const time = document.createElement('time');
+    time.textContent = formatDate(item.created_at) || '已保存';
+    const unit = document.createElement('span');
+    unit.textContent = '一个问答轮次';
+    meta.append(time, unit);
+    const question = document.createElement('p');
+    question.className = 'archive-question';
+    question.textContent = String(item.question || '已保存的问题');
+    const answer = document.createElement('p');
+    answer.className = 'archive-answer';
+    answer.textContent = String(item.answer && item.answer.reply || '答复已保存');
+    const remove = button('删除这条', () => confirmDeleteRound(item.id), 'danger');
+    article.append(meta, question, answer, remove);
+    return article;
+  }
+
+  async function loadArchive(){
+    $('archiveList').replaceChildren();
+    $('archiveLive').textContent = '';
+    if (memberMode === 'non-member') {
+      setState('archive', COPY.archive.memberOnly.title, COPY.archive.memberOnly.body, '会员限定');
+      replaceActions('archiveActions', []);
+      return;
+    }
+    if (memberMode === 'removed') {
+      setState('archive', COPY.archive.removed.title, COPY.archive.removed.body, '已删除');
+      replaceActions('archiveActions', []);
+      return;
+    }
+    setState('archive', COPY.archive.loading.title, COPY.archive.loading.body, '加载中');
+    replaceActions('archiveActions', []);
+    try {
+      archiveData = await zxMember.deepHistory();
+      const items = Array.isArray(archiveData && archiveData.items) ? archiveData.items.slice(0, 50) : [];
+      if (archiveData && archiveData.archive_available === false) {
+        setState('archive', COPY.archive.removed.title, COPY.archive.removed.body, '已删除');
+        return;
+      }
+      const deleteAt = formatDate(archiveData && archiveData.archive_delete_at || archiveDeleteAt());
+      if (!items.length) {
+        const empty = memberMode === 'grace' ? COPY.archive.emptyGrace : COPY.archive.emptyActive;
+        setState('archive', empty.title, empty.body.replace('{date}', deleteAt), '0 / 50');
+        replaceActions('archiveActions', memberMode === 'active' ? [linkButton(COPY.archive.emptyActive.action, reportPath + '#sec-deep')] : []);
+        return;
+      }
+      const readyBody = COPY.archive.ready.body.replace('{count}', String(items.length));
+      setState('archive', COPY.archive.ready.title, readyBody, items.length + ' / 50');
+      replaceActions('archiveActions', [button(COPY.archive.ready.action, confirmClearArchive, 'danger')]);
+      $('archiveList').replaceChildren(...items.map(renderArchiveItem));
+      if (memberMode === 'grace') $('archiveLive').textContent = COPY.archive.grace.body.replace('{date}', deleteAt);
+    } catch (_) {
+      setState('archive', COPY.archive.loadError.title, COPY.archive.loadError.body, '读取失败');
+      replaceActions('archiveActions', [button(COPY.archive.loadError.action, loadArchive)]);
+    }
+  }
+
+  function openConfirm(copy, action, options){
+    const settings = options || {};
+    $('confirmTitle').textContent = copy.title;
+    $('confirmBody').textContent = copy.body;
+    $('confirmPrimary').textContent = copy.primary;
+    $('confirmCancel').textContent = copy.secondary;
+    $('confirmCheckWrap').hidden = !settings.checkbox;
+    $('confirmCheckLabel').textContent = settings.checkbox || '';
+    $('confirmCheck').checked = false;
+    $('confirmPrimary').disabled = !!settings.checkbox;
+    confirmAction = action;
+    $('confirmDialog').showModal();
+  }
+
+  function confirmEnableCloud(){
+    openConfirm(COPY.cloud.confirmEnable, async () => {
+      $('cloudLive').textContent = COPY.cloud.enabling.title + '。' + COPY.cloud.enabling.body;
+      try {
+        await zxMember.enableCloudSync();
+        memberState = snapshot();
+        renderCloud();
+        $('cloudLive').textContent = COPY.cloud.on.title;
+      } catch (_) {
+        $('cloudLive').textContent = COPY.cloud.error.body;
+      }
+    }, { checkbox:COPY.cloud.confirmEnable.check });
+  }
+
+  function confirmDisableCloud(){
+    openConfirm(COPY.cloud.confirmDisable, async () => {
+      $('cloudLive').textContent = COPY.cloud.disabling.title + '。' + COPY.cloud.disabling.body;
+      try {
+        await zxMember.disableCloudSync();
+        memberState = snapshot();
+        renderCloud();
+        $('cloudLive').textContent = COPY.cloud.disabled.title + '。' + COPY.cloud.disabled.body;
+      } catch (_) {
+        $('cloudLive').textContent = COPY.cloud.error.body;
+      }
+    });
+  }
+
+  function confirmDeleteRound(id){
+    openConfirm(COPY.archive.confirmDelete, async () => {
+      $('archiveLive').textContent = COPY.archive.deleting.title + '。' + COPY.archive.deleting.body;
+      try {
+        await zxMember.deleteDeepAnswer(id);
+        $('archiveLive').textContent = COPY.archive.deleted.title + '。' + COPY.archive.deleted.body;
+        await loadArchive();
+      } catch (_) {
+        $('archiveLive').textContent = COPY.archive.mutationError.body;
+      }
+    });
+  }
+
+  function confirmClearArchive(){
+    openConfirm(COPY.archive.confirmClear, async () => {
+      $('archiveLive').textContent = COPY.archive.clearing.title + '。' + COPY.archive.clearing.body;
+      try {
+        await zxMember.clearDeepHistory();
+        archiveData = { items:[],archive_available:true };
+        await loadArchive();
+        $('archiveLive').textContent = COPY.archive.cleared.title + '。' + COPY.archive.cleared.body;
+      } catch (_) {
+        $('archiveLive').textContent = COPY.archive.mutationError.body;
+      }
+    });
+  }
+
+  function confirmDeleteAccount(){
+    openConfirm(COPY.deletion.confirm, async () => {
+      $('deleteLive').textContent = COPY.deletion.deleting.title + '。' + COPY.deletion.deleting.body;
+      try {
+        await zxMember.deleteAccount();
+        accountDeleted = true;
+        renderDeleteAccount();
+        $('deleteLive').textContent = COPY.deletion.success.body;
+        replaceActions('cloudActions', []);
+        replaceActions('archiveActions', []);
+        $('archiveList').replaceChildren();
+      } catch (_) {
+        $('deleteLive').textContent = COPY.deletion.error.body;
+      }
+    }, { checkbox:COPY.deletion.confirm.check });
+  }
+
+  async function waitForMemberReady(){
+    for (let i = 0; i < 30; i += 1) {
+      memberState = snapshot();
+      if (memberState.ready) return true;
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+    return false;
+  }
+
+  async function initializePage(){
+    accountDeleted = false;
+    archiveData = null;
+    memberState = snapshot();
+    if (!memberState.configured) {
+      renderUnavailable();
+      return;
+    }
+    renderLoading();
+    const ready = await waitForMemberReady();
+    if (!ready) {
+      renderError();
+      return;
+    }
+    renderReady();
+    await loadArchive();
+  }
+
+  $('confirmCancel').addEventListener('click', () => $('confirmDialog').close());
+  $('confirmCheck').addEventListener('change', event => { $('confirmPrimary').disabled = !event.target.checked; });
+  $('confirmPrimary').addEventListener('click', async () => {
+    const action = confirmAction;
+    $('confirmDialog').close();
+    confirmAction = null;
+    if (action) await action();
+  });
+  $('confirmDialog').addEventListener('cancel', () => { confirmAction = null; });
+
+  addMemberScript().then(initializePage);
+})();
+</script>
+</body>
+</html>

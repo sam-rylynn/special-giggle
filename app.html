@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
 <title>知星·命盘研究所 — 以易理观己,以星盘为证</title>
 <meta name="description" content="输入出生信息,推演你的日主与本命关键词。以东方命理为主轴的个人发展探索工具。">
 <link rel="preload" as="image" href="./media/hero-taiji-mobile.webp" type="image/webp" media="(max-width:899px)">
@@ -78,6 +79,8 @@
   .cta{display:block;width:100%;margin:34px auto 0;padding:16px 0;background:linear-gradient(180deg,#d8b96a,var(--gold));color:#241c0c;border:none;border-radius:999px;cursor:pointer;font-family:var(--serif);font-size:18px;font-weight:700;letter-spacing:.3em;text-indent:.3em;box-shadow:0 6px 26px rgba(201,168,92,.25)}
   .cta:active{transform:translateY(1px)}
   .hint{margin-top:14px;text-align:center;color:var(--mist);font-size:12px}
+  .age-hint{margin-top:-8px;color:#8f99aa;font-size:12px;line-height:1.6}
+  .field-error{margin-top:8px;padding:9px 11px;border-left:2px solid var(--cinnabar);background:rgba(181,71,47,.1);color:#efb0a3;font-size:12px;line-height:1.65}
 
   .card{background:var(--panel);border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:26px 22px;margin-top:26px}
   /* 返回用户"继续这张盘"条 */
@@ -174,6 +177,16 @@
   .btn{flex:1;padding:14px 0;border-radius:999px;cursor:pointer;text-align:center;font-family:var(--serif);font-size:15px;letter-spacing:.2em;text-indent:.2em;border:1px solid var(--gold)}
   .btn.gold{background:linear-gradient(180deg,#d8b96a,var(--gold));color:#241c0c;font-weight:700;border:none}
   .btn.ghost{background:transparent;color:var(--gold)}
+  .share-gate{margin-top:22px;padding:15px 16px;border:1px solid rgba(201,168,92,.22);background:rgba(201,168,92,.055);border-radius:9px}
+  .share-gate-head{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--serif);color:#f3ead2;font-size:14px;font-weight:700}
+  .share-gate-badge{flex:none;border:1px solid rgba(201,168,92,.35);border-radius:999px;padding:2px 8px;color:var(--gold);font-family:var(--sans);font-size:10px;font-weight:400}
+  .share-gate p{margin:8px 0 0;color:#9da7b7;font-size:12px;line-height:1.75;text-align:justify}
+  .share-gate-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+  .share-gate-actions .btn{min-width:135px;padding:11px 12px;font-family:var(--sans);font-size:12px;letter-spacing:.04em;text-indent:0}
+  .share-gate-actions .btn:disabled{cursor:not-allowed;opacity:.45}
+  .share-gate-status{min-height:18px;margin-top:9px;color:var(--gold-dim);font-size:11px;line-height:1.6}
+  .share-notice{position:fixed;z-index:70;top:14px;left:50%;width:min(88vw,440px);transform:translateX(-50%);padding:12px 42px 12px 14px;border:1px solid rgba(201,168,92,.35);border-radius:10px;background:rgba(18,24,39,.96);box-shadow:0 12px 40px rgba(0,0,0,.45);color:var(--moon);font-size:13px;line-height:1.6}
+  .share-notice button{position:absolute;right:9px;top:8px;border:0;background:transparent;color:var(--mist);font-size:20px;cursor:pointer}
   .again{display:block;text-align:center;margin-top:18px;color:var(--mist);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
 
   #posterLayer{display:none;position:fixed;inset:0;z-index:50;background:rgba(8,11,20,.9);overflow:auto;padding:26px 0}
@@ -210,6 +223,9 @@
   #consent .box{background:var(--panel);border:1px solid rgba(201,168,92,.3);border-radius:10px;max-width:400px;padding:26px 22px}
   #consent h3{font-family:var(--serif);color:var(--gold);letter-spacing:.15em;font-size:16px;margin-bottom:12px}
   #consent p{font-size:13px;color:var(--mist);margin-bottom:16px}
+  #consent .privacy-link{margin:-4px 0 16px;font-size:12px}
+  #consent .privacy-link a{color:var(--gold);text-underline-offset:3px}
+  #consent .privacy-link a:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
   #consent .actions{display:grid;grid-template-columns:1fr;gap:10px}
 
   footer{margin-top:56px;text-align:center;color:#4b5563;font-size:11px;line-height:2}
@@ -220,6 +236,7 @@
 </head>
 <body>
 <canvas id="starfield"></canvas>
+<div class="share-notice" id="shareNotice" role="status" hidden><span id="shareNoticeText"></span><button id="shareNoticeClose" type="button" aria-label="关闭提示">×</button></div>
 
 <div class="wrap">
   <header>
@@ -338,7 +355,7 @@
 
   <section id="formCard" class="card">
     <h2>写下你来到世界的时刻</h2>
-    <div class="field"><label>出生日期</label><input type="date" id="bDate" min="1940-01-01" max="2026-12-31"></div>
+    <div class="field"><label for="bDate">出生日期</label><input type="date" id="bDate" min="1940-01-01" max="2026-12-31" aria-describedby="ageHint ageError"><div class="age-hint" id="ageHint">本服务仅向已满 14 周岁的用户提供。</div><div class="field-error" id="ageError" role="alert" hidden></div></div>
     <div class="row2">
       <div class="field"><label>出生时间<span class="optional">未知可不填</span></label><input type="time" id="bTime"></div>
       <div class="field"><label>性别<span class="optional">可选</span></label><select id="bGender"><option value="">不填</option><option>女</option><option>男</option><option>其他</option></select></div>
@@ -391,15 +408,25 @@
       <div class="portrait" id="portrait"></div>
     </div>
     <div class="btn-row"><button class="btn gold" id="posterBtn">保存我的日主海报</button></div>
-    <div class="btn-row"><button class="btn ghost" id="deepBtn">查看深度本命报告</button></div>
+    <div class="share-gate" id="shareGate" aria-live="polite">
+      <div class="share-gate-head"><span id="shareGateTitle">分享解锁尚未启用</span> <span class="share-gate-badge" id="shareGateBadge">暂不可用</span></div>
+      <p id="shareGateBody">分享规则已确定，但账号与分享权益服务尚未完成上线验收，本入口暂不可用。保存图片或调起系统分享不会自动计入有效分享。</p>
+      <div class="share-gate-actions" id="shareGateActions" hidden>
+        <button class="btn gold" id="shareActionBtn" type="button">分享日主海报</button>
+        <button class="btn ghost" id="reportAccessBtn" type="button" disabled>查看深度报告</button>
+        <button class="btn ghost" id="shareRefreshBtn" type="button">刷新权益</button>
+      </div>
+      <div class="share-gate-status" id="shareGateStatus"></div>
+    </div>
+    <div class="btn-row" id="localReportPreview" hidden><button class="btn ghost" id="deepBtn">本地测试 · 查看深度报告</button></div>
     <span class="again" id="againBtn">重新推演一次</span>
     <div class="divider">观 星 台</div>
   </section>
 
   <footer>
-    本页面基于传统文化框架生成内容,仅供自我探索与娱乐参考,<br>
+    本页面基于传统文化框架生成基础盘面，仅供自我探索与个人发展参考。<br>
     不构成医疗、心理、法律或投资建议。<br>
-    演示版基于日柱天干与太阳星座 · 完整版将加入全盘四柱与月亮、上升<br>
+    深度报告包含四柱、五行、关系与行动、大运时间轴、星盘互证与本命签。<br>
     © 知星·命盘研究所
   </footer>
 </div>
@@ -409,7 +436,8 @@
   <h3>开始前，先确认资料如何使用</h3>
   <p>你填写的出生日期、出生时间、出生城市和性别，会用于生成盘面结构、基础报告和问知星上下文。未成为会员且未开启本命盘云端同步时，资料可保存在当前浏览器，用于返回继续查看。</p>
   <p>使用问知星时，盘面摘要、本次问题、最近几轮对话摘要和当日本命签会经知星后端发送给第三方大模型服务处理。请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。</p>
-  <p>为了记录免费次数并保障账号安全，知星会在当前设备生成一个随机设备标识。它不读取硬件序列号，不用于广告或跨应用追踪。</p>
+  <p>为了记录免费次数并保障账号安全，知星会在当前设备生成一个随机设备标识。它不读取硬件序列号，不使用浏览器指纹，不用于广告或跨应用追踪。</p>
+  <p class="privacy-link">隐私政策页尚未开放：正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</p>
   <div class="actions">
     <button class="cta" style="margin-top:0" id="consentOk">同意并继续</button>
     <button class="btn ghost" id="consentCancel">暂不使用</button>
@@ -419,9 +447,12 @@
 <div id="posterLayer"><div class="inner">
   <canvas id="posterCanvas" width="750" height="1000"></canvas>
   <div class="tip">长按图片保存 / 右键另存为,分享到朋友圈或小红书</div>
+  <button class="btn gold" style="width:100%;margin-bottom:10px" id="sharePosterBtn" type="button" hidden>分享海报并邀请好友</button>
   <button class="btn ghost" style="width:100%" id="posterClose">关 闭</button>
 </div></div>
 
+<script src="./member.js"></script>
+<script src="./minimum-age.js"></script>
 <script>
 /* ============ 星空背景 ============ */
 (function(){
@@ -588,18 +619,246 @@ function dayPillar(y,m,d,hour){
 /* ============ 流程 ============ */
 const $=id=>document.getElementById(id);
 let CUR=null;
+let SHARE_STATUS=null;
+let REPORT_FALLBACK_ALLOWED=false;
+const SHARE_UNLOCK_COPY={
+  disabled:{
+    title:'分享解锁尚未启用',
+    badge:'暂不可用',
+    body:'分享规则已确定，但账号与分享权益服务尚未完成上线验收，本入口暂不可用。保存图片或调起系统分享不会自动计入有效分享。'
+  },
+  enabled:{
+    title:'分享日主海报，解锁深度报告',
+    body:'好友首次打开你的专属分享链接后，计入 1 次有效分享；同一账号或设备重复打开不计。每个账号或设备最多计入 2 次。',
+    validWindow:'每次权益自好友首次打开起有效 7×24 小时，不是永久权益。',
+    consumptionPoint:'服务端首次签发报告访问凭证时，权益绑定当前命盘；到期前可重复进入同一张报告。',
+    identity:'未登录时，当前浏览器使用密码学随机设备标识换取匿名账号；不读取硬件序列号，不使用浏览器指纹。',
+    footnote:'保存图片或调起系统分享不等于有效分享；以页面显示的权益状态为准。'
+  }
+};
+const INBOUND_SHARE_TOKEN=new URLSearchParams(location.search).get('share')||'';
+if(INBOUND_SHARE_TOKEN){
+  const cleanUrl=new URL(location.href);
+  cleanUrl.searchParams.delete('share');
+  history.replaceState(null,'',cleanUrl.href);
+}
+
+function showShareNotice(message){
+  $('shareNoticeText').textContent=message;
+  $('shareNotice').hidden=false;
+}
+$('shareNoticeClose').onclick=()=>$('shareNotice').hidden=true;
+
+function currentChartPayload(){
+  return {
+    d:$('bDate').value,
+    t:$('bTime').value,
+    c:$('bCity').value,
+    g:$('bGender')?$('bGender').value:''
+  };
+}
+
+function reportPath(){
+  return /\/web\/[^/]*$/.test(location.pathname)?'../v1/report.html':'./report.html';
+}
+
+function reportUrl(){
+  const p=new URLSearchParams();
+  const payload=currentChartPayload();
+  if(payload.d)p.set('d',payload.d);
+  if(payload.t)p.set('t',payload.t);
+  if(payload.c)p.set('c',payload.c);
+  if(payload.g)p.set('g',payload.g);
+  return reportPath()+(p.toString()?'?'+p.toString():'');
+}
+
+async function currentChartRef(){
+  if(!window.zxMember||!zxMember.chartRef)throw new Error('share client unavailable');
+  return zxMember.chartRef(currentChartPayload());
+}
+
+function renderShareGate(mode,message){
+  const actions=$('shareGateActions');
+  const posterShare=$('sharePosterBtn');
+  const fallback=$('localReportPreview');
+  const allowFallback=mode==='disabled'||LOCAL_REPORT_PREVIEW;
+  REPORT_FALLBACK_ALLOWED=allowFallback;
+  fallback.hidden=!allowFallback;
+  $('deepBtn').textContent=LOCAL_REPORT_PREVIEW?'本地测试 · 查看深度报告':'查看普通深度报告';
+  if(mode==='enabled'){
+    const count=SHARE_STATUS&&Number(SHARE_STATUS.valid_share_count)||0;
+    $('shareGateTitle').textContent=SHARE_UNLOCK_COPY.enabled.title;
+    $('shareGateBadge').textContent=count+'/2 次';
+    $('shareGateBody').textContent=[
+      SHARE_UNLOCK_COPY.enabled.body,
+      SHARE_UNLOCK_COPY.enabled.validWindow,
+      SHARE_UNLOCK_COPY.enabled.consumptionPoint,
+      SHARE_UNLOCK_COPY.enabled.identity
+    ].join(' ');
+    actions.hidden=false;
+    posterShare.hidden=false;
+    $('reportAccessBtn').disabled=count<1;
+    $('shareGateStatus').textContent=message||(
+      count>0?'已有可用权益，进入报告时由服务端签发访问凭证。':SHARE_UNLOCK_COPY.enabled.footnote
+    );
+    return;
+  }
+  $('shareGateTitle').textContent=mode==='error'?'分享权益状态暂时无法读取':SHARE_UNLOCK_COPY.disabled.title;
+  $('shareGateBadge').textContent=mode==='error'?'稍后再试':SHARE_UNLOCK_COPY.disabled.badge;
+  $('shareGateBody').textContent=SHARE_UNLOCK_COPY.disabled.body;
+  actions.hidden=true;
+  posterShare.hidden=true;
+  $('shareGateStatus').textContent=message||'';
+}
+
+async function refreshShareGate(){
+  if(!CUR||!window.zxMember||!zxMember.configured||!zxMember.configured()){
+    renderShareGate('disabled');
+    return null;
+  }
+  try{
+    await zxMember.whenReady();
+    SHARE_STATUS=await zxMember.shareStatus();
+    renderShareGate('enabled');
+    return SHARE_STATUS;
+  }catch(error){
+    if(error&&error.status===404)renderShareGate('disabled');
+    else renderShareGate('error','网络恢复后可再次刷新；当前不会误计分享次数。');
+    return null;
+  }
+}
+
+function shareLink(token){
+  const url=new URL(location.href);
+  const localApi=url.searchParams.get('api');
+  url.search='';
+  if(localApi&&LOCAL_REPORT_PREVIEW)url.searchParams.set('api',localApi);
+  url.searchParams.set('share',token);
+  return url.href;
+}
+
+function posterBlob(){
+  return new Promise(resolve=>{
+    const canvas=$('posterCanvas');
+    if(typeof canvas.toBlob!=='function'){resolve(null);return}
+    canvas.toBlob(resolve,'image/jpeg',.92);
+  });
+}
+
+async function shareCurrentPoster(){
+  if(!CUR)return;
+  const status=$('shareGateStatus');
+  status.textContent='正在生成专属分享链接……';
+  try{
+    await zxMember.whenReady();
+    const ref=await currentChartRef();
+    const intent=await zxMember.createShareIntent(ref);
+    const url=shareLink(intent.share_token);
+    await preparePoster();
+    let shared=false;
+    if(navigator.share){
+      const text='这是我的知星日主海报。打开链接可进入知星生成你自己的盘：'+url;
+      const blob=await posterBlob();
+      const file=blob&&typeof File==='function'?new File([blob],'知星-日主海报.jpg',{type:'image/jpeg'}):null;
+      const data=file&&navigator.canShare&&navigator.canShare({files:[file]})
+        ?{title:'知星·命盘研究所',text,files:[file]}
+        :{title:'知星·命盘研究所',text,url};
+      await navigator.share(data);
+      shared=true;
+    }else if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+      status.textContent='专属链接已复制。好友首次打开后才计入有效分享。';
+      shared=true;
+    }
+    if(!shared){
+      status.textContent='当前浏览器无法调起分享，请复制此链接发给好友：'+url;
+      return;
+    }
+    status.textContent='已调起分享。好友首次打开链接后，再点“刷新权益”。';
+  }catch(error){
+    if(error&&error.name==='AbortError'){
+      status.textContent='已取消分享，本次不会计入有效分享。';
+      return;
+    }
+    status.textContent=error&&error.status===429?'未确认的分享链接较多，请稍后再试。':'分享链接生成失败，请检查网络后重试。';
+  }
+}
+
+async function openReportWithAccess(){
+  const button=$('reportAccessBtn');
+  button.disabled=true;
+  $('shareGateStatus').textContent='正在核验这张命盘的报告权益……';
+  try{
+    await zxMember.whenReady();
+    const ref=await currentChartRef();
+    const access=await zxMember.issueReportAccess(ref);
+    if(!access.allowed){
+      $('shareGateStatus').textContent='这张命盘暂时没有可用权益；好友首次打开分享链接后再刷新。';
+      return;
+    }
+    location.href=reportUrl();
+  }catch(_){
+    $('shareGateStatus').textContent='权益核验暂时没有接上，请稍后重试。';
+  }finally{
+    button.disabled=false;
+  }
+}
+
+async function confirmInboundShare(){
+  if(!INBOUND_SHARE_TOKEN)return;
+  if(!window.zxMember||!zxMember.configured||!zxMember.configured()){
+    showShareNotice('分享权益服务尚未开放，这次打开不会误计为有效分享。');
+    return;
+  }
+  showShareNotice('正在确认这次好友打开……');
+  try{
+    await zxMember.whenReady();
+    const result=await zxMember.confirmShare(INBOUND_SHARE_TOKEN);
+    const message={
+      granted:'已确认一次有效好友打开。你也可以在这里生成自己的基础盘面。',
+      already_confirmed:'这次好友打开已经确认过，不会重复计数。',
+      same_device:'这是分享者自己的设备，本次不计入有效分享。',
+      claimed_by_another_recipient:'这条分享链接已经由另一位好友确认。',
+      duplicate:'同一账号或设备的重复打开不计入新的权益。',
+      limit_reached:'分享者已经达到最多 2 次有效分享。'
+    }[result.reason]||'分享链接已处理，你可以继续生成自己的基础盘面。';
+    showShareNotice(message);
+  }catch(_){
+    showShareNotice('分享确认暂时没有接上，这次不会误计；请稍后重新打开原链接。');
+  }
+}
 
 /* 下滑引导 → 平滑滚到表单 */
 if($('scrollCue')) $('scrollCue').onclick=()=>$('formCard').scrollIntoView({behavior:'smooth',block:'start'});
 
+const LOCAL_REPORT_PREVIEW=location.protocol==='file:'||['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+$('localReportPreview').hidden=!LOCAL_REPORT_PREVIEW;
+const eligibleBirthMax=ZxMinimumAge.latestEligibleBirthDate();
+if(eligibleBirthMax)$('bDate').max=eligibleBirthMax;
+function validateBirthDate(){
+  const value=$('bDate').value;
+  const status=ZxMinimumAge.evaluateMinimumAge(value);
+  const error=$('ageError');
+  if(!status.valid){
+    error.textContent='请填写有效的出生日期。';error.hidden=false;
+    $('bDate').setAttribute('aria-invalid','true');$('bDate').focus();return false;
+  }
+  if(!status.allowed){
+    error.textContent='暂无法使用知星：本服务暂不向不满 14 周岁的用户提供。';error.hidden=false;
+    $('bDate').setAttribute('aria-invalid','true');$('bDate').focus();return false;
+  }
+  error.hidden=true;error.textContent='';$('bDate').removeAttribute('aria-invalid');$('bDate').style.borderColor='';return true;
+}
+$('bDate').addEventListener('input',()=>{if($('bDate').value)validateBirthDate()});
 $('goBtn').onclick=()=>{
-  if(!$('bDate').value){$('bDate').focus();$('bDate').style.borderColor='var(--cinnabar)';return}
+  if(!validateBirthDate())return;
   $('consent').style.display='flex';
 };
 $('consentCancel').onclick=()=>{
   $('consent').style.display='none';
 };
 $('consentOk').onclick=()=>{
+  if(!validateBirthDate()){$('consent').style.display='none';return}
   $('consent').style.display='none';
   try{localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:'')}))}catch(_){/* 深度报告读取兜底 */}
   const [y,m,d]=$('bDate').value.split('-').map(Number);
@@ -625,6 +884,8 @@ $('consentOk').onclick=()=>{
 (function resumeLast(){
   let last=null; try{last=JSON.parse(localStorage.getItem('zx_input')||'null')}catch(_){}
   if(!last||!last.d) return;
+  const age=ZxMinimumAge.evaluateMinimumAge(last.d);
+  if(!age.valid||!age.allowed){try{localStorage.removeItem('zx_input')}catch(_){}return}
   if($('bDate')) $('bDate').value=last.d;
   if($('bTime')&&last.t) $('bTime').value=last.t;
   if($('bCity')&&last.c) $('bCity').value=last.c;
@@ -655,58 +916,46 @@ function showResult(){
     `<div class="aux-block"><span class="src-tag">星盘辅证·太阳${sign}</span>${SIGN_AUX[sign]}</div>`+
     `<p class="deep-tease">这只是你的<b>日柱</b>——1/4 张盘;完整的四柱全盘、五行能量、月亮与上升、一问一卦,都在<b>深度报告</b>的另外 <b>3/4</b> 里。</p>`;
   $('result').style.display='block';
+  refreshShareGate();
   scrollTo({top:0,behavior:'smooth'});
 }
 
 $('againBtn').onclick=()=>{$('result').style.display='none';$('formCard').style.display='block';scrollTo({top:0,behavior:'smooth'})};
 
-/* ============ 深度报告入口:携出生信息跳转真报告(report.html) ============ */
+/* ============ 普通报告兼容入口:分享服务关闭时保留,启用或状态不明时收起 ============ */
 $('deepBtn').onclick=()=>{
-  const p=new URLSearchParams();
-  if($('bDate').value)p.set('d',$('bDate').value);
-  if($('bTime').value)p.set('t',$('bTime').value);
-  if($('bCity').value)p.set('c',$('bCity').value);
-  if($('bGender')&&$('bGender').value)p.set('g',$('bGender').value);   // 性别→大运用
-  const reportPath=/\/web\/[^/]*$/.test(location.pathname)?'../v1/report.html':'./report.html';
-  location.href=reportPath+(p.toString()?'?'+p.toString():'');   // 出生信息也已存 localStorage(zx_input)兜底
+  if(!REPORT_FALLBACK_ALLOWED&&!LOCAL_REPORT_PREVIEW)return;
+  location.href=reportUrl();   // 出生信息也已存 localStorage(zx_input)兜底
 };
 
 /* ============ 海报:日主为主视觉 ============ */
 $('posterBtn').onclick=()=>{drawPoster();$('posterLayer').style.display='block'};
 $('posterClose').onclick=()=>$('posterLayer').style.display='none';
+$('shareActionBtn').onclick=shareCurrentPoster;
+$('sharePosterBtn').onclick=shareCurrentPoster;
+$('shareRefreshBtn').onclick=refreshShareGate;
+$('reportAccessBtn').onclick=openReportWithAccess;
+addEventListener('focus',()=>{if(CUR)refreshShareGate()});
+document.addEventListener('visibilitychange',()=>{if(CUR&&!document.hidden)refreshShareGate()});
+confirmInboundShare();
 
 /* 海报底图:太极星球分享卡(参考视觉 share-cosmic-card,已裁 750×1000) */
 const POSTER_BG="./media/share-poster-bg.jpg";
 const posterImg=new Image();
-const DAY_MASTER_POSTERS={
-  甲:'day-master-jia-wood.webp',
-  乙:'day-master-yi-wood.webp',
-  丙:'day-master-bing-fire.webp',
-  丁:'day-master-ding-fire.webp',
-  戊:'day-master-wu-earth.webp',
-  己:'day-master-ji-earth.webp',
-  庚:'day-master-geng-metal.webp',
-  辛:'day-master-xin-metal.webp',
-  壬:'day-master-ren-water.webp',
-  癸:'day-master-gui-water.webp'
-};
-const DAY_MASTER_POSTER_BASE=/\/web\/[^/]*$/.test(location.pathname)?'../v1/img/share/day-master/':'./img/share/day-master/';
 function drawPoster(){
-  const file=CUR&&CUR.dp&&DAY_MASTER_POSTERS[CUR.dp.stem];
-  if(!file){drawPosterFallback();return}
-  const img=new Image();
-  img.onload=()=>{
-    const c=$('posterCanvas'),x=c.getContext('2d');
-    c.width=img.naturalWidth;c.height=img.naturalHeight;
-    x.clearRect(0,0,c.width,c.height);
-    x.drawImage(img,0,0,c.width,c.height);
-  };
-  img.onerror=drawPosterFallback;
-  img.src=DAY_MASTER_POSTER_BASE+file;
+  preparePoster().catch(()=>{});
+}
+function preparePoster(){
+  return new Promise((resolve,reject)=>{
+    const paint=()=>{drawPosterFallback();resolve()};
+    if(posterImg.complete&&posterImg.naturalWidth){paint();return}
+    posterImg.onload=paint;
+    posterImg.onerror=()=>reject(new Error('poster image unavailable'));
+    if(!posterImg.src)posterImg.src=POSTER_BG;
+  });
 }
 function drawPosterFallback(){
-  if(!posterImg.src){posterImg.onload=drawPosterFallback;posterImg.src=POSTER_BG;return}
-  if(!posterImg.complete){posterImg.onload=drawPosterFallback;return}
+  if(!posterImg.complete||!posterImg.naturalWidth)return;
   const c=$('posterCanvas'),x=c.getContext('2d');
   const W=750,H=1000,{sign,dp}=CUR,S=STEM_LIB[dp.stem];
   c.width=W;c.height=H;
@@ -736,25 +985,13 @@ function drawPosterFallback(){
   x.fillStyle='#E8E4D8';x.fillText(kwLine,W/2,864);
   x.fillStyle='#6B7280';x.font='18px '+SERIF;
   x.fillText('星盘辅证 · 太阳'+sign+' · '+SIGN_KW[sign],W/2,896);
-  // ===== 底栏:左品牌 + 右二维码占位 =====
-  const rr=(X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
-  const QS=76, qx=W-44-QS, qy=902;
-  // 分隔线(止于二维码前)
-  x.strokeStyle='rgba(201,168,92,.2)';x.lineWidth=1;x.beginPath();x.moveTo(44,930);x.lineTo(qx-18,930);x.stroke();
-  // 左:品牌 + slogan(左对齐)
-  x.textAlign='left';
+  // 正式域名和扫码验收完成前，分享图不绘制二维码或占位框。
+  x.strokeStyle='rgba(201,168,92,.2)';x.lineWidth=1;x.beginPath();x.moveTo(44,930);x.lineTo(W-44,930);x.stroke();
+  x.textAlign='center';
   x.fillStyle='#C9A85C';x.font='700 22px '+SERIF;
-  x.fillText('知 · 星  命盘研究所',44,966);
+  x.fillText('知 · 星  命盘研究所',W/2,966);
   x.fillStyle='#6B7280';x.font='14px '+SERIF;
-  x.fillText('以易理观己 · 以星盘为证',44,988);
-  // 右:二维码占位框(域名定后把这段替换成 drawImage(qrImg,qx,qy,QS,QS))
-  rr(qx,qy,QS,QS,8);
-  x.fillStyle='rgba(232,228,216,.05)';x.fill();
-  x.strokeStyle='rgba(201,168,92,.5)';x.setLineDash([5,4]);x.lineWidth=1.2;x.stroke();x.setLineDash([]);
-  x.textAlign='center';x.fillStyle='#8f7a45';x.font='700 13px '+SERIF;
-  x.fillText('扫码识别',qx+QS/2,qy+QS/2-3);
-  x.fillStyle='#6B7280';x.font='11px '+SERIF;
-  x.fillText('二维码待上线',qx+QS/2,qy+QS/2+16);
+  x.fillText('以易理观己 · 以星盘为证',W/2,988);
 }
 </script>
 </body>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0E1220">
-<title>知·星 — 深度本命报告(内测)</title>
+<title>知·星｜深度本命报告</title>
 <style>
   :root{--ink:#0E1220;--panel:#1A2233;--gold:#C9A85C;--gold-dim:#8f7a45;--moon:#E8E4D8;--cinnabar:#B5472F;--mist:#6B7280;
     --serif:"Noto Serif SC","Songti SC","STSong",serif;--sans:"Noto Sans SC","PingFang SC",sans-serif}
@@ -146,12 +146,16 @@
   .member-pill{flex:none;border:1px solid rgba(201,168,92,.35);border-radius:999px;padding:3px 8px;color:var(--gold);font-size:11px}
   .member-copy{margin-top:7px;color:#b9c2d0;font-size:12px;line-height:1.75;text-align:justify}
   .member-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .member-actions:empty{display:none}
   .member-actions a,.member-actions span{display:inline-flex;align-items:center;height:30px;border-radius:999px;border:1px solid rgba(232,228,216,.14);padding:0 10px;font-size:12px;color:var(--gold);text-decoration:none}
   .member-actions .disabled{color:var(--mist);opacity:.65;cursor:not-allowed}
   .deep-echo{margin-top:10px;background:rgba(201,168,92,.07);border-radius:8px;padding:10px 12px;color:#b9c2d0;font-size:13px;line-height:1.8}
   .deep-notice{margin-top:10px;padding:10px 12px;border-left:2px solid rgba(201,168,92,.42);background:rgba(201,168,92,.045)}
   .deep-notice p{margin:0;color:#aeb8c7;font-size:12px;line-height:1.75}
   .deep-notice p+p{margin-top:6px}
+  .deep-policy{margin-top:7px;color:#8992a3;font-size:12px}
+  .ai-interaction{margin-top:10px;color:var(--gold-dim);font-size:12px}
+  .ai-label{display:inline-flex;align-items:center;margin-bottom:8px;border:1px solid rgba(201,168,92,.3);border-radius:999px;padding:2px 9px;color:var(--gold);font-size:10px;letter-spacing:.08em}
   /* 本命深问 · 答复卡 */
   .deep-ans{margin-top:12px;animation:qfade .5s ease}
   .da-q{font-size:12.5px;color:var(--gold-dim);margin-bottom:10px;padding-left:10px;border-left:2px solid rgba(201,168,92,.4)}
@@ -232,13 +236,20 @@
     .nav-group{grid-template-columns:42px minmax(0,1fr);gap:8px}
   }
   @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube{animation:none;transition:none}.nav-progress-fill,.nav-tool,.nav-section-link{transition:none;transform:none}}
+  #ageGateBlock,#reportAccessGateBlock{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--ink)}
+  #ageGateBlock[hidden],#reportAccessGateBlock[hidden]{display:none}
+  .age-gate-card{width:min(100%,420px);padding:28px 24px;border:1px solid rgba(201,168,92,.3);background:var(--panel);border-radius:12px;text-align:center}
+  .age-gate-card .badge{margin-bottom:14px}
+  .age-gate-card h1{font-size:25px;letter-spacing:.08em;text-indent:0}
+  .age-gate-card p{margin-top:14px;color:#b8c0cd}
+  .age-gate-card a{display:inline-block;margin-top:18px;padding:10px 18px;border:1px solid var(--gold);border-radius:999px;color:var(--gold);text-decoration:none;font-size:13px}
 </style>
 </head>
 <body>
 <div class="cover">
   <img src="./img/cover.jpg" alt="">
   <div class="tt">
-    <span class="badge">内 测 · 抢 先 版</span>
+    <span class="badge">个 人 发 展 参 考</span>
     <h1>深度本命报告</h1>
     <div class="sub">五行能量 · 星盘互证 · 本命签</div>
   </div>
@@ -298,15 +309,27 @@
   <div class="endviz"><img src="./img/token.jpg" alt="" loading="lazy"><div class="cap">本 命 信 物</div></div>
 
   <div class="meta">
-    本报告基于传统文化框架(八字/星盘/易理)对出生时间信息的结构化解读,仅供自我探索与个人发展参考,<br>
-    不构成医疗、心理、法律、投资建议,不含对未来事件的预测。<br>
-    精度说明:节气按天文算法推算(约 ±15 分钟);真太阳时已按出生地经度与均时差校正;<br>
-    日主强弱与时间卦为简化读法,提供参考视角,非定论。
+    本报告基于传统文化框架，对出生时间信息进行结构化解读，仅供自我探索与个人发展参考。<br>
+    不构成医疗、心理、法律或投资建议，也不替代相关专业服务。<br>
+    八字与五行作为主轴，星盘用于印证或呈现反差；页面中的来源标注可用于回看解读依据。
   </div>
 </div>
 
+<section id="ageGateBlock" role="alertdialog" aria-modal="true" aria-labelledby="ageGateTitle" tabindex="-1" hidden>
+  <div class="age-gate-card"><span class="badge">服 务 年 龄 门 槛</span><h1 id="ageGateTitle">暂无法使用知星</h1><p id="ageGateBody">本服务暂不向不满 14 周岁的用户提供。</p></div>
+</section>
+<section id="reportAccessGateBlock" role="alertdialog" aria-modal="true" aria-labelledby="reportAccessGateTitle" tabindex="-1" hidden>
+  <div class="age-gate-card">
+    <span class="badge">深 度 报 告 权 益</span>
+    <h1 id="reportAccessGateTitle">尚未取得这张命盘的访问凭证</h1>
+    <p id="reportAccessGateBody">返回首页分享日主海报；好友首次打开专属链接后，权益有效 7×24 小时。</p>
+    <a id="reportAccessBack" href="../web/index.html">返回首页</a>
+  </div>
+</section>
+
 <div id="aiLoading"><img src="./img/altar.jpg" alt=""><div class="inner"><div class="txt">正在推演整张盘……</div></div></div>
 
+<script src="./minimum-age.js"></script>
 <script src="./member.js"></script>
 <script src="./bazi-engine.js"></script>
 <script src="./explainer.js"></script>
@@ -768,15 +791,16 @@ function deepMemberBox(){
   return `<div id="deepMemberBox" class="member-box" aria-live="polite"></div>`;
 }
 
-const ACCOUNT_PAGE_AVAILABLE = false;
+const REPORT_SOURCE_TREE = /\/v1\/report\.html$/.test(location.pathname);
+const ACCOUNT_PAGE_AVAILABLE = true;
+const ACCOUNT_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/account.html' : './account.html';
 const MEMBER_ACTIVE_BODY = '会员可不限次使用问知星，并默认保存最近 50 个问答轮次。';
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
-const MEMBER_POLICY = MEMBER_ACTIVE_BODY + MEMBER_ARCHIVE_TAIL;
 const MODEL_PROCESSING_NOTICE = '提问会发送盘面摘要、本次问题、最近几轮对话摘要和当日本命签，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
 const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
 const QUOTA_UNAVAILABLE = {
   title: '当前可用次数已用完',
-  body: '你仍可查看本命报告与本命签。'
+  body: '免费深问每 24 小时可使用 1 次。你仍可查看本命报告与本命签。'
 };
 
 function memberSnapshot(){
@@ -801,9 +825,10 @@ function renderMemberStatus(){
   const s = memberSnapshot();
   const untilText = formatMemberUntil(s.memberUntil);
   const isMember = !!(s.memberUntil && new Date(typeof s.memberUntil === 'number' ? s.memberUntil : String(s.memberUntil)).getTime() > Date.now());
-  let title = '会员服务暂未接通';
-  let pill = '未配置';
-  let copy = '当前仍可查看本命报告与本命签。会员与账号服务接通后，可在这里查看权益状态。';
+  let title = '账号服务尚未开放';
+  let pill = '暂不可用';
+  let copy = '当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。';
+  let policy = '';
   if (s.configured && !s.ready) {
     title = '正在读取会员状态';
     pill = '加载中';
@@ -812,15 +837,15 @@ function renderMemberStatus(){
     title = untilText ? `会员有效至 ${untilText}` : '会员已开通';
     pill = '会员';
     copy = MEMBER_ACTIVE_BODY;
+    policy = MEMBER_ARCHIVE_TAIL;
   } else if (s.configured) {
     title = '当前未开通会员';
     pill = '非会员';
     copy = '你可以继续使用问知星的基础体验。';
   }
   const account = s.configured && ACCOUNT_PAGE_AVAILABLE
-    ? `<a href="./account.html">账号</a>`
-    : `<span class="disabled">账号入口待接通</span>`;
-  const policy = copy === MEMBER_ACTIVE_BODY ? MEMBER_ARCHIVE_TAIL : MEMBER_POLICY;
+    ? `<a href="${ACCOUNT_PAGE_HREF}">账号与资料</a>`
+    : '';
   box.innerHTML = `<div class="member-row"><div class="member-title">${esc(title)}</div><div class="member-pill">${esc(pill)}</div></div>
     <div class="member-copy">${esc(copy)} ${esc(policy)}</div>
     <div class="member-actions">${account}</div>`;
@@ -843,7 +868,8 @@ function deepCard(){
     <p class="deep-intro">它已经读过你的整张盘——你问的每件事,都放回你自己的命局里答。职业、关系、眼下要不要做某件事,都可以问。</p>
     ${deepMemberBox()}
     ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
-    <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p></div>
+    <div class="ai-interaction">你正在与人工智能服务互动</div>
+    <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">隐私政策页尚未开放：正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</div></div>
     <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
     <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
     <div id="deepEcho"></div>
@@ -858,25 +884,6 @@ function qianCard(){
     <div style="text-align:center;margin:16px 0 4px"><button id="drawBtn">${esc(U.cta)}</button></div>
     <div id="qianOut"></div>
   </div></div>`;
-}
-
-let shareCardManifestPromise = null;
-function loadShareCardManifest(){
-  if (!shareCardManifestPromise){
-    shareCardManifestPromise = fetch('./img/share/share-card-assets.json', { cache:'no-store' })
-      .then(r => r.ok ? r.json() : null)
-      .catch(() => null);
-  }
-  return shareCardManifestPromise;
-}
-
-function loadQianPosterImage(src){
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
 }
 
 /* 抽签仪式:摇签 ~1.2s 后直接出图,不提前铺开签文 */
@@ -895,7 +902,7 @@ function drawQianRitual(chart){
   }, 1200);
 }
 
-/* 本命签分享卡:定稿图优先，资源失败时保留 750×1000 Canvas 回退。 */
+/* 正式分享地址未核验前，统一使用不含二维码的 Canvas 分享卡。 */
 function qposWrap(x, text, cx, y, maxW, lh){
   let line = '', yy = y;
   for (const ch of [...text]){
@@ -907,26 +914,6 @@ function qposWrap(x, text, cx, y, maxW, lh){
 }
 async function drawQianPoster(q){
   const c = $('qianCanvas');
-  try {
-    const manifest = await loadShareCardManifest();
-    const item = manifest && (manifest.qianCards || []).find(card => card.id === q.assetId && card.status === 'ready');
-    const filename = item && String(item.targetFile || '').split('/').pop();
-    if (filename && /^[a-z0-9-]+\.webp$/.test(filename)){
-      const img = await loadQianPosterImage('./img/share/qian/' + filename);
-      c.width = img.naturalWidth;
-      c.height = img.naturalHeight;
-      const x = c.getContext('2d');
-      x.clearRect(0, 0, c.width, c.height);
-      x.drawImage(img, 0, 0);
-      const posterDate = drawQianPosterDateOverlay(x, c.width);
-      c.dataset.renderMode = 'asset';
-      c.dataset.assetId = q.assetId;
-      c.dataset.posterDate = posterDate;
-      return 'asset';
-    }
-  } catch (_) {
-    // 资源不可读时继续使用已有 Canvas，不阻断抽签。
-  }
   const posterDate = qianPosterDateText();
   drawQianPosterFallback(q, posterDate);
   c.dataset.renderMode = 'canvas';
@@ -937,25 +924,6 @@ async function drawQianPoster(q){
 
 function qianPosterDateText(date = new Date()){
   return date.getFullYear()+'.'+(date.getMonth()+1)+'.'+date.getDate();
-}
-
-function drawQianPosterDateOverlay(x, width, date = new Date()){
-  const scale = width / 750;
-  const posterDate = qianPosterDateText(date);
-  const shade = x.createLinearGradient(110*scale, 0, 640*scale, 0);
-  shade.addColorStop(0, 'rgba(5,8,13,0)');
-  shade.addColorStop(.14, 'rgba(5,8,13,.98)');
-  shade.addColorStop(.86, 'rgba(5,8,13,.98)');
-  shade.addColorStop(1, 'rgba(5,8,13,0)');
-  x.save();
-  x.fillStyle = shade;
-  x.fillRect(110*scale, 42*scale, 530*scale, 64*scale);
-  x.textAlign = 'center';
-  x.fillStyle = '#C9A85C';
-  x.font = (20*scale)+'px "Noto Serif SC","Songti SC","STSong",serif';
-  x.fillText('◇ 今 日 本 命 签 · '+posterDate+' ◇', width/2, 84*scale);
-  x.restore();
-  return posterDate;
 }
 
 function drawQianPosterFallback(q, posterDate){
@@ -981,16 +949,10 @@ function drawQianPosterFallback(q, posterDate){
   x.fillText('宜  '+(q.yi||[]).join('  ')+'      忌  '+(q.ji||[]).join('  '), W/2, gy + 56);
   x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
   x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
-  const rr = (X,Y,Wd,Hd,R)=>{x.beginPath();x.moveTo(X+R,Y);x.arcTo(X+Wd,Y,X+Wd,Y+Hd,R);x.arcTo(X+Wd,Y+Hd,X,Y+Hd,R);x.arcTo(X,Y+Hd,X,Y,R);x.arcTo(X,Y,X+Wd,Y,R);x.closePath();};
-  const QS = 76, qx = W-44-QS, qy = 902;
-  x.strokeStyle = 'rgba(201,168,92,.2)'; x.lineWidth = 1; x.beginPath(); x.moveTo(44,930); x.lineTo(qx-18,930); x.stroke();
-  x.textAlign = 'left';
-  x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF; x.fillText('知 · 星  命盘研究所', 44, 966);
-  x.fillStyle = '#6B7280'; x.font = '14px '+SERIF; x.fillText('以易理观己 · 以星盘为证', 44, 988);
-  rr(qx,qy,QS,QS,8); x.fillStyle = 'rgba(232,228,216,.05)'; x.fill();
-  x.strokeStyle = 'rgba(201,168,92,.5)'; x.setLineDash([5,4]); x.lineWidth = 1.2; x.stroke(); x.setLineDash([]);
-  x.textAlign = 'center'; x.fillStyle = '#8f7a45'; x.font = '700 13px '+SERIF; x.fillText('扫码识别', qx+QS/2, qy+QS/2-3);
-  x.fillStyle = '#6B7280'; x.font = '11px '+SERIF; x.fillText('二维码待上线', qx+QS/2, qy+QS/2+16);
+  x.strokeStyle = 'rgba(201,168,92,.2)'; x.lineWidth = 1; x.beginPath(); x.moveTo(44,930); x.lineTo(W-44,930); x.stroke();
+  x.textAlign = 'center';
+  x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF; x.fillText('知 · 星  命盘研究所', W/2, 966);
+  x.fillStyle = '#6B7280'; x.font = '14px '+SERIF; x.fillText('以易理观己 · 以星盘为证', W/2, 988);
 }
 
 function render(chart, sections){
@@ -1099,13 +1061,73 @@ function currentInput(){
   return input;
 }
 
+function ensureEligibleBirthDate(value){
+  const status = ZxMinimumAge.evaluateMinimumAge(value);
+  if (status.valid && status.allowed){
+    $('ageGateBlock').hidden = true;
+    document.body.style.overflow = '';
+    return true;
+  }
+  $('ageGateTitle').textContent = status.valid ? '暂无法使用知星' : '出生日期无效';
+  $('ageGateBody').textContent = status.valid ? '本服务暂不向不满 14 周岁的用户提供。' : '请返回首页填写有效的出生日期。';
+  $('ageGateBlock').hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('ageGateBlock').focus({preventScroll:true});
+  return false;
+}
+
 function generateRule(){
+  if (!ensureEligibleBirthDate($('d').value)) return;
   const chart = BaziEngine.computeChart(currentInput());
   const sections = Explainer.validateSections(Explainer.buildSections(chart), chart)
     .map(s => s.issues.length ? { ...s, body:'(本章内容整理中)来源:研究所', issues:[] } : s);
   render(chart, sections);
 }
-$('go').onclick = generateRule;
+
+function reportChartPayload(){
+  return { d:$('d').value, t:$('t').value, c:$('c').value, g:GENDER };
+}
+
+function showReportAccessGate(message){
+  $('reportAccessGateBody').textContent=message;
+  $('reportAccessGateBlock').hidden=false;
+  document.body.style.overflow='hidden';
+  $('reportAccessGateBlock').focus({preventScroll:true});
+}
+
+async function generateAuthorizedRule(){
+  if (!ensureEligibleBirthDate($('d').value)) return;
+  if (!window.zxMember || !zxMember.configured || !zxMember.configured()){
+    $('reportAccessGateBlock').hidden=true;
+    generateRule();
+    return;
+  }
+  try{
+    await zxMember.whenReady();
+    try{
+      await zxMember.shareStatus();
+    }catch(error){
+      if(error&&error.status===404){
+        $('reportAccessGateBlock').hidden=true;
+        generateRule();
+        return;
+      }
+      throw error;
+    }
+    const ref=await zxMember.chartRef(reportChartPayload());
+    const access=await zxMember.verifyStoredReportAccess(ref);
+    if(!access.allowed){
+      showReportAccessGate('这张命盘尚无有效访问凭证。返回首页分享日主海报；好友首次打开专属链接后，权益有效 7×24 小时。');
+      return;
+    }
+    $('reportAccessGateBlock').hidden=true;
+    document.body.style.overflow='';
+    generateRule();
+  }catch(_){
+    showReportAccessGate('暂时无法连接权益核验服务。为避免误放行，请稍后重试或返回首页。');
+  }
+}
+$('go').onclick = generateAuthorizedRule;
 $('editLink').onclick = () => { const r=$('editRow'); r.style.display = (r.style.display==='none'||!r.style.display) ? 'flex' : 'none'; };
 
 /* ---------- AI 直连(内测;正式版走后端) ---------- */
@@ -1200,7 +1222,8 @@ const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|
 /* 后端直答开关:部署国内云 GPT 后端后把地址填这里,公开访问即出真答;
  * 留空=公开走预告、内测走 ?lab=1 直连(现状),部署前端可安全先行。 */
 const DEEP_ENDPOINT = 'https://1451100549-43dsk5vbzp.ap-guangzhou.tencentscf.com';
-const DEEP_FREE = 30;       // 内测期放开连续追问;后端仍有 DAILY_LIMIT_PER_IP 兜底
+const DEEP_FREE = 1;
+const DEEP_FREE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const DEEP_HISTORY_LIMIT = 4;
 let deepTurns = [];
 
@@ -1225,12 +1248,15 @@ function deepEndpoint(){
   return localEndpoint || (isLocalDebugPage() ? '' : DEEP_ENDPOINT);
 }
 function deepQuota(){
-  const today = new Date().toISOString().slice(0,10);
+  const timestamp = Date.now();
   let s = null; try { s = JSON.parse(localStorage.getItem('zx_deep_q') || 'null'); } catch(_){}
-  if (!s || s.d !== today) s = { d: today, n: 0 };
-  return s;
+  const consumedAt = s && Number(s.consumed_at);
+  if (!Number.isFinite(consumedAt) || consumedAt + DEEP_FREE_WINDOW_MS <= timestamp) {
+    return { n: 0, consumed_at: null, next_available_at: null };
+  }
+  return { n: 1, consumed_at: consumedAt, next_available_at: consumedAt + DEEP_FREE_WINDOW_MS };
 }
-function deepQuotaBump(){ const s = deepQuota(); s.n++; localStorage.setItem('zx_deep_q', JSON.stringify(s)); }
+function deepQuotaBump(){ localStorage.setItem('zx_deep_q', JSON.stringify({ consumed_at: Date.now() })); }
 function deepAccountToken(){ try { return localStorage.getItem('zx_token') || ''; } catch(_){ return ''; } }
 
 /* 公开真答:走后端(key 只在后端,前端不碰) */
@@ -1248,14 +1274,23 @@ async function callDeepBackend(chart, question, history = []){
     })
   });
   const data = await r.json();
-  if (data && data.paywall) { const e = new Error('paywall'); e.paywall = 1; throw e; }
+  if (data && data.paywall) {
+    const e = new Error('paywall');
+    e.paywall = 1;
+    e.nextAvailableAt = data.next_available_at ? Number(data.next_available_at) : null;
+    throw e;
+  }
   if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
   return data;
 }
 
 /* 免费额度用完:只提示真实状态,不展示未接通的支付入口 */
-function deepPaywall(){
-  return `<div class="deep-echo"><b style="color:var(--gold)">${esc(QUOTA_UNAVAILABLE.title)}</b><br>${esc(QUOTA_UNAVAILABLE.body)}</div>`;
+function deepPaywall(nextAvailableAt){
+  const timestamp = Number(nextAvailableAt);
+  const reset = Number.isFinite(timestamp) && timestamp > Date.now()
+    ? `预计 ${new Date(timestamp).toLocaleString('zh-CN', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' })} 后恢复 1 次。`
+    : '';
+  return `<div class="deep-echo"><b style="color:var(--gold)">${esc(QUOTA_UNAVAILABLE.title)}</b><br>${esc(reset + QUOTA_UNAVAILABLE.body)}</div>`;
 }
 
 async function callDeep(chart, question, key){
@@ -1298,6 +1333,7 @@ function renderDeep(ans, q){
   const adv = (ans.advice || []).length
     ? `<div class="da-adv"><div class="da-adv-h">可以先做的</div><ul>${ans.advice.map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>` : '';
   return `<div class="deep-ans">
+    <div class="ai-label">AI 生成内容</div>
     <div class="da-q">你问:${esc(q)}</div>
     <div class="da-reply">${esc(ans.reply || '')}</div>
     ${parts}${adv}
@@ -1326,7 +1362,7 @@ function deepUpsell(){
 }
 /* 无 Key(未走内测通道 / 公开访问):优雅降级为预告,不暴露直连 */
 function deepTeaser(q){
-  return `<div class="deep-echo">已记下:「${esc(q)}」。<b style="color:var(--gold)">知星顾问</b>会把这件事放回你的整张盘(日主、十神、大运、星盘)来答——完整体验即将开放。当下,先把本命签给的方向拿稳。</div>`;
+  return `<div class="deep-echo"><b style="color:var(--gold)">问知星暂不可用</b><br>本次问题未能提交。你仍可查看本命报告与本命签。</div>`;
 }
 
 async function askDeep(chart){
@@ -1335,7 +1371,8 @@ async function askDeep(chart){
   if (!q){ echo.innerHTML = `<div class="deep-echo">先写下你想问的那件事。</div>`; return; }
   const useBackend = !!deepEndpoint();
   const hasServerAccount = !!deepAccountToken();
-  if (useBackend && !hasServerAccount && deepQuota().n >= DEEP_FREE){ echo.innerHTML = deepPaywall(); return; }   // 免费额度用完
+  const localQuota = deepQuota();
+  if (useBackend && !hasServerAccount && localQuota.n >= DEEP_FREE){ echo.innerHTML = deepPaywall(localQuota.next_available_at); return; }
   let key = '';
   if (!useBackend){                                      // 无后端:内测直连(需本机 key),否则预告
     const keyEl = $('deepKey') || $('key');              // 优先问知星块内的 key 栏(内测)
@@ -1354,7 +1391,7 @@ async function askDeep(chart){
     $('deepQ').value = '';
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
   } catch (e) {
-    if (e && e.paywall){ echo.innerHTML = priorHtml + deepPaywall(); return; }
+    if (e && e.paywall){ echo.innerHTML = priorHtml + deepPaywall(e.nextAvailableAt); return; }
     echo.innerHTML = priorHtml + `<div class="deep-echo">推演暂时没有接上，请稍后再试。你也可以先把本命签给的方向拿稳。</div>`;
   } finally {
     btn.disabled = false; btn.textContent = label;
@@ -1369,7 +1406,7 @@ document.addEventListener('pointerdown', e => {
 });
 
 /* ---------- 初始化:URL 参数 / 简版握手 / 默认样例 ---------- */
-(function init(){
+(async function init(){
   const q = new URLSearchParams(location.search);
   if (q.get('lab') === '2') $('labPanel').style.display = 'block';   // 旧「整份报告 AI 重生成」实验工具,收进 ?lab=2,不与问知星抢镜;?lab=1 只在问知星块内出 key 栏
   let stash = null;
@@ -1379,7 +1416,8 @@ document.addEventListener('pointerdown', e => {
   const c = q.get('c') || (stash && stash.c) || '贵阳';
   GENDER = q.get('g') || (stash && stash.g) || '';
   $('d').value = d; $('t').value = t; $('c').value = c;
-  generateRule();
+  $('reportAccessBack').href=REPORT_SOURCE_TREE?'../web/index.html':'./app.html';
+  await generateAuthorizedRule();
 })();
 </script>
 </body>
