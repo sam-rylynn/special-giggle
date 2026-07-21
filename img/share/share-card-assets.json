@@ -1,17 +1,27 @@
 {
   "schemaVersion": 2,
-  "contractDate": "2026-07-14",
-  "status": "all_runtime_share_assets_ready",
-  "sourceArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-10/",
+  "contractDate": "2026-07-21",
+  "status": "share_visuals_runtime_selected",
+  "sourceArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-13/本命签-全量改版/",
   "sourceArchiveStatus": {
     "presentAtLastCheck": true,
+    "dayMasterArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-10/日主身份卡/",
+    "qianArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-13/本命签-全量改版/",
     "dayMasterRawCount": 10,
     "qianRawCount": 60,
     "overviewCount": 6,
     "dayMasterWebReadyCount": 10,
     "qianWebReadyCount": 60,
     "reviewOverviewReadyCount": 6,
-    "qianReviewStatus": "approved"
+    "qianReviewStatus": "approved_2026_07_13"
+  },
+  "runtimeSelection": {
+    "dayMaster": "canvas_dynamic_background",
+    "dayMasterBackground": "web/media/day-master-share-bg-v2.webp",
+    "qian": "asset_safe_crop",
+    "qrVerified": false,
+    "qianSafeSourceHeightRatio": 0.82,
+    "note": "The qian renderer excludes the baked QR footer before drawing a dynamic QR-free footer. Day-master identity facts stay deterministic in Canvas over a text-free, QR-free universal background because the archived cards bake fixed day-pillar copy."
   },
   "target": {
     "dayMasterSizing": {

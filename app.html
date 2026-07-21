@@ -190,9 +190,10 @@
   .again{display:block;text-align:center;margin-top:18px;color:var(--mist);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
 
   #posterLayer{display:none;position:fixed;inset:0;z-index:50;background:rgba(8,11,20,.9);overflow:auto;padding:26px 0}
-  #posterLayer .inner{max-width:400px;margin:0 auto;padding:0 22px;text-align:center}
+  #posterLayer .inner{max-width:600px;margin:0 auto;padding:0 22px;text-align:center}
   #posterCanvas{width:100%;border-radius:10px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
   #posterLayer .tip{color:var(--mist);font-size:12px;margin:12px 0}
+  @media(max-width:640px){#posterLayer .inner{max-width:420px}}
 
   /* ---------- 深度报告预告:五行能量盘 ---------- */
   #deepLayer{display:none;position:fixed;inset:0;z-index:55;background:#07090F;overflow:hidden}
@@ -451,6 +452,8 @@
   <button class="btn ghost" style="width:100%" id="posterClose">关 闭</button>
 </div></div>
 
+<script src="./vendor/qrcode-generator.js"></script>
+<script src="./share-qr.js"></script>
 <script src="./member.js"></script>
 <script src="./minimum-age.js"></script>
 <script>
@@ -754,7 +757,8 @@ async function shareCurrentPoster(){
     const ref=await currentChartRef();
     const intent=await zxMember.createShareIntent(ref);
     const url=shareLink(intent.share_token);
-    await preparePoster();
+    await preparePoster(url);
+    $('posterLayer').style.display='block';
     let shared=false;
     if(navigator.share){
       const text='这是我的知星日主海报。打开链接可进入知星生成你自己的盘：'+url;
@@ -939,22 +943,27 @@ addEventListener('focus',()=>{if(CUR)refreshShareGate()});
 document.addEventListener('visibilitychange',()=>{if(CUR&&!document.hidden)refreshShareGate()});
 confirmInboundShare();
 
-/* 海报底图:太极星球分享卡(参考视觉 share-cosmic-card,已裁 750×1000) */
-const POSTER_BG="./media/share-poster-bg.jpg";
+/* 日主卡使用无文字、无二维码、无固定日柱的通用底图；所有身份事实仍由确定性 Canvas 绘制。 */
+const POSTER_BG="./media/day-master-share-bg-v2.webp";
 const posterImg=new Image();
 function drawPoster(){
   preparePoster().catch(()=>{});
 }
-function preparePoster(){
+function preparePoster(shareUrl=''){
   return new Promise((resolve,reject)=>{
-    const paint=()=>{drawPosterFallback();resolve()};
+    const paint=()=>{
+      drawPosterFallback(shareUrl);
+      $('posterCanvas').dataset.renderMode='canvas-dynamic-background';
+      $('posterCanvas').dataset.qrMode=shareUrl?'signed':'hidden';
+      resolve();
+    };
     if(posterImg.complete&&posterImg.naturalWidth){paint();return}
     posterImg.onload=paint;
     posterImg.onerror=()=>reject(new Error('poster image unavailable'));
     if(!posterImg.src)posterImg.src=POSTER_BG;
   });
 }
-function drawPosterFallback(){
+function drawPosterFallback(shareUrl=''){
   if(!posterImg.complete||!posterImg.naturalWidth)return;
   const c=$('posterCanvas'),x=c.getContext('2d');
   const W=750,H=1000,{sign,dp}=CUR,S=STEM_LIB[dp.stem];
@@ -962,36 +971,76 @@ function drawPosterFallback(){
   const SERIF='"Noto Serif SC","Songti SC","STSong",serif';
   x.clearRect(0,0,W,H);
   x.drawImage(posterImg,0,0,W,H);
-  // 云海文字区压暗
-  const g=x.createLinearGradient(0,600,0,H);
-  g.addColorStop(0,'rgba(7,9,15,0)');g.addColorStop(.35,'rgba(7,9,15,.55)');g.addColorStop(1,'rgba(7,9,15,.8)');
-  x.fillStyle=g;x.fillRect(0,600,W,H-600);
-  // 细金框
-  x.strokeStyle='rgba(201,168,92,.32)';x.lineWidth=1;x.strokeRect(18.5,18.5,W-37,H-37);
+  // 中央身份区保持安静，避免星点与山脊干扰动态文字。
+  const calm=x.createRadialGradient(W/2,360,30,W/2,360,360);
+  calm.addColorStop(0,'rgba(8,12,20,.2)');calm.addColorStop(1,'rgba(8,12,20,0)');
+  x.fillStyle=calm;x.fillRect(0,80,W,620);
   x.textAlign='center';
-  // 日主区(云海之上)
-  x.fillStyle='#8f7a45';x.font='19px '+SERIF;
-  x.fillText('你 的 日 主',W/2,708);
-  x.shadowColor='rgba(201,168,92,.5)';x.shadowBlur=26;
-  x.fillStyle='#C9A85C';x.font='700 86px '+SERIF;
-  x.fillText(dp.stem+S.el,W/2,794);
+  x.fillStyle='#9f884d';x.font='17px '+SERIF;
+  x.fillText('◇  日 主 身 份 卡  ◇',W/2,104);
+  x.strokeStyle='rgba(201,168,92,.32)';x.lineWidth=1;x.beginPath();x.moveTo(302,132.5);x.lineTo(448,132.5);x.stroke();
+
+  x.shadowColor='rgba(201,168,92,.55)';x.shadowBlur=30;
+  x.fillStyle='#d8bd78';x.font='700 112px '+SERIF;
+  x.fillText(dp.stem+S.el,W/2,286);
   x.shadowBlur=0;
-  x.fillStyle='#E8E4D8';x.font='22px '+SERIF;
-  x.fillText(S.img+' · '+dp.stem+dp.branch+'日',W/2,834);
-  // 本命关键词(一行)
-  let kwLine=S.kw[0]+' · '+S.kw[1];
-  x.font='700 30px '+SERIF;
-  if(x.measureText(kwLine).width>676)x.font='700 26px '+SERIF;
-  x.fillStyle='#E8E4D8';x.fillText(kwLine,W/2,864);
-  x.fillStyle='#6B7280';x.font='18px '+SERIF;
-  x.fillText('星盘辅证 · 太阳'+sign+' · '+SIGN_KW[sign],W/2,896);
-  // 正式域名和扫码验收完成前，分享图不绘制二维码或占位框。
-  x.strokeStyle='rgba(201,168,92,.2)';x.lineWidth=1;x.beginPath();x.moveTo(44,930);x.lineTo(W-44,930);x.stroke();
-  x.textAlign='center';
-  x.fillStyle='#C9A85C';x.font='700 22px '+SERIF;
-  x.fillText('知 · 星  命盘研究所',W/2,966);
-  x.fillStyle='#6B7280';x.font='14px '+SERIF;
-  x.fillText('以易理观己 · 以星盘为证',W/2,988);
+  x.fillStyle='#c9b477';x.font='22px '+SERIF;
+  x.fillText(S.img+' · '+dp.stem+dp.branch+'日',W/2,334);
+
+  const pill=(label,cx)=>{
+    x.font='19px '+SERIF;
+    const pw=Math.max(148,x.measureText(label).width+44),ph=45,px=cx-pw/2,py=374;
+    x.beginPath();x.moveTo(px+16,py);x.lineTo(px+pw-16,py);x.quadraticCurveTo(px+pw,py,px+pw,py+16);
+    x.lineTo(px+pw,py+ph-16);x.quadraticCurveTo(px+pw,py+ph,px+pw-16,py+ph);
+    x.lineTo(px+16,py+ph);x.quadraticCurveTo(px,py+ph,px,py+ph-16);
+    x.lineTo(px,py+16);x.quadraticCurveTo(px,py,px+16,py);x.closePath();
+    x.fillStyle='rgba(9,13,22,.62)';x.fill();x.strokeStyle='rgba(201,168,92,.55)';x.stroke();
+    x.fillStyle='#ddd5c2';x.fillText(label,cx,404);
+  };
+  pill(S.kw[0],W/2-132);pill(S.kw[1],W/2+132);
+
+  const quote=(S.p.split('。')[0]||S.kw.join('，'))+'。';
+  x.fillStyle='#E8E4D8';x.font='700 31px '+SERIF;
+  const lines=[],maxWidth=610;let line='';
+  for(const ch of quote){
+    if(x.measureText(line+ch).width>maxWidth&&line){lines.push(line);line=ch}else line+=ch;
+  }
+  if(line)lines.push(line);
+  const visible=lines.slice(0,3),startY=494-(visible.length-1)*20;
+  visible.forEach((text,i)=>x.fillText(text,W/2,startY+i*48));
+
+  x.strokeStyle='rgba(201,168,92,.22)';x.beginPath();x.moveTo(108,640.5);x.lineTo(642,640.5);x.stroke();
+  x.fillStyle='#858b98';x.font='17px '+SERIF;
+  x.fillText('来源 · 日主人格分析 / 星盘辅证 · 太阳'+sign,W/2,678);
+  x.fillStyle='#bda86d';x.font='17px '+SERIF;
+  x.fillText('太阳'+sign+' · '+SIGN_KW[sign],W/2,712);
+
+  // 默认导出仍不带二维码；只有服务端签发 share_token 后才绘制可验证的专属码。
+  const footer=x.createLinearGradient(0,shareUrl?730:850,0,H);
+  footer.addColorStop(0,'rgba(5,9,16,0)');footer.addColorStop(1,'rgba(5,9,16,.82)');
+  x.fillStyle=footer;x.fillRect(0,shareUrl?708:830,W,shareUrl?292:170);
+  if(shareUrl){
+    if(!window.ZxShareQr)throw new Error('share qr unavailable');
+    x.textAlign='left';
+    x.fillStyle='#E8E4D8';x.font='700 24px '+SERIF;
+    x.fillText('扫码打开知星',62,812);
+    x.fillStyle='#aab1bf';x.font='16px '+SERIF;
+    x.fillText('好友首次打开专属链接后',62,850);
+    x.fillText('才计入 1 次有效分享',62,878);
+    x.strokeStyle='rgba(201,168,92,.28)';x.beginPath();x.moveTo(62,908.5);x.lineTo(420,908.5);x.stroke();
+    x.fillStyle='#C9A85C';x.font='700 22px '+SERIF;
+    x.fillText('知 · 星  命盘研究所',62,948);
+    x.fillStyle='#6B7280';x.font='14px '+SERIF;
+    x.fillText('以易理观己 · 以星盘为证',62,976);
+    window.ZxShareQr.draw(x,shareUrl,{x:492,y:742,size:220});
+  }else{
+    x.textAlign='center';
+    x.strokeStyle='rgba(201,168,92,.24)';x.beginPath();x.moveTo(62,930.5);x.lineTo(W-62,930.5);x.stroke();
+    x.fillStyle='#C9A85C';x.font='700 22px '+SERIF;
+    x.fillText('知 · 星  命盘研究所',W/2,964);
+    x.fillStyle='#6B7280';x.font='14px '+SERIF;
+    x.fillText('以易理观己 · 以星盘为证',W/2,987);
+  }
 }
 </script>
 </body>
