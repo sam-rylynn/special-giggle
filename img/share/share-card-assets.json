@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "contractDate": "2026-07-21",
-  "status": "share_visuals_runtime_selected",
+  "status": "approved_static_visuals_runtime_selected",
   "sourceArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-13/本命签-全量改版/",
   "sourceArchiveStatus": {
     "presentAtLastCheck": true,
@@ -16,12 +16,15 @@
     "qianReviewStatus": "approved_2026_07_13"
   },
   "runtimeSelection": {
-    "dayMaster": "canvas_dynamic_background",
-    "dayMasterBackground": "web/media/day-master-share-bg-v2.webp",
-    "qian": "asset_safe_crop",
+    "dayMaster": "approved_asset_with_dynamic_fact_slots",
+    "dayMasterVersion": "2026-07-10",
+    "qian": "approved_asset_with_dynamic_fact_slots",
+    "qianVersion": "2026-07-13",
+    "assetFailurePolicy": "fail_closed_no_visual_fallback",
+    "canvasRole": "export_and_signed_qr_compositor_only",
     "qrVerified": false,
     "qianSafeSourceHeightRatio": 0.82,
-    "note": "The qian renderer excludes the baked QR footer before drawing a dynamic QR-free footer. Day-master identity facts stay deterministic in Canvas over a text-free, QR-free universal background because the archived cards bake fixed day-pillar copy."
+    "note": "Approved day-master and qian artwork is the only visual source. Runtime compositing may replace baked example facts, production date and QR slots, but must never draw a second fallback card design."
   },
   "target": {
     "dayMasterSizing": {
@@ -53,7 +56,7 @@
     "manifestUrl": "./img/share/share-card-assets.json",
     "dayMasterLookup": "chart.dayMaster.stem",
     "qianLookup": "q.assetId",
-    "fallback": "Keep current Canvas renderer when manifest item is not ready or image loading fails.",
+    "fallback": "Fail closed with a visible retry message when an approved image cannot be loaded. Do not generate a Canvas fallback card.",
     "separation": "dayMasterCards and qianCards are separate asset sets and must not share templates, directories, or cache keys.",
     "policyBoundary": "report-ui only consumes main-approved data policy and copywriting-delivered UI copy. It must not decide retention period, deletion rules, quota, member pricing, paid benefits, or backend behavior.",
     "membershipBoundary": "Do not implement backend, payment, quota, archive, or membership APIs in this asset phase.",

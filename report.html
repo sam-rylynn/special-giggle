@@ -959,6 +959,9 @@ function drawQianRitual(chart){
       await drawQianPoster(q);
       $('qianPosterLayer').style.display = 'block';
       refreshQianShareButton();
+    } catch (_) {
+      CURRENT_QIAN = null;
+      $('qianOut').innerHTML = '<p class="muted">最新版命签图片暂时无法读取，请刷新后重试。</p>';
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -966,15 +969,6 @@ function drawQianRitual(chart){
 }
 
 /* 正式分享地址：默认卡片不带码；服务端签发 share_token 后才重绘专属二维码。 */
-function qposWrap(x, text, cx, y, maxW, lh){
-  let line = '', yy = y;
-  for (const ch of [...text]){
-    if (x.measureText(line + ch).width > maxW && !/[。！?？，,、；;:：)）」』]/.test(ch)){ x.fillText(line, cx, yy); line = ch; yy += lh; }
-    else line += ch;   // 闭合标点不另起一行,避免孤字
-  }
-  if (line) x.fillText(line, cx, yy);
-  return yy;
-}
 const QIAN_ASSET_ROOT = './img/share/qian/';
 const QIAN_POSTER_IMAGES = new Map();
 function qianAssetUrl(assetId){
@@ -1000,16 +994,10 @@ async function drawQianPoster(q,shareUrl=''){
   c.dataset.assetId = q.assetId || '';
   c.dataset.posterDate = posterDate;
   c.dataset.qrMode = shareUrl ? 'signed' : 'hidden';
-  try {
-    const img = await loadQianPosterImage(q.assetId);
-    drawQianPosterAsset(q,img,posterDate,shareUrl);
-    c.dataset.renderMode = 'asset';
-    return 'asset';
-  } catch (error) {
-    drawQianPosterFallback(q, posterDate, shareUrl);
-    c.dataset.renderMode = 'canvas';
-    return 'canvas';
-  }
+  const img = await loadQianPosterImage(q.assetId);
+  drawQianPosterAsset(q,img,posterDate,shareUrl);
+  c.dataset.renderMode = 'asset';
+  return 'asset';
 }
 
 function qianPosterDateText(date = new Date()){
@@ -1025,6 +1013,17 @@ function drawQianPosterAsset(q,img,posterDate,shareUrl=''){
   // 原图二维码位于最底栏。只绘制上方已确认视觉区，避免二维码像素进入导出图。
   const safeSourceHeight = Math.floor(img.naturalHeight * .82);
   x.drawImage(img,0,0,img.naturalWidth,safeSourceHeight,0,0,W,FOOTER_TOP);
+
+  // 2026-07-13 定稿图保留版式，但原图日期是制作日；覆盖为当天确定日期，避免双日期。
+  const dateCover = x.createLinearGradient(0,44,0,112);
+  dateCover.addColorStop(0,'rgba(4,10,17,.15)');
+  dateCover.addColorStop(.22,'rgba(4,10,17,.98)');
+  dateCover.addColorStop(.78,'rgba(4,10,17,.98)');
+  dateCover.addColorStop(1,'rgba(4,10,17,.15)');
+  x.fillStyle = dateCover; x.fillRect(150,44,450,68);
+  x.textAlign = 'center';
+  x.fillStyle = '#d7b766'; x.font = '20px '+SERIF;
+  x.fillText('◇  今 日 本 命 签  ·  '+posterDate+'  ◇',W/2,88);
 
   const footer = x.createLinearGradient(0,FOOTER_TOP-38,0,H);
   footer.addColorStop(0,'rgba(6,10,17,0)');
@@ -1062,39 +1061,6 @@ function drawQianSignedFooter(x,q,posterDate,shareUrl,SERIF){
   x.fillStyle='#C9A85C';x.font='700 21px '+SERIF;x.fillText('知 · 星  命盘研究所',52,936);
   x.fillStyle='#7f8798';x.font='14px '+SERIF;x.fillText(q.bindElement+' · '+q.strength+' · '+posterDate,52,964);
   window.ZxShareQr.draw(x,shareUrl,{x:492,y:740,size:220});
-}
-
-function drawQianPosterFallback(q, posterDate, shareUrl=''){
-  const c = $('qianCanvas'), x = c.getContext('2d');
-  const W = 750, H = 1000, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
-  c.width = W; c.height = H;
-  x.clearRect(0,0,W,H);
-  const bg = x.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#141c30'); bg.addColorStop(.5,'#0E1220'); bg.addColorStop(1,'#0a0d16');
-  x.fillStyle = bg; x.fillRect(0,0,W,H);
-  const glow = x.createRadialGradient(W/2,180,20,W/2,180,460); glow.addColorStop(0,'rgba(201,168,92,.18)'); glow.addColorStop(1,'rgba(201,168,92,0)');
-  x.fillStyle = glow; x.fillRect(0,0,W,600);
-  x.strokeStyle = 'rgba(201,168,92,.34)'; x.lineWidth = 1; x.strokeRect(18.5,18.5,W-37,H-37);
-  x.textAlign = 'center';
-  x.fillStyle = '#8f7a45'; x.font = '20px '+SERIF; x.fillText('今 日 本 命 签  ·  '+(posterDate || qianPosterDateText()), W/2, 124);
-  x.strokeStyle = 'rgba(201,168,92,.3)'; x.beginPath(); x.moveTo(W/2-56,152); x.lineTo(W/2+56,152); x.stroke();
-  const gg = x.createLinearGradient(0,250,0,430); gg.addColorStop(0,'#fff6dd'); gg.addColorStop(.5,'#e9d09a'); gg.addColorStop(1,'#C9A85C');
-  x.save(); x.fillStyle = gg; x.shadowColor = 'rgba(201,168,92,.4)'; x.shadowBlur = 32; x.font = '700 128px '+SERIF;
-  x.fillText([...q.hex].join('  '), W/2, 380); x.restore();
-  x.fillStyle = '#E8E4D8'; x.font = '25px '+SERIF; x.fillText(q.omen, W/2, 470);
-  const g1 = q.line || q.guide || '';
-  x.fillStyle = '#e9d09a'; x.font = '24px '+SERIF; const gy = qposWrap(x, g1, W/2, 560, 620, 42);
-  x.fillStyle = '#8f7a45'; x.font = '19px '+SERIF;
-  x.fillText('宜  '+(q.yi||[]).join('  ')+'      忌  '+(q.ji||[]).join('  '), W/2, gy + 56);
-  x.fillStyle = '#6B7280'; x.font = '17px '+SERIF;
-  x.fillText('依你的日主 '+q.bindElement+'·'+q.strength+' 而取 · 同日同签 · 隔日流转', W/2, 812);
-  if(shareUrl){
-    drawQianSignedFooter(x,q,posterDate,shareUrl,SERIF);
-  }else{
-    x.strokeStyle = 'rgba(201,168,92,.2)'; x.lineWidth = 1; x.beginPath(); x.moveTo(44,930); x.lineTo(W-44,930); x.stroke();
-    x.textAlign = 'center';
-    x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF; x.fillText('知 · 星  命盘研究所', W/2, 966);
-    x.fillStyle = '#6B7280'; x.font = '14px '+SERIF; x.fillText('以易理观己 · 以星盘为证', W/2, 988);
-  }
 }
 
 function qianShareLink(token){
