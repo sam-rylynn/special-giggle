@@ -410,12 +410,12 @@
     </div>
     <div class="btn-row"><button class="btn gold" id="posterBtn">保存我的日主海报</button></div>
     <div class="share-gate" id="shareGate" aria-live="polite">
-      <div class="share-gate-head"><span id="shareGateTitle">分享解锁尚未启用</span> <span class="share-gate-badge" id="shareGateBadge">暂不可用</span></div>
-      <p id="shareGateBody">分享规则已确定，但账号与分享权益服务尚未完成上线验收，本入口暂不可用。保存图片或调起系统分享不会自动计入有效分享。</p>
-      <div class="share-gate-actions" id="shareGateActions" hidden>
+      <div class="share-gate-head"><span id="shareGateTitle">分享日主海报</span> <span class="share-gate-badge" id="shareGateBadge">可直接分享</span></div>
+      <p id="shareGateBody">把这张日主海报分享给朋友。当前只分享图片，不影响报告权益。</p>
+      <div class="share-gate-actions" id="shareGateActions">
         <button class="btn gold" id="shareActionBtn" type="button">分享日主海报</button>
-        <button class="btn ghost" id="reportAccessBtn" type="button" disabled>查看深度报告</button>
-        <button class="btn ghost" id="shareRefreshBtn" type="button">刷新权益</button>
+        <button class="btn ghost" id="reportAccessBtn" type="button" disabled hidden>查看深度报告</button>
+        <button class="btn ghost" id="shareRefreshBtn" type="button" hidden>刷新权益</button>
       </div>
       <div class="share-gate-status" id="shareGateStatus"></div>
     </div>
@@ -448,7 +448,7 @@
 <div id="posterLayer"><div class="inner">
   <canvas id="posterCanvas" width="750" height="1000"></canvas>
   <div class="tip">长按图片保存 / 右键另存为,分享到朋友圈或小红书</div>
-  <button class="btn gold" style="width:100%;margin-bottom:10px" id="sharePosterBtn" type="button" hidden>分享海报并邀请好友</button>
+  <button class="btn gold" style="width:100%;margin-bottom:10px" id="sharePosterBtn" type="button">分享这张海报</button>
   <button class="btn ghost" style="width:100%" id="posterClose">关 闭</button>
 </div></div>
 
@@ -626,9 +626,9 @@ let SHARE_STATUS=null;
 let REPORT_FALLBACK_ALLOWED=false;
 const SHARE_UNLOCK_COPY={
   disabled:{
-    title:'分享解锁尚未启用',
-    badge:'暂不可用',
-    body:'分享规则已确定，但账号与分享权益服务尚未完成上线验收，本入口暂不可用。保存图片或调起系统分享不会自动计入有效分享。'
+    title:'分享日主海报',
+    badge:'可直接分享',
+    body:'把这张日主海报分享给朋友。当前只分享图片，不影响报告权益。'
   },
   enabled:{
     title:'分享日主海报，解锁深度报告',
@@ -683,6 +683,8 @@ async function currentChartRef(){
 function renderShareGate(mode,message){
   const actions=$('shareGateActions');
   const posterShare=$('sharePosterBtn');
+  const accessButton=$('reportAccessBtn');
+  const refreshButton=$('shareRefreshBtn');
   const fallback=$('localReportPreview');
   const allowFallback=mode==='disabled'||LOCAL_REPORT_PREVIEW;
   REPORT_FALLBACK_ALLOWED=allowFallback;
@@ -700,7 +702,9 @@ function renderShareGate(mode,message){
     ].join(' ');
     actions.hidden=false;
     posterShare.hidden=false;
-    $('reportAccessBtn').disabled=count<1;
+    accessButton.hidden=false;
+    refreshButton.hidden=false;
+    accessButton.disabled=count<1;
     $('shareGateStatus').textContent=message||(
       count>0?'已有可用权益，进入报告时由服务端签发访问凭证。':SHARE_UNLOCK_COPY.enabled.footnote
     );
@@ -709,8 +713,10 @@ function renderShareGate(mode,message){
   $('shareGateTitle').textContent=mode==='error'?'分享权益状态暂时无法读取':SHARE_UNLOCK_COPY.disabled.title;
   $('shareGateBadge').textContent=mode==='error'?'稍后再试':SHARE_UNLOCK_COPY.disabled.badge;
   $('shareGateBody').textContent=SHARE_UNLOCK_COPY.disabled.body;
-  actions.hidden=true;
-  posterShare.hidden=true;
+  actions.hidden=false;
+  posterShare.hidden=false;
+  accessButton.hidden=true;
+  refreshButton.hidden=true;
   $('shareGateStatus').textContent=message||'';
 }
 
@@ -748,43 +754,56 @@ function posterBlob(){
   });
 }
 
+function downloadCurrentPoster(){
+  const link=document.createElement('a');
+  link.download='知星-日主海报.jpg';
+  link.href=$('posterCanvas').toDataURL('image/jpeg',.92);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+async function handoffPoster(status,shareUrl=''){
+  const blob=await posterBlob();
+  const file=blob&&typeof File==='function'?new File([blob],'知星-日主海报.jpg',{type:'image/jpeg'}):null;
+  const canShareFile=!!(navigator.share&&file&&navigator.canShare&&navigator.canShare({files:[file]}));
+  if(canShareFile){
+    const text=shareUrl?'这是我的知星日主海报。打开链接可进入知星生成你自己的盘：'+shareUrl:'这是我的知星日主海报。';
+    await navigator.share({title:'知星·命盘研究所',text,files:[file]});
+    status.textContent=shareUrl?'已调起分享。好友首次打开链接后，再点“刷新权益”。':'已调起系统分享。';
+    return;
+  }
+  downloadCurrentPoster();
+  status.textContent='海报已保存，请从相册或下载文件中选择并分享。';
+}
+
 async function shareCurrentPoster(){
   if(!CUR)return;
   const status=$('shareGateStatus');
-  status.textContent='正在生成专属分享链接……';
+  status.textContent='正在准备日主海报……';
   try{
-    await zxMember.whenReady();
-    const ref=await currentChartRef();
-    const intent=await zxMember.createShareIntent(ref);
-    const url=shareLink(intent.share_token);
+    let url='';
+    const signedShareAvailable=!!(window.zxMember&&zxMember.configured&&zxMember.configured());
+    if(signedShareAvailable){
+      try{
+        await zxMember.whenReady();
+        const ref=await currentChartRef();
+        const intent=await zxMember.createShareIntent(ref);
+        url=shareLink(intent.share_token);
+      }catch(error){
+        if(error&&error.name==='AbortError')throw error;
+        url='';
+      }
+    }
     await preparePoster(url);
     $('posterLayer').style.display='block';
-    let shared=false;
-    if(navigator.share){
-      const text='这是我的知星日主海报。打开链接可进入知星生成你自己的盘：'+url;
-      const blob=await posterBlob();
-      const file=blob&&typeof File==='function'?new File([blob],'知星-日主海报.jpg',{type:'image/jpeg'}):null;
-      const data=file&&navigator.canShare&&navigator.canShare({files:[file]})
-        ?{title:'知星·命盘研究所',text,files:[file]}
-        :{title:'知星·命盘研究所',text,url};
-      await navigator.share(data);
-      shared=true;
-    }else if(navigator.clipboard&&navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(url);
-      status.textContent='专属链接已复制。好友首次打开后才计入有效分享。';
-      shared=true;
-    }
-    if(!shared){
-      status.textContent='当前浏览器无法调起分享，请复制此链接发给好友：'+url;
-      return;
-    }
-    status.textContent='已调起分享。好友首次打开链接后，再点“刷新权益”。';
+    await handoffPoster(status,url);
   }catch(error){
     if(error&&error.name==='AbortError'){
       status.textContent='已取消分享，本次不会计入有效分享。';
       return;
     }
-    status.textContent=error&&error.status===429?'未确认的分享链接较多，请稍后再试。':'分享链接生成失败，请检查网络后重试。';
+    status.textContent='海报暂时没有准备好，请刷新后重试。';
   }
 }
 
@@ -950,7 +969,7 @@ addEventListener('focus',()=>{if(CUR)refreshShareGate()});
 document.addEventListener('visibilitychange',()=>{if(CUR&&!document.hidden)refreshShareGate()});
 confirmInboundShare();
 
-/* 视觉只认 2026-07-10 审核通过的十张日主身份卡；Canvas 仅负责导出与动态事实槽，不再生成另一套卡面。 */
+/* 视觉只认 2026-07-10 审核通过的十张日主身份卡；Canvas 仅负责导出与官网二维码，不再生成另一套卡面。 */
 const DAY_MASTER_CARD_FILES={
   甲:'day-master-jia-wood.webp',乙:'day-master-yi-wood.webp',丙:'day-master-bing-fire.webp',丁:'day-master-ding-fire.webp',
   戊:'day-master-wu-earth.webp',己:'day-master-ji-earth.webp',庚:'day-master-geng-metal.webp',辛:'day-master-xin-metal.webp',
@@ -980,54 +999,23 @@ async function preparePoster(shareUrl=''){
   const c=$('posterCanvas');
   c.dataset.assetId=CUR.dp.stem;
   c.dataset.renderMode='asset';
-  c.dataset.qrMode=shareUrl?'signed':'hidden';
+  c.dataset.qrMode='official';
+  c.dataset.shareLinkMode=shareUrl?'signed':'none';
   return 'asset';
 }
 function drawDayMasterPosterAsset(img,shareUrl=''){
   const c=$('posterCanvas'),x=c.getContext('2d');
-  const W=img.naturalWidth||750,H=img.naturalHeight||1333,{sign,dp}=CUR,S=STEM_LIB[dp.stem];
-  const SERIF='"Noto Serif SC","Songti SC","STSong",serif',scale=W/750;
+  const W=img.naturalWidth||750,H=img.naturalHeight||1333,scale=W/750;
   c.width=W;c.height=H;
   x.clearRect(0,0,W,H);
   x.drawImage(img,0,0,W,H);
 
-  // 定稿原图中的示例日柱和太阳星座只作版式占位；运行时覆盖为确定性计算结果。
-  const roundedPanel=(left,top,width,height,radius=12*scale)=>{
-    const right=left+width,bottom=top+height,r=Math.min(radius,width/2,height/2);
-    x.beginPath();x.moveTo(left+r,top);x.lineTo(right-r,top);x.quadraticCurveTo(right,top,right,top+r);
-    x.lineTo(right,bottom-r);x.quadraticCurveTo(right,bottom,right-r,bottom);x.lineTo(left+r,bottom);
-    x.quadraticCurveTo(left,bottom,left,bottom-r);x.lineTo(left,top+r);x.quadraticCurveTo(left,top,left+r,top);x.closePath();
-  };
-  const factSlot=(top,height)=>{
-    roundedPanel(W*.08,top,W*.84,height);
-    x.fillStyle='#040c14';x.fill();
-    x.strokeStyle='rgba(201,168,92,.28)';x.lineWidth=Math.max(1,scale);x.stroke();
-  };
-  x.textAlign='center';
-  factSlot(H*.425,H*.075);
-  x.fillStyle='#d7b766';x.font=`${Math.round(26*scale)}px `+SERIF;
-  x.fillText(S.img+' · '+dp.stem+dp.branch+'日',W/2,H*.465);
-  factSlot(H*.69,H*.06);
-  x.fillStyle='#d5c9ad';x.font=`${Math.round(15*scale)}px `+SERIF;
-  x.fillText('来源 · 日主人格分析 / 星盘辅证 · 太阳'+sign,W/2,H*.722);
-
-  // 清除原图中未核验的固定二维码；服务端签发 share_token 后才在同一位置绘制专属码。
-  const qrX=W*.72,qrSize=W*.19,qrY=H-qrSize-H*.055;
-  const coverX=qrX-W*.04,coverY=qrY-H*.04,coverW=W*.27,coverH=qrSize+H*.09;
-  roundedPanel(coverX,coverY,coverW,coverH,14*scale);
-  x.fillStyle='#040c14';x.fill();
-  x.strokeStyle='rgba(201,168,92,.6)';x.lineWidth=Math.max(1,1.2*scale);x.stroke();
-  if(shareUrl){
-    if(!window.ZxShareQr)throw new Error('share qr unavailable');
-    window.ZxShareQr.draw(x,shareUrl,{x:qrX,y:qrY,size:qrSize});
-    x.fillStyle='#c7a85f';x.font=`${Math.round(14*scale)}px `+SERIF;
-    x.fillText('扫码打开知星',qrX+qrSize/2,qrY+qrSize+H*.026);
-  }else{
-    x.fillStyle='#c7a85f';x.font=`${Math.round(26*scale)}px `+SERIF;
-    x.fillText('星',qrX+qrSize/2,qrY+qrSize*.52);
-    x.fillStyle='#8e8063';x.font=`${Math.round(12*scale)}px `+SERIF;
-    x.fillText('专属分享码',qrX+qrSize/2,qrY+qrSize+H*.026);
-  }
+  // 卡面不再叠加日柱、星座、来源或额外说明；仅在既定右下角绘制与品牌标识同量级的官网入口码。
+  if(!window.ZxShareQr)throw new Error('share qr unavailable');
+  const qrSize=Math.round(W*.116),qrX=Math.round(W*.755),qrY=H-qrSize-Math.round(H*.048);
+  const qr=window.ZxShareQr.drawOfficial(x,{x:qrX,y:qrY,size:qrSize,quietZone:2});
+  x.strokeStyle='#C9A85C';x.lineWidth=Math.max(1,Math.round(2*scale));
+  x.strokeRect(qr.left-x.lineWidth,qr.top-x.lineWidth,qr.actualSize+x.lineWidth*2,qr.actualSize+x.lineWidth*2);
 }
 </script>
 </body>

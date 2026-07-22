@@ -1,6 +1,8 @@
-/* share-qr.js — 只为服务端签名分享链接绘制二维码。 */
+/* share-qr.js — 绘制官网入口码；签名分享链接仍由服务端单独签发。 */
 (function (global) {
   'use strict';
+
+  var OFFICIAL_SITE_URL = 'https://zhixing.cn/';
 
   function signedShareUrl(value) {
     var url;
@@ -15,14 +17,13 @@
     return url.href;
   }
 
-  function draw(context, value, options) {
+  function drawText(context, text, options) {
     if (!context || typeof context.fillRect !== 'function') throw new Error('canvas context required');
     if (typeof global.qrcode !== 'function') throw new Error('qr encoder unavailable');
 
     options = options || {};
-    var text = signedShareUrl(value);
     var size = Math.floor(Number(options.size) || 216);
-    var quietZone = Math.max(4, Math.floor(Number(options.quietZone) || 4));
+    var quietZone = Math.max(0, Math.floor(Number(options.quietZone) || 0));
     var qr = global.qrcode(0, options.level || 'M');
     qr.addData(text, 'Byte');
     qr.make();
@@ -64,5 +65,20 @@
     });
   }
 
-  global.ZxShareQr = Object.freeze({ draw: draw, signedShareUrl: signedShareUrl });
+  function draw(context, value, options) {
+    options = Object.assign({ quietZone: 4 }, options || {});
+    return drawText(context, signedShareUrl(value), options);
+  }
+
+  function drawOfficial(context, options) {
+    options = Object.assign({ level: 'L', quietZone: 2 }, options || {});
+    return drawText(context, OFFICIAL_SITE_URL, options);
+  }
+
+  global.ZxShareQr = Object.freeze({
+    draw: draw,
+    drawOfficial: drawOfficial,
+    signedShareUrl: signedShareUrl,
+    officialSiteUrl: OFFICIAL_SITE_URL
+  });
 })(window);

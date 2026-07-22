@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e1220">
-<title>账号与资料｜知星</title>
+<title>我的｜知星</title>
 <style>
   :root{--night:#0e1220;--panel:#1a2233;--panel-2:#131a29;--line:rgba(201,168,92,.2);--gold:#c9a85c;--gold-dim:#9f874f;--moon:#e8e4d8;--mist:#8992a3;--danger:#d67b68;--serif:"Songti SC","STSong","Noto Serif CJK SC",serif;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
   *{box-sizing:border-box}
@@ -20,9 +20,25 @@
   .back{display:inline-flex;align-items:center;min-height:38px;color:var(--mist);font-size:13px;text-decoration:none}
   header{padding:4px 0 22px}
   h1{margin:0;font-family:var(--serif);font-size:clamp(26px,5vw,36px);letter-spacing:0}
-  .lead{max-width:650px;margin:10px 0 0;color:#aeb7c6}
   .account-grid{display:grid;grid-template-columns:1fr;gap:14px}
   .panel{padding:20px;background:var(--panel);border:1px solid rgba(201,168,92,.18);border-radius:8px;scroll-margin-top:18px}
+  .profile-panel{background:linear-gradient(145deg,rgba(201,168,92,.1),rgba(26,34,51,.96) 42%,rgba(19,26,41,.98));border-color:rgba(201,168,92,.3)}
+  .profile-identity{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:2px 0 15px;border-bottom:1px solid var(--line)}
+  .profile-name-label{display:block;color:var(--gold-dim);font-size:11px}
+  .profile-name{display:block;margin-top:2px;color:#f2ead5;font-family:var(--serif);font-size:clamp(22px,4vw,30px);font-weight:700}
+  .profile-name-tools{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:8px}
+  .profile-name-tools .btn{min-height:32px;padding:0 11px;font-size:12px}
+  .profile-name-hint{color:#788397;font-size:11px}
+  .profile-day-master{color:var(--gold);font-family:var(--serif);font-size:14px;text-align:right}
+  .profile-facts{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:14px 0 0}
+  .profile-facts div{min-width:0;padding:10px 12px;border-top:1px solid rgba(201,168,92,.1)}
+  .profile-facts dt{color:#788397;font-size:11px}
+  .profile-facts dd{margin:3px 0 0;color:#d8d3c7;font-family:var(--serif);font-size:13px;overflow-wrap:anywhere}
+  .qian-panel{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(181,71,47,.12),rgba(26,34,51,.98) 48%)}
+  .qian-date{color:#7f8999;font-size:11px}
+  .qian-signature{margin:7px 0 0;color:#efd6a0;font-family:var(--serif);font-size:28px;letter-spacing:.22em}
+  .qian-hook{margin:7px 0 0;color:#e7e1d5;font-family:var(--serif);font-size:15px;font-weight:700}
+  .qian-guidance{margin:12px 0 0;padding:11px 12px;border-left:2px solid rgba(181,71,47,.62);background:rgba(8,13,23,.38);color:#aeb7c6}
   .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
   .eyebrow{margin-bottom:3px;color:var(--gold-dim);font-size:11px}
   h2{margin:0;color:#f1ead8;font-family:var(--serif);font-size:18px;letter-spacing:0}
@@ -43,18 +59,20 @@
   .archive-answer{display:-webkit-box;margin:7px 0 0;color:#aeb7c6;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:3}
   .archive-item .btn{min-height:34px;margin-top:10px;padding:0 11px;font-size:12px}
   .live{min-height:20px;margin-top:10px;color:var(--gold-dim);font-size:12px}
-  .privacy-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 2px;color:var(--mist)}
   dialog{width:min(calc(100% - 32px),430px);padding:0;border:1px solid rgba(201,168,92,.38);border-radius:8px;background:var(--panel);color:var(--moon);box-shadow:0 24px 70px rgba(0,0,0,.55)}
   dialog::backdrop{background:rgba(6,9,16,.82)}
   .dialog-body{padding:22px}
   .dialog-body h2{margin-bottom:9px;color:var(--gold)}
   .dialog-copy{margin:0;color:#b5becb}
+  .dialog-field{display:grid;gap:7px;margin-top:16px;color:var(--gold-dim);font-size:12px}
+  .dialog-field input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(201,168,92,.3);border-radius:6px;background:#111827;color:var(--moon)}
+  .dialog-error{min-height:20px;margin:7px 0 0;color:#efb0a3;font-size:12px}
   .confirm-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;padding:11px;background:#111827;color:#c8ced7;font-size:13px;cursor:pointer}
   .confirm-check input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold)}
   .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
   .dialog-actions .btn{width:100%}
   @media(min-width:760px){.account-grid{grid-template-columns:1fr 1fr}.panel-wide{grid-column:1/-1}}
-  @media(max-width:480px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.privacy-row{align-items:flex-start;flex-direction:column;gap:6px}.dialog-actions{grid-template-columns:1fr}}
+  @media(max-width:480px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.profile-identity{display:block}.profile-day-master{margin-top:8px;text-align:left}.profile-facts{grid-template-columns:1fr}.profile-facts div{padding-left:0;padding-right:0}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.dialog-actions{grid-template-columns:1fr}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none;transform:none}}
 </style>
 </head>
@@ -66,11 +84,32 @@
   </nav>
 
   <header>
-    <h1>账号与资料</h1>
-    <p class="lead">账号服务尚未开放。当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。</p>
+    <h1>我的</h1>
   </header>
 
   <main class="account-grid">
+    <section class="panel panel-wide profile-panel" id="profile-summary">
+      <div class="panel-head">
+        <div><div class="eyebrow">本命资料</div><h2>我的命盘</h2></div>
+        <span class="badge" id="profileBadge">本机</span>
+      </div>
+      <div class="profile-identity">
+        <div>
+          <span class="profile-name-label">名称</span>
+          <strong class="profile-name" id="profileName">正在生成</strong>
+          <div class="profile-name-tools"><button class="btn" id="profileRenameBtn" type="button">更改名称</button><span class="profile-name-hint" id="profileNameHint">每 30 天可更改一次</span></div>
+        </div>
+        <div class="profile-day-master" id="profileDayMaster">正在读取本命盘</div>
+      </div>
+      <dl class="profile-facts">
+        <div><dt>出生信息</dt><dd id="profileBirth">正在读取</dd></div>
+        <div><dt>生辰八字</dt><dd id="profilePillars">正在排定</dd></div>
+        <div><dt>日主</dt><dd id="profileStem">正在排定</dd></div>
+        <div><dt>星盘三要素</dt><dd id="profileAstro">正在排定</dd></div>
+      </dl>
+      <div class="actions"><a class="btn primary" id="profileReportLink" href="../v1/report.html">查看本命报告</a></div>
+    </section>
+
     <section class="panel" id="account-status">
       <div class="panel-head">
         <div><div class="eyebrow">账号</div><h2>当前状态</h2></div>
@@ -103,6 +142,18 @@
       <div class="live" id="cloudLive" aria-live="polite"></div>
     </section>
 
+    <section class="panel panel-wide qian-panel" id="daily-qian">
+      <div class="panel-head">
+        <div><div class="eyebrow">同日同签 · 隔日流转</div><h2>今日本命签</h2></div>
+        <span class="badge" id="qianBadge">今日</span>
+      </div>
+      <div class="qian-date" id="qianDate">正在读取日期</div>
+      <div class="qian-signature" id="qianSignature">待启</div>
+      <p class="qian-hook" id="qianHook">生成本命盘后即可查看今天的签。</p>
+      <p class="qian-guidance" id="qianGuidance">本命签按你的日主五行与强弱确定，同一天保持一致。</p>
+      <div class="actions"><a class="btn" id="qianReportLink" href="../v1/report.html#sec-qian">进入本命签</a></div>
+    </section>
+
     <section class="panel panel-wide" id="qa-archive">
       <div class="panel-head">
         <div><div class="eyebrow">问知星</div><h2>问答存档</h2></div>
@@ -127,10 +178,6 @@
     </section>
   </main>
 
-  <div class="privacy-row">
-    <span>隐私政策页尚未开放</span>
-    <span>正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</span>
-  </div>
 </div>
 
 <dialog id="confirmDialog" aria-labelledby="confirmTitle">
@@ -148,15 +195,37 @@
   </div>
 </dialog>
 
+<dialog id="renameDialog" aria-labelledby="renameTitle">
+  <form class="dialog-body" id="renameForm" method="dialog">
+    <h2 id="renameTitle">更改名称</h2>
+    <p class="dialog-copy">这是你在知星里的称呼。确认后，30 天内不能再次更改。</p>
+    <label class="dialog-field" for="renameInput">新名称
+      <input id="renameInput" name="name" type="text" minlength="2" maxlength="8" autocomplete="nickname" placeholder="2—8 个字">
+    </label>
+    <p class="dialog-error" id="renameError" aria-live="polite"></p>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="renameCancel">取消</button>
+      <button class="btn primary" type="submit">确认更改</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
 'use strict';
 (function(){
   const DAY_MS = 24 * 60 * 60 * 1000;
   const ARCHIVE_GRACE_MS = 30 * DAY_MS;
+  const NAME_CHANGE_MS = 30 * DAY_MS;
+  const PROFILE_NAME_KEY = 'zx_profile_name_v1';
   const sourceTree = /\/web\/account\.html$/.test(location.pathname);
   const memberScriptPath = sourceTree ? '../member.js' : './member.js';
+  const engineScriptPath = sourceTree ? '../v1/bazi-engine.js' : './bazi-engine.js';
+  const explainerScriptPath = sourceTree ? '../v1/explainer.js' : './explainer.js';
   const reportPath = sourceTree ? '../v1/report.html' : './report.html';
+  const homePath = sourceTree ? './index.html' : './app.html';
   document.getElementById('reportLink').href = reportPath;
+  document.getElementById('profileReportLink').href = reportPath;
+  document.getElementById('qianReportLink').href = reportPath + '#sec-qian';
 
   const COPY = {
     account: {
@@ -215,15 +284,155 @@
   let archiveData = null;
   let accountDeleted = false;
   let confirmAction = null;
+  let currentProfileRef = '';
+  let currentProfileName = null;
 
-  function addMemberScript(){
+  function addScript(src){
     return new Promise(resolve => {
       const script = document.createElement('script');
-      script.src = memberScriptPath;
+      script.src = src;
       script.onload = resolve;
       script.onerror = resolve;
       document.head.appendChild(script);
     });
+  }
+
+  function addMemberScript(){ return addScript(memberScriptPath); }
+
+  function readLocalInput(){
+    try {
+      const data = JSON.parse(localStorage.getItem('zx_input') || 'null');
+      return data && data.d ? data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function engineInput(data){
+    const [y,m,d] = String(data.d || '').split('-').map(Number);
+    if (!y || !m || !d) return null;
+    const input = { y,m,d,city:String(data.c || '').trim() };
+    const time = String(data.t || '');
+    if (/^\d{2}:\d{2}$/.test(time)){
+      input.hh = Number(time.slice(0,2));
+      input.mm = Number(time.slice(3,5));
+    }
+    if (data.g === '男' || data.g === '女') input.gender = data.g;
+    return input;
+  }
+
+  function pillarText(pillar){ return pillar ? pillar.stem + pillar.branch : '时辰未提供'; }
+
+  function hashText(value){
+    let hash = 2166136261;
+    for (const char of String(value)){
+      hash ^= char.codePointAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function readProfileName(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(PROFILE_NAME_KEY) || 'null');
+      return saved && typeof saved.name === 'string' ? saved : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function generatedChartName(chart, ref){
+    const roots = {
+      木:['青枝','新篁','扶疏','栖木'],
+      火:['曜野','灯川','赤霄','烛原'],
+      土:['静原','厚垣','岚丘','原上'],
+      金:['霜衡','砺月','清铎','寒锋'],
+      水:['云汐','深澜','泉壑','流光']
+    };
+    const tails = chart.dayMaster.yinyang === '阴'
+      ? ['听雨','藏星','映月','栖云']
+      : ['观澜','照野','听风','归舟'];
+    const seed = hashText(ref + '|' + chart.dayMaster.stem);
+    const pool = roots[chart.dayMaster.element] || roots.水;
+    return pool[seed % pool.length] + tails[Math.floor(seed / pool.length) % tails.length];
+  }
+
+  function formatNextNameDate(value){
+    return new Date(value).toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
+  }
+
+  function renderProfileName(chart, data){
+    currentProfileRef = [data.d,data.t,data.c,data.g,chart.pillars.day.stem,chart.pillars.day.branch].filter(Boolean).join('|');
+    let saved = readProfileName();
+    if (!saved || saved.chartRef !== currentProfileRef){
+      saved = { chartRef:currentProfileRef,name:generatedChartName(chart,currentProfileRef),changedAt:null };
+      localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(saved));
+    }
+    currentProfileName = saved;
+    $('profileName').textContent = saved.name;
+    const nextAt = Number(saved.changedAt || 0) + NAME_CHANGE_MS;
+    const locked = !!saved.changedAt && nextAt > Date.now();
+    $('profileRenameBtn').disabled = locked;
+    $('profileRenameBtn').textContent = locked ? '暂不可更改' : '更改名称';
+    $('profileNameHint').textContent = locked ? `${formatNextNameDate(nextAt)}后可再改` : '每 30 天可更改一次';
+  }
+
+  function showProfileEmpty(){
+    currentProfileRef = '';
+    currentProfileName = null;
+    $('profileName').textContent = '等待你的命盘';
+    $('profileRenameBtn').disabled = true;
+    $('profileNameHint').textContent = '生成命盘后自动命名';
+    $('profileBadge').textContent = '本机暂无';
+    $('profileDayMaster').textContent = '还没有可读取的本命盘';
+    $('profileBirth').textContent = '请先生成日主';
+    $('profilePillars').textContent = '—';
+    $('profileStem').textContent = '—';
+    $('profileAstro').textContent = '—';
+    $('profileReportLink').textContent = '去生成日主';
+    $('profileReportLink').href = homePath;
+    $('qianBadge').textContent = '待生成';
+    $('qianDate').textContent = new Date().toLocaleDateString('zh-CN');
+    $('qianSignature').textContent = '待启';
+    $('qianHook').textContent = '生成本命盘后即可查看今天的签。';
+    $('qianGuidance').textContent = '本命签按你的日主五行与强弱确定，同一天保持一致。';
+    $('qianReportLink').textContent = '去生成日主';
+    $('qianReportLink').href = homePath;
+  }
+
+  function renderPersonalSummary(){
+    const data = readLocalInput();
+    if (!data || !window.BaziEngine || !window.Explainer){ showProfileEmpty(); return; }
+    try {
+      const input = engineInput(data);
+      if (!input) { showProfileEmpty(); return; }
+      const chart = BaziEngine.computeChart(input);
+      const p = chart.pillars;
+      const dm = chart.dayMaster;
+      const strength = chart.fiveElements.dayMasterStrength.label;
+      const astro = chart.astro || {};
+      const birthBits = [data.d, data.t, data.c, data.g].filter(Boolean);
+      renderProfileName(chart,data);
+      $('profileBadge').textContent = '本机命盘';
+      $('profileDayMaster').textContent = `${dm.stem}${dm.element} · ${strength}`;
+      $('profileBirth').textContent = birthBits.join(' · ');
+      $('profilePillars').textContent = [p.year,p.month,p.day,p.hour].map(pillarText).join('  ');
+      $('profileStem').textContent = `${dm.yinyang}${dm.element} · ${dm.stem}${p.day.branch}日 · ${strength}`;
+      $('profileAstro').textContent = [`太阳${astro.sun && astro.sun.sign || '未定'}`,`月亮${astro.moon && astro.moon.sign || '未定'}`,astro.asc ? `上升${astro.asc.sign}` : '上升未计算'].join(' · ');
+      $('profileReportLink').textContent = '查看本命报告';
+      $('profileReportLink').href = reportPath;
+
+      const qian = Explainer.drawQian(chart,new Date());
+      $('qianBadge').textContent = dm.element + ' · ' + strength;
+      $('qianDate').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
+      $('qianSignature').textContent = qian.hex;
+      $('qianHook').textContent = qian.line;
+      $('qianGuidance').textContent = `宜：${qian.yi.join(' · ')}　忌：${qian.ji.join(' · ')}`;
+      $('qianReportLink').textContent = '进入本命签';
+      $('qianReportLink').href = reportPath + '#sec-qian';
+    } catch (_) {
+      showProfileEmpty();
+    }
   }
 
   function setState(prefix, title, body, badge){
@@ -286,23 +495,24 @@
   }
 
   function renderUnavailable(){
-    const account = COPY.account.unavailable;
-    const member = COPY.member.unavailable;
-    setState('account', account.title, account.body, account.badge);
-    setState('member', member.title, member.body, member.badge);
-    setState('cloud', account.title, account.body, '未配置');
-    setState('archive', account.title, account.body, '未配置');
-    setState('delete', account.title, account.body, '未配置');
+    $('account-status').hidden = true;
+    $('cloud-sync').hidden = true;
+    $('delete-account').hidden = true;
+    setState('member', '当前为普通用户', '你可以查看本命盘、每日签与基础报告。', '普通用户');
+    setState('archive', '还没有问知星记录', '完成一次问知星后，你的对话会显示在这里。', '0 条');
     replaceActions('accountActions', []);
     replaceActions('memberActions', []);
     replaceActions('cloudActions', []);
-    replaceActions('archiveActions', []);
+    replaceActions('archiveActions', [linkButton('去问知星', reportPath + '#sec-deep')]);
     replaceActions('deleteActions', []);
     $('memberPolicy').hidden = true;
     $('archiveList').replaceChildren();
   }
 
   function renderLoading(){
+    $('account-status').hidden = false;
+    $('cloud-sync').hidden = false;
+    $('delete-account').hidden = false;
     setState('account', COPY.account.loading.title, COPY.account.loading.body, COPY.account.loading.badge);
     setState('member', COPY.member.loading.title, COPY.member.loading.body, COPY.member.loading.badge);
     setState('cloud', COPY.account.loading.title, COPY.account.loading.body, '加载中');
@@ -529,6 +739,7 @@
   async function initializePage(){
     accountDeleted = false;
     archiveData = null;
+    renderPersonalSummary();
     memberState = snapshot();
     if (!memberState.configured) {
       renderUnavailable();
@@ -540,6 +751,9 @@
       renderError();
       return;
     }
+    try { await zxMember.me(); } catch (_) {}
+    memberState = snapshot();
+    renderPersonalSummary();
     renderReady();
     await loadArchive();
   }
@@ -554,7 +768,34 @@
   });
   $('confirmDialog').addEventListener('cancel', () => { confirmAction = null; });
 
-  addMemberScript().then(initializePage);
+  $('profileRenameBtn').addEventListener('click', () => {
+    if (!currentProfileName || $('profileRenameBtn').disabled) return;
+    $('renameInput').value = currentProfileName.name;
+    $('renameError').textContent = '';
+    $('renameDialog').showModal();
+    setTimeout(() => $('renameInput').select(), 0);
+  });
+  $('renameCancel').addEventListener('click', () => $('renameDialog').close());
+  $('renameForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!currentProfileName || !currentProfileRef) return;
+    const name = $('renameInput').value.trim();
+    const length = Array.from(name).length;
+    if (length < 2 || length > 8){
+      $('renameError').textContent = '请输入 2—8 个字的名称。';
+      return;
+    }
+    const changedAt = Date.now();
+    currentProfileName = { chartRef:currentProfileRef,name,changedAt };
+    localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(currentProfileName));
+    $('profileName').textContent = name;
+    $('profileRenameBtn').disabled = true;
+    $('profileRenameBtn').textContent = '暂不可更改';
+    $('profileNameHint').textContent = `${formatNextNameDate(changedAt + NAME_CHANGE_MS)}后可再改`;
+    $('renameDialog').close();
+  });
+
+  Promise.all([addMemberScript(),addScript(engineScriptPath),addScript(explainerScriptPath)]).then(initializePage);
 })();
 </script>
 </body>

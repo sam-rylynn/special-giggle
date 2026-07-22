@@ -14,6 +14,12 @@
   .wrap{max-width:1000px;margin:0 auto;padding:0 18px 70px}
   .wrap > .card,.wrap > .meta{max-width:640px;margin-left:auto;margin-right:auto}
   #out > .card{max-width:640px;margin-left:auto;margin-right:auto}
+  .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+  .report-topbar{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;z-index:6;display:flex;align-items:center;justify-content:space-between;width:min(calc(100% - 28px),960px);transform:translateX(-50%);pointer-events:none}
+  .report-topbar a,.report-topbar button{pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 14px;border:1px solid rgba(201,168,92,.34);border-radius:999px;background:rgba(14,18,32,.78);box-shadow:0 10px 26px rgba(2,5,11,.28);backdrop-filter:blur(12px);color:#efe5c9;font-family:var(--serif);font-size:12.5px;font-weight:700;line-height:1;text-decoration:none}
+  .report-topbar button{width:auto;margin:0;letter-spacing:.02em;text-indent:0;cursor:pointer}
+  .report-topbar .report-my-link{color:var(--gold);border-color:rgba(201,168,92,.5)}
 
   /* 封面:观星大厅 */
   .cover{position:relative;height:min(56vh,460px);overflow:hidden;border-radius:0 0 14px 14px}
@@ -43,32 +49,18 @@
   /* 正文末尾「来源:…」弱化:更小更浅,不抢解读本身 */
   .src-inline{font-size:10.5px;color:#5a6273;letter-spacing:.02em}
 
-  /* 方法论开篇 */
-  .manifesto p{margin-bottom:10px;text-align:justify}
-  .manifesto b{color:var(--gold);font-weight:700}
-  .manifesto .axiom{font-family:var(--serif);font-size:17px;color:var(--gold);text-align:center;letter-spacing:.3em;text-indent:.3em;margin:16px 0 4px}
-  .manifesto .axiom-sub{text-align:center;color:var(--mist);font-size:12px;margin-bottom:0}
+  /* 方法论固定视觉:文字已烘焙，隐藏原文仅保留无障碍语义。 */
+  .manifesto-art{display:block;width:100%;margin:20px auto 0;overflow:hidden;border-radius:14px;background:var(--ink)}
+  .manifesto-art picture,.manifesto-art img{display:block;width:100%;height:auto}
 
-  /* 报告导航:阅读状态、核心工具、分组章节 */
-  .report-nav-card .pad{padding:20px 18px 16px}
-  .report-nav-card h2{font-size:18px;text-shadow:0 1px 12px rgba(201,168,92,.18)}
-  .nav-status{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:end;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(201,168,92,.16)}
+  /* 命盘书册内置目录、进度与两个独立工具。 */
+  .nav-status{padding:9px 7px 11px;border-top:1px solid rgba(201,168,92,.12);border-bottom:1px solid rgba(201,168,92,.12)}
   .nav-current{min-width:0}
   .nav-current span,.nav-progress-label{display:block;color:var(--mist);font-size:10.5px;line-height:1.4;letter-spacing:.08em}
-  .nav-current strong{display:block;margin-top:3px;color:#f6efdb;font-family:var(--serif);font-size:15px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
-  .nav-progress{text-align:right}
+  .nav-current strong{display:block;margin-top:3px;color:#f6efdb;font-family:var(--serif);font-size:13px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
+  .nav-progress{margin-top:8px;text-align:left}
   .nav-progress-track{height:4px;margin-top:8px;background:#10182a;overflow:hidden}
   .nav-progress-fill{display:block;width:12.5%;height:100%;background:var(--gold);transition:width .25s ease}
-  .nav-mode-tip{margin:12px 0 2px;padding:9px 11px;border-left:2px solid rgba(201,168,92,.45);background:rgba(201,168,92,.05);color:#aeb8c7;font-size:12px;line-height:1.7}
-  .nav-tools-label{display:flex;align-items:center;gap:10px;margin:15px 0 10px;color:var(--gold-dim);font-family:var(--serif);font-size:12px;font-weight:600;line-height:1;letter-spacing:0}
-  .nav-tools-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,92,.3),transparent)}
-  .nav-tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px}
-  .nav-tool{display:flex;align-items:center;justify-content:center;width:100%;height:50px;min-width:0;border:1px solid rgba(201,168,92,.34);border-radius:7px;
-    color:var(--gold);font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.04em;text-decoration:none;white-space:nowrap;transition:background .18s,color .18s,border-color .18s,transform .18s}
-  .nav-tool-primary{background:var(--gold);border-color:var(--gold);color:#241c0c}
-  .nav-tool-secondary{background:#10182a}
-  .nav-tool:hover{transform:translateY(-1px);border-color:rgba(240,214,149,.75)}
-  .nav-tool.active{box-shadow:inset 0 0 0 2px #f0d695}
   .secnav{display:block;margin-top:4px;border-top:1px solid rgba(201,168,92,.12)}
   .nav-group{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid rgba(201,168,92,.12)}
   .nav-group-name{padding-top:8px;color:var(--gold-dim);font-family:var(--serif);font-size:12.5px;font-weight:600;line-height:1.5;letter-spacing:0}
@@ -77,19 +69,28 @@
     color:#c8cfda;font-family:var(--serif);font-size:13.5px;font-weight:600;line-height:1.45;letter-spacing:0;text-decoration:none;overflow-wrap:anywhere;
     transition:background .18s,color .18s,border-color .18s,transform .18s}
   .nav-label{min-width:0}
+  .nav-glyph{flex:0 0 18px;width:18px;height:18px;margin-right:7px;color:var(--gold-dim);fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .nav-state-icon{display:inline-grid;place-items:center;flex:0 0 18px;width:18px;height:18px;margin-left:auto;color:var(--gold-dim);font-family:var(--sans);font-size:16px;font-weight:500;line-height:1}
   .nav-state-icon::before{content:"›"}
   .nav-section-link.visited:not(.active) .nav-state-icon::before{content:"✓";font-size:12px;font-weight:700}
   .nav-section-link:hover{color:#f3e6bd;background:rgba(201,168,92,.055);transform:translateX(2px)}
   .nav-section-link.active{color:var(--gold);background:rgba(201,168,92,.09);border-left-color:var(--gold)}
   .nav-section-link.active .nav-state-icon{color:var(--gold)}
-  .nav-tool:focus-visible,.nav-section-link:focus-visible,.navedit a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  .nav-group-tools .nav-group-links{display:grid;gap:8px;padding:3px 0}
+  .reader-tool-link{min-height:44px;border:1px solid transparent;border-left-width:1px;border-radius:8px;padding:8px 10px;font-size:13px;letter-spacing:.08em;transform:none}
+  .reader-tool-link .nav-state-icon::before{content:"进入";font-size:9px;letter-spacing:0}
+  .reader-tool-deep{color:#f2d990;border-color:rgba(201,168,92,.48);background:linear-gradient(135deg,rgba(201,168,92,.2),rgba(201,168,92,.07))}
+  .reader-tool-qian{color:#e6b8aa;border-color:rgba(181,71,47,.5);background:linear-gradient(135deg,rgba(181,71,47,.2),rgba(181,71,47,.06))}
+  .reader-tool-deep.active{color:#251d0c;background:var(--gold);border-color:var(--gold)}
+  .reader-tool-qian.active{color:#fff1ea;background:#8e3828;border-color:#b5472f}
+  .reader-tool-link:hover{transform:none}
+  .nav-section-link:focus-visible,.navedit a:focus-visible,.report-topbar a:focus-visible,.report-topbar button:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
   .navedit{display:block;text-align:center;margin-top:12px;color:var(--mist);font-size:12px}
   .navedit a{color:var(--gold-dim);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
   .card[id]{scroll-margin-top:24px}
 
   /* 命盘书册:报告正文不再纵向堆叠,桌面目录 + 单章正文,手机一次只呈现一章。 */
-  .report-reader{display:grid;grid-template-columns:180px minmax(0,1fr);gap:18px;align-items:start;margin-top:20px}
+  .report-reader{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:start;margin-top:0}
   .reader-rail{position:sticky;top:18px;z-index:8}
   .reader-rail-inner{padding:15px 12px;border:1px solid rgba(201,168,92,.22);border-radius:12px;background:rgba(20,28,48,.96);box-shadow:0 16px 42px rgba(4,7,13,.24)}
   .reader-rail-label{display:block;padding:0 7px 10px;color:var(--gold);font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.12em}
@@ -98,8 +99,7 @@
   .reader-rail .nav-group-name{padding:0 7px 5px;color:#756a54;font-size:10.5px;letter-spacing:.08em}
   .reader-rail .nav-group-links{display:block}
   .reader-rail .nav-section-link{min-height:40px;padding:6px 8px 6px 10px;font-size:13px}
-  .reader-mobile-control{display:none}
-  .reader-mobile-tool{display:none}
+  .reader-mobile-nav{display:none}
   .reader-main{min-width:0}
   .reader-stage{min-height:420px}
   .reader-page.card{max-width:720px;margin:0 auto}
@@ -117,6 +117,9 @@
   .reader-position{min-width:46px;color:#948968;font-size:11px;line-height:1;text-align:center;white-space:nowrap}
   .reader-return{grid-column:1/-1;width:100%;min-height:48px;border:1px solid rgba(201,168,92,.34);border-radius:8px;background:#10182a;color:var(--gold);font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.04em;text-indent:0}
   .reader-return[hidden]{display:none}
+  .reader-edit-dock{width:min(100%,720px);margin:12px auto 0;padding:0 4px}
+  .reader-edit-dock .navedit{margin-top:0}
+  .reader-edit-dock .row{margin-top:10px;padding:12px;border:1px solid rgba(201,168,92,.16);border-radius:10px;background:rgba(20,28,48,.72)}
 
   /* 星盘轮 */
   .wheel{display:block;width:min(100%,320px);margin:8px auto 4px}
@@ -169,7 +172,7 @@
   /* 本命签分享卡层 */
   #qianPosterLayer{display:none;position:fixed;inset:0;z-index:60;background:rgba(8,11,20,.92);overflow:auto;padding:24px 0}
   .qp-inner{width:min(92vw,600px);margin:0 auto;padding:0 20px;text-align:center}
-  #qianCanvas{width:100%;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
+  #qianCanvas{display:block;width:100%;height:auto;aspect-ratio:3/4;border-radius:12px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
   .qp-tip{color:var(--mist);font-size:12.5px;margin:12px 0}
   .qp-actions{display:grid;gap:10px}
   #qianShareBtn,#qianPosterClose{width:100%;margin:0 auto}
@@ -266,30 +269,37 @@
   small.note{display:block;color:var(--mist);font-size:11.5px;margin-top:8px;line-height:1.7}
   @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
   @media(max-width:420px){
-    .nav-status{grid-template-columns:minmax(0,1fr) 104px}
-    .nav-tools{gap:8px}
-    .nav-tool{font-size:13px;letter-spacing:.04em}
     .nav-group{grid-template-columns:42px minmax(0,1fr);gap:8px}
   }
   @media(max-width:760px){
     .wrap{max-width:640px}
+    .report-topbar{top:max(10px,env(safe-area-inset-top));width:calc(100% - 22px)}
+    .report-topbar a,.report-topbar button{min-height:40px;padding:0 12px;font-size:12px}
+    .manifesto-art{width:calc(100% + 36px);margin:14px -18px 0;border-radius:0}
     .report-reader{display:block}
-    .reader-rail{top:0;margin:0 -18px 12px;padding:8px 18px;background:linear-gradient(180deg,var(--ink) 78%,rgba(14,18,32,0))}
+    .reader-rail{position:static;top:auto;z-index:auto;margin:0 -18px 12px;padding:8px 18px;background:linear-gradient(180deg,var(--ink) 84%,rgba(14,18,32,0))}
     .reader-rail-inner{padding:9px 11px;border-radius:0 0 11px 11px;background:rgba(20,28,48,.97)}
     .reader-rail-label,.reader-rail .secnav{display:none}
-    .reader-mobile-control{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}
-    .reader-mobile-control[hidden]{display:none}
-    .reader-mobile-control span{color:var(--gold-dim);font-family:var(--serif);font-size:11px;white-space:nowrap}
-    .reader-mobile-control select{width:100%;min-height:46px;padding:0 34px 0 12px;border:1px solid rgba(201,168,92,.28);border-radius:8px;background:#10182a;color:#f0e9d7;font-family:var(--serif);font-size:14px}
-    .reader-mobile-tool{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;min-height:46px;padding:0 12px;border:1px solid rgba(201,168,92,.28);border-radius:8px;background:#10182a}
-    .reader-mobile-tool[hidden]{display:none}
-    .reader-mobile-tool span{color:var(--gold-dim);font-family:var(--serif);font-size:11px;white-space:nowrap}
-    .reader-mobile-tool strong{color:#f0e9d7;font-family:var(--serif);font-size:14px;font-weight:600}
+    .reader-rail .nav-status{display:grid;grid-template-columns:minmax(0,1fr) 104px;align-items:end;gap:10px;padding:3px 0 9px;border-top:0}
+    .reader-rail .nav-progress{margin-top:0;text-align:right}
+    .reader-mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px}
+    .reader-mobile-nav-item{flex-direction:column;justify-content:center;min-height:62px;padding:6px 3px;border:1px solid rgba(201,168,92,.2);border-radius:8px;background:#10182a;color:#bfc6d2;font-family:var(--sans);font-size:10.5px;font-weight:500;line-height:1.2;text-align:center;transform:none}
+    .reader-mobile-nav-item .nav-glyph{width:20px;height:20px;margin:0 0 5px;color:#8d805e}
+    .reader-mobile-nav-item .nav-label{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .reader-mobile-nav-item .nav-state-icon{display:none}
+    .reader-mobile-nav-item:hover{transform:none}
+    .reader-mobile-nav-item.active{border-color:rgba(224,191,112,.78);border-left-color:rgba(224,191,112,.78);background:rgba(201,168,92,.15);color:#f5ead0}
+    .reader-mobile-nav-item.active .nav-glyph{color:#e1bd69}
+    .reader-mobile-nav-item.reader-tool-deep{border-color:rgba(201,168,92,.42);color:#efd996;background:linear-gradient(145deg,rgba(201,168,92,.18),#10182a)}
+    .reader-mobile-nav-item.reader-tool-qian{border-color:rgba(181,71,47,.46);color:#e8b9ac;background:linear-gradient(145deg,rgba(181,71,47,.2),#10182a)}
+    .reader-mobile-nav-item.reader-tool-deep.active{color:#251d0c;background:var(--gold)}
+    .reader-mobile-nav-item.reader-tool-qian.active{color:#fff1ea;background:#8e3828}
     .reader-stage{min-height:360px}
     .reader-controls{bottom:calc(9px + env(safe-area-inset-bottom));margin-top:10px;padding:7px}
     .reader-control{min-height:46px;padding:7px 8px;font-size:12px}
+    .reader-edit-dock{margin-top:10px;padding:0}
   }
-  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube,.reader-page.is-active{animation:none;transition:none}.nav-progress-fill,.nav-tool,.nav-section-link{transition:none;transform:none}}
+  @media(prefers-reduced-motion:reduce){.cover img,#aiLoading img,.chapviz img,.txt,.qian-cast .tube,.reader-page.is-active{animation:none;transition:none}.nav-progress-fill,.reader-tool-link,.nav-section-link{transition:none;transform:none}}
   #ageGateBlock,#reportAccessGateBlock{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--ink)}
   #ageGateBlock[hidden],#reportAccessGateBlock[hidden]{display:none}
   .age-gate-card{width:min(100%,420px);padding:28px 24px;border:1px solid rgba(201,168,92,.3);background:var(--panel);border-radius:12px;text-align:center}
@@ -300,6 +310,10 @@
 </style>
 </head>
 <body>
+<nav class="report-topbar" aria-label="报告快捷导航">
+  <button id="reportBack" type="button">‹ 返回日主页</button>
+  <a class="report-my-link" id="myPageLink" href="../web/account.html">我的</a>
+</nav>
 <div class="cover">
   <img src="./img/cover.jpg" alt="">
   <div class="tt">
@@ -310,47 +324,33 @@
 </div>
 
 <div class="wrap">
-  <div class="card"><div class="pad manifesto">
-    <h2>以易理观己 · 以星盘为证</h2>
-    <p>这份报告同时动用两套彼此独立的古老体系,观测同一个对象——<b>你出生的那一刻</b>。八字把那一刻拆成天干地支,读的是你内在的能量配置;星盘把同一刻的宇宙星位原样存档,读的是这份配置向外的投影。</p>
-    <p>中华黄河流域传承与西古地中海神学,两千年互不通信,却不约而同选了同一个坐标:出生时刻。所以我们不混用、不互相代劳——<b>易理为主轴,星盘只做印证</b>。两套独立体系在同一个结论上相遇,那个结论才值得你认真对待;而它们彼此打架的地方,往往就是你身上最值得琢磨的张力。</p>
-    <p class="axiom">孤证不立,双盘互证。</p>
-    <p class="axiom-sub">下面每一条解读都标注了出处盘位,随时可以回头查证。</p>
-  </div></div>
+  <figure class="manifesto-art" aria-labelledby="manifestoText">
+    <picture>
+      <source media="(max-width:760px)" srcset="./img/report-method-dual-orbit-mobile-compact.jpg">
+      <img src="./img/report-method-dual-orbit-desktop.jpg" alt="" width="1876" height="812" decoding="async">
+    </picture>
+    <figcaption class="sr-only" id="manifestoText">以易理观己，以星盘为证。这份报告同时动用两套彼此独立的古老体系，观测同一个对象——你出生的那一刻。八字把那一刻拆成天干地支，读的是你内在的能量配置；星盘把同一刻的宇宙星位原样存档，读的是这份配置向外的投影。中华黄河流域传承与西古地中海神学，两千年互不通信，却不约而同选了同一个坐标：出生时刻。所以我们不混用、不互相代劳——易理为主轴，星盘只做印证。两套独立体系在同一个结论上相遇，那个结论才值得你认真对待；而它们彼此打架的地方，往往就是你身上最值得琢磨的张力。孤证不立，双盘互证。下面每一条解读都标注了出处盘位，随时可以回头查证。</figcaption>
+  </figure>
 
-  <div class="card report-nav-card"><div class="pad">
-    <h2>报告导航</h2>
-    <div class="nav-status" aria-live="polite">
-      <div class="nav-current"><span>当前阅读章节</span><strong id="navCurrent">盘面</strong></div>
-      <div class="nav-progress">
-        <span class="nav-progress-label" id="navProgressText">已浏览 1 / 8</span>
-        <div class="nav-progress-track" id="navProgressTrack" role="progressbar" aria-label="报告阅读进度" aria-valuemin="0" aria-valuemax="8" aria-valuenow="1"><span class="nav-progress-fill" id="navProgressFill"></span></div>
-      </div>
-    </div>
-    <p class="nav-mode-tip">报告采用单章阅读：一次只呈现一章，可从目录或前后章切换。</p>
-    <div class="nav-tools-label">报告工具</div>
-    <div class="nav-tools" aria-label="核心功能">
-      <a class="nav-tool nav-tool-primary" href="#sec-deep" data-nav-target="sec-deep">问知星</a>
-      <a class="nav-tool nav-tool-secondary" href="#sec-qian" data-nav-target="sec-qian">本命签</a>
-    </div>
+  <div id="out"></div>
+
+  <div class="reader-edit-dock" id="reportEditDock" hidden>
     <small class="navedit">已按你的出生信息生成 · <a id="editLink">生辰有误?点此修改</a></small>
-    <div class="row" id="editRow" style="display:none;margin-top:12px">
+    <div class="row" id="editRow" style="display:none">
       <input type="date" id="d" style="flex:1.2;min-width:150px">
       <input type="time" id="t" style="flex:1;min-width:110px">
       <input type="text" id="c" placeholder="城市" style="width:96px">
       <button id="go">重新生成</button>
     </div>
-  </div></div>
-
-  <div id="out"></div>
+  </div>
 
   <!-- 本命签分享卡 -->
   <div id="qianPosterLayer"><div class="qp-inner">
     <canvas id="qianCanvas" width="750" height="1000"></canvas>
-    <div class="qp-tip">长按图片保存 / 截图分享；专属二维码仅在点击分享后生成</div>
+    <div class="qp-tip">长按图片保存 / 截图分享；二维码可打开知星官网</div>
     <div id="qianShareStatus" role="status" aria-live="polite"></div>
     <div class="qp-actions">
-      <button id="qianShareBtn" type="button" hidden>生成专属二维码并分享</button>
+      <button id="qianShareBtn" type="button" hidden>分享本命签</button>
       <button id="qianPosterClose" class="ghost" type="button">关闭</button>
     </div>
   </div></div>
@@ -855,6 +855,7 @@ function deepMemberBox(){
 const REPORT_SOURCE_TREE = /\/v1\/report\.html$/.test(location.pathname);
 const ACCOUNT_PAGE_AVAILABLE = true;
 const ACCOUNT_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/account.html' : './account.html';
+const HOME_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/index.html' : './app.html';
 const MEMBER_ACTIVE_BODY = '会员可不限次使用问知星，并默认保存最近 50 个问答轮次。';
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
 const MODEL_PROCESSING_NOTICE = '提问会发送盘面摘要、本次问题、最近几轮对话摘要和当日本命签，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
@@ -862,6 +863,17 @@ const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址
 const QUOTA_UNAVAILABLE = {
   title: '当前可用次数已用完',
   body: '免费深问每 24 小时可使用 1 次。你仍可查看本命报告与本命签。'
+};
+
+$('myPageLink').href = ACCOUNT_PAGE_HREF;
+$('reportBack').onclick = () => {
+  let cameFromDayMaster = false;
+  try {
+    const previous = new URL(document.referrer);
+    cameFromDayMaster = previous.origin === location.origin && /\/(?:web\/index|app)\.html$/.test(previous.pathname);
+  } catch (_) {}
+  if (cameFromDayMaster && history.length > 1) history.back();
+  else location.href = HOME_PAGE_HREF;
 };
 
 function memberSnapshot(){
@@ -904,8 +916,8 @@ function renderMemberStatus(){
     pill = '非会员';
     copy = '你可以继续使用问知星的基础体验。';
   }
-  const account = s.configured && ACCOUNT_PAGE_AVAILABLE
-    ? `<a href="${ACCOUNT_PAGE_HREF}">账号与资料</a>`
+  const account = ACCOUNT_PAGE_AVAILABLE
+    ? `<a href="${ACCOUNT_PAGE_HREF}">进入我的</a>`
     : '';
   box.innerHTML = `<div class="member-row"><div class="member-title">${esc(title)}</div><div class="member-pill">${esc(pill)}</div></div>
     <div class="member-copy">${esc(copy)} ${esc(policy)}</div>
@@ -968,7 +980,7 @@ function drawQianRitual(chart){
   }, 1200);
 }
 
-/* 正式分享地址：默认卡片不带码；服务端签发 share_token 后才重绘专属二维码。 */
+/* 卡片固定绘制官网入口码；服务端签发的 share_token 只随系统分享文本传递，不压进定稿卡面。 */
 const QIAN_ASSET_ROOT = './img/share/qian/';
 const QIAN_POSTER_IMAGES = new Map();
 function qianAssetUrl(assetId){
@@ -993,7 +1005,8 @@ async function drawQianPoster(q,shareUrl=''){
   const posterDate = qianPosterDateText();
   c.dataset.assetId = q.assetId || '';
   c.dataset.posterDate = posterDate;
-  c.dataset.qrMode = shareUrl ? 'signed' : 'hidden';
+  c.dataset.qrMode = 'official';
+  c.dataset.shareLinkMode = shareUrl ? 'signed' : 'none';
   const img = await loadQianPosterImage(q.assetId);
   drawQianPosterAsset(q,img,posterDate,shareUrl);
   c.dataset.renderMode = 'asset';
@@ -1006,61 +1019,52 @@ function qianPosterDateText(date = new Date()){
 
 function drawQianPosterAsset(q,img,posterDate,shareUrl=''){
   const c = $('qianCanvas'), x = c.getContext('2d');
-  const W = 750, H = 1000, FOOTER_TOP = 820, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
+  const W = 750, H = 1000, SERIF = '"Noto Serif SC","Songti SC","STSong",serif';
   c.width = W; c.height = H;
   x.clearRect(0,0,W,H);
 
-  // 原图二维码位于最底栏。只绘制上方已确认视觉区，避免二维码像素进入导出图。
-  const safeSourceHeight = Math.floor(img.naturalHeight * .82);
-  x.drawImage(img,0,0,img.naturalWidth,safeSourceHeight,0,0,W,FOOTER_TOP);
+  // 保留定稿命签从标题到品牌底栏的完整视觉，只在旧二维码原位绘制小尺寸官网码。
+  x.drawImage(img,0,0,img.naturalWidth,img.naturalHeight,0,0,W,H);
 
   // 2026-07-13 定稿图保留版式，但原图日期是制作日；覆盖为当天确定日期，避免双日期。
   const dateCover = x.createLinearGradient(0,44,0,112);
   dateCover.addColorStop(0,'rgba(4,10,17,.15)');
-  dateCover.addColorStop(.22,'rgba(4,10,17,.98)');
-  dateCover.addColorStop(.78,'rgba(4,10,17,.98)');
+  dateCover.addColorStop(.22,'rgba(4,10,17,1)');
+  dateCover.addColorStop(.78,'rgba(4,10,17,1)');
   dateCover.addColorStop(1,'rgba(4,10,17,.15)');
   x.fillStyle = dateCover; x.fillRect(150,44,450,68);
   x.textAlign = 'center';
   x.fillStyle = '#d7b766'; x.font = '20px '+SERIF;
   x.fillText('◇  今 日 本 命 签  ·  '+posterDate+'  ◇',W/2,88);
 
-  const footer = x.createLinearGradient(0,FOOTER_TOP-38,0,H);
-  footer.addColorStop(0,'rgba(6,10,17,0)');
-  footer.addColorStop(.24,'rgba(6,10,17,.96)');
-  footer.addColorStop(1,'#060a11');
-  x.fillStyle = footer; x.fillRect(0,FOOTER_TOP-38,W,H-FOOTER_TOP+38);
-  if(shareUrl){
-    drawQianSignedFooter(x,q,posterDate,shareUrl,SERIF);
-  }else{
-    x.strokeStyle = 'rgba(201,168,92,.42)'; x.lineWidth = 1;
-    x.beginPath(); x.moveTo(48,884); x.lineTo(W-48,884); x.stroke();
-    x.textAlign = 'left';
-    x.fillStyle = '#C9A85C'; x.font = '700 22px '+SERIF;
-    x.fillText('知 · 星  命盘研究所',58,930);
-    x.fillStyle = '#7f8798'; x.font = '14px '+SERIF;
-    x.fillText('以易理观己 · 以星盘为证',58,958);
-    x.textAlign = 'right';
-    x.fillStyle = '#d8c18d'; x.font = '18px '+SERIF;
-    x.fillText(q.bindElement+' · '+q.strength+' · 同日同签',W-58,928);
-    x.fillStyle = '#7f8798'; x.font = '14px '+SERIF;
-    x.fillText('今日 · '+posterDate+' · 隔日流转',W-58,958);
-  }
+  coverQianLegacyQr(x);
+  drawQianOfficialQr(x);
 }
 
-function drawQianSignedFooter(x,q,posterDate,shareUrl,SERIF){
+function coverQianLegacyQr(x){
+  const image=x.getImageData(0,0,750,1000),data=image.data;
+  const rect={left:592,top:822,right:678,bottom:904,feather:5};
+  const pixel=(px,py,channel)=>data[(py*750+px)*4+channel];
+  for(let py=rect.top;py<=rect.bottom;py+=1){
+    for(let px=rect.left;px<=rect.right;px+=1){
+      const mix=(px-rect.left)/(rect.right-rect.left);
+      const edge=Math.min(px-rect.left,rect.right-px,py-rect.top,rect.bottom-py);
+      const alpha=Math.max(0,Math.min(1,edge/rect.feather));
+      const index=(py*750+px)*4;
+      for(let channel=0;channel<3;channel+=1){
+        const clean=Math.round(pixel(rect.left-8,py,channel)*(1-mix)+pixel(rect.right+8,py,channel)*mix);
+        data[index+channel]=Math.round(data[index+channel]*(1-alpha)+clean*alpha);
+      }
+    }
+  }
+  x.putImageData(image,0,0);
+}
+
+function drawQianOfficialQr(x){
   if(!window.ZxShareQr)throw new Error('share qr unavailable');
-  const cover=x.createLinearGradient(0,720,0,1000);
-  cover.addColorStop(0,'rgba(6,10,17,0)');cover.addColorStop(.3,'rgba(6,10,17,.97)');cover.addColorStop(1,'#060a11');
-  x.fillStyle=cover;x.fillRect(0,704,750,296);
-  x.textAlign='left';
-  x.fillStyle='#E8E4D8';x.font='700 23px '+SERIF;x.fillText('扫码打开知星',52,808);
-  x.fillStyle='#aab1bf';x.font='15px '+SERIF;x.fillText('好友首次打开专属链接后',52,844);
-  x.fillText('才计入 1 次有效分享',52,872);
-  x.strokeStyle='rgba(201,168,92,.3)';x.beginPath();x.moveTo(52,898.5);x.lineTo(430,898.5);x.stroke();
-  x.fillStyle='#C9A85C';x.font='700 21px '+SERIF;x.fillText('知 · 星  命盘研究所',52,936);
-  x.fillStyle='#7f8798';x.font='14px '+SERIF;x.fillText(q.bindElement+' · '+q.strength+' · '+posterDate,52,964);
-  window.ZxShareQr.draw(x,shareUrl,{x:492,y:740,size:220});
+  const qr=window.ZxShareQr.drawOfficial(x,{x:602,y:830,size:66,quietZone:4});
+  x.strokeStyle='#C9A85C';x.lineWidth=1;
+  x.strokeRect(qr.left-1,qr.top-1,qr.actualSize+2,qr.actualSize+2);
 }
 
 function qianShareLink(token){
@@ -1088,7 +1092,7 @@ async function refreshQianShareButton(){
     await zxMember.whenReady();
     await zxMember.shareStatus();
     button.hidden=false;
-    status.textContent='点击后才会向服务端申请专属链接并生成二维码。';
+    status.textContent='海报已带官网二维码；点击后会申请专属分享链接。';
   }catch(_){
     button.hidden=true;
   }
@@ -1116,9 +1120,9 @@ async function shareQianPoster(){
       await navigator.share(data);shared=true;
     }else if(navigator.clipboard&&navigator.clipboard.writeText){
       await navigator.clipboard.writeText(url);shared=true;
-      status.textContent='专属链接已复制；海报上的二维码也已更新。';
+      status.textContent='专属链接已复制；海报二维码可打开知星官网。';
     }
-    if(!shared){status.textContent='二维码已生成，请保存海报；也可复制此链接：'+url;return}
+    if(!shared){status.textContent='请保存海报；也可复制此专属链接：'+url;return}
     if(!status.textContent.includes('已复制'))status.textContent='已调起分享。好友首次打开后才计入有效分享。';
   }catch(error){
     if(error&&error.name==='AbortError'){status.textContent='已取消分享，本次不会计入有效分享。';return}
@@ -1157,6 +1161,22 @@ const REPORT_NAV_GROUPS = [
 ];
 const REPORT_READING_IDS = REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item[0]));
 const REPORT_TOOL_IDS = ['sec-deep','sec-qian'];
+const REPORT_NAV_ICONS = {
+  'sec-chart':'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
+  'sec-overview':'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/>',
+  'sec-astro':'<circle cx="12" cy="12" r="2.5"/><path d="M3.8 9.5c2.2-5 7.8-7.3 12.5-5.1s5.3 8 .6 11.9-10.6 3.5-13.1-.8c-1.7-3 .4-5.6 3.2-6.5 4.2-1.3 8.5.7 10.8 4.1"/><circle cx="18.4" cy="7.1" r="1.2"/>',
+  'sec-energy':'<path d="m12 3 7.6 5.5-2.9 8.9H7.3L4.4 8.5 12 3Z"/><circle cx="12" cy="3" r="1.2"/><circle cx="19.6" cy="8.5" r="1.2"/><circle cx="16.7" cy="17.4" r="1.2"/><circle cx="7.3" cy="17.4" r="1.2"/><circle cx="4.4" cy="8.5" r="1.2"/>',
+  'sec-skeleton':'<path d="M12 21V9m0 0L7 4m5 5 5-5M7 4H4v3m13-3h3v3M12 14l-4 4m4-4 4 4"/>',
+  'sec-relation':'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 20c.6-4 2.3-6 5-6s4.4 2 5 6m-2 0c.5-3.4 2.2-5.2 5-5.2 2.7 0 4.3 1.8 5 5.2"/>',
+  'sec-action':'<path d="M4 18 18 4m0 0v8m0-8h-8"/><path d="m5 6 3 3-3 3"/>',
+  'sec-phase':'<path d="M3 17c3.2 0 3.5-10 7-10s3.8 10 7 10 3.5-6 4-8"/><path d="M3 21h18"/>',
+  'sec-deep':'<path d="M21 13a7 7 0 0 1-7 7H7l-4 2 1.4-4.1A8 8 0 1 1 21 13Z"/><path d="m14.8 8 .6 1.3 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6.6-1.3Z"/>',
+  'sec-qian':'<path d="M6 3h12v18l-6-4-6 4V3Z"/><path d="M9 7h6m-6 4h6"/>'
+};
+const REPORT_MOBILE_TITLES = {
+  'sec-chart':'盘面','sec-overview':'总览','sec-astro':'星盘','sec-energy':'五行','sec-skeleton':'骨架',
+  'sec-relation':'关系','sec-action':'行动','sec-phase':'进与收','sec-deep':'问知星','sec-qian':'本命签'
+};
 const REPORT_NAV_TITLES = Object.fromEntries(REPORT_NAV_GROUPS.flatMap(group => group.items).concat([
   ['sec-deep','问知星 · 本命深问'],['sec-qian','本命签']
 ]));
@@ -1175,6 +1195,14 @@ let REPORT_NAV_SCROLL_HANDLER = null;
 let REPORT_VISITED = new Set();
 let REPORT_ACTIVE_ID = 'sec-overview';
 let REPORT_LAST_READING_ID = 'sec-overview';
+
+function reportNavIcon(id){
+  return `<svg class="nav-glyph" viewBox="0 0 24 24" aria-hidden="true">${REPORT_NAV_ICONS[id] || ''}</svg>`;
+}
+
+function reportNavLink(id, title, className = ''){
+  return `<a class="nav-section-link${className ? ' ' + className : ''}" href="#${id}" data-nav-target="${id}">${reportNavIcon(id)}<span class="nav-label">${title}</span><span class="nav-state-icon" aria-hidden="true"></span></a>`;
+}
 
 function scrollToReportTarget(target, smooth){
   if (!target) return;
@@ -1195,16 +1223,10 @@ function scrollToReportTarget(target, smooth){
 function syncReaderControls(id){
   const index = REPORT_READING_IDS.indexOf(id);
   if (index < 0) return;
-  const select = $('readerChapterSelect');
-  if (select) select.value = id;
   const position = $('readerPosition');
   if (position) position.textContent = `${index + 1} / ${REPORT_READING_IDS.length}`;
   const prev = $('readerPrev'), next = $('readerNext');
   const returnButton = $('readerReturn');
-  const mobileControl = document.querySelector('.reader-mobile-control');
-  const mobileTool = $('readerMobileTool');
-  if (mobileControl) mobileControl.hidden = false;
-  if (mobileTool) mobileTool.hidden = true;
   if (prev) prev.hidden = false;
   if (next) next.hidden = false;
   if (position) position.hidden = false;
@@ -1255,12 +1277,6 @@ function activateReportTool(id, shouldScroll, updateHash = true){
     returnButton.hidden = false;
     returnButton.textContent = `返回报告 · ${REPORT_NAV_TITLES[REPORT_LAST_READING_ID]}`;
   }
-  const mobileControl = document.querySelector('.reader-mobile-control');
-  const mobileTool = $('readerMobileTool');
-  const mobileToolTitle = $('readerMobileToolTitle');
-  if (mobileControl) mobileControl.hidden = true;
-  if (mobileTool) mobileTool.hidden = false;
-  if (mobileToolTitle) mobileToolTitle.textContent = REPORT_NAV_TITLES[id];
   setReportNavActive(id);
   if (updateHash) history.replaceState(null, '', `#${id}`);
   if (shouldScroll) scrollToReportTarget($('reportReader'), true);
@@ -1276,8 +1292,14 @@ function buildReportReader(){
   reader.setAttribute('aria-label', '命盘书册单章阅读器');
   reader.innerHTML = `<aside class="reader-rail" aria-label="章节目录"><div class="reader-rail-inner">
       <span class="reader-rail-label">命 盘 书 册</span>
-      <label class="reader-mobile-control" for="readerChapterSelect"><span>正在阅读</span><select id="readerChapterSelect" aria-label="选择报告章节"></select></label>
-      <div class="reader-mobile-tool" id="readerMobileTool" hidden><span>报告工具</span><strong id="readerMobileToolTitle"></strong></div>
+      <div class="nav-status" aria-live="polite">
+        <div class="nav-current"><span>当前阅读</span><strong id="navCurrent">命局总览</strong></div>
+        <div class="nav-progress">
+          <span class="nav-progress-label" id="navProgressText">已浏览 1 / ${REPORT_READING_IDS.length}</span>
+          <div class="nav-progress-track" id="navProgressTrack" role="progressbar" aria-label="报告阅读进度" aria-valuemin="0" aria-valuemax="${REPORT_READING_IDS.length}" aria-valuenow="1"><span class="nav-progress-fill" id="navProgressFill"></span></div>
+        </div>
+      </div>
+      <nav class="reader-mobile-nav" id="readerMobileNav" aria-label="报告全览"></nav>
       <nav class="secnav" id="secNav" aria-label="报告章节"></nav>
     </div></aside>
     <div class="reader-main"><div class="reader-stage" id="readerStage"></div>
@@ -1290,7 +1312,6 @@ function buildReportReader(){
     </div>`;
   out.prepend(reader);
   const stage = $('readerStage');
-  const select = $('readerChapterSelect');
   REPORT_READING_IDS.forEach((id, index) => {
     const card = $(id); if (!card) return;
     const pad = card.querySelector(':scope > .pad');
@@ -1303,10 +1324,6 @@ function buildReportReader(){
     (source || heading).insertAdjacentElement('afterend', guide);
     card.classList.add('reader-page');
     stage.appendChild(card);
-    const option = document.createElement('option');
-    option.value = id;
-    option.textContent = `${index + 1}. ${REPORT_NAV_TITLES[id]}`;
-    select.appendChild(option);
   });
   REPORT_TOOL_IDS.forEach(id => {
     const card = $(id); if (!card) return;
@@ -1315,7 +1332,6 @@ function buildReportReader(){
     card.setAttribute('aria-hidden', 'true');
     stage.appendChild(card);
   });
-  select.addEventListener('change', () => activateReportChapter(select.value, false));
   $('readerPrev').addEventListener('click', () => {
     const index = REPORT_READING_IDS.indexOf(REPORT_ACTIVE_ID);
     if (index > 0) activateReportChapter(REPORT_READING_IDS[index - 1], true);
@@ -1325,6 +1341,11 @@ function buildReportReader(){
     if (index >= 0 && index < REPORT_READING_IDS.length - 1) activateReportChapter(REPORT_READING_IDS[index + 1], true);
   });
   $('readerReturn').addEventListener('click', () => activateReportChapter(REPORT_LAST_READING_ID, true));
+  const editDock = $('reportEditDock');
+  if (editDock){
+    editDock.hidden = false;
+    reader.querySelector('.reader-main').appendChild(editDock);
+  }
   activateReportChapter('sec-overview', false, false);
 }
 
@@ -1357,7 +1378,7 @@ function setReportNavActive(id){
   if (track) track.setAttribute('aria-valuenow', String(count));
 }
 
-/* 报告导航:目录控制单章阅读器；问知星与本命签仍是独立工具。 */
+/* 命盘书册目录:八章与两个工具共用一套入口，不再另设重复的报告导航卡。 */
 function buildNav(){
   const nav = $('secNav'); if (!nav) return;
   if (REPORT_NAV_OBSERVER) REPORT_NAV_OBSERVER.disconnect();
@@ -1365,10 +1386,25 @@ function buildNav(){
   REPORT_NAV_OBSERVER = null;
   REPORT_NAV_SCROLL_HANDLER = null;
   REPORT_VISITED = new Set([REPORT_ACTIVE_ID]);
-  nav.innerHTML = REPORT_NAV_GROUPS.map(group => `<div class="nav-group">
+  const chapterGroups = REPORT_NAV_GROUPS.map(group => `<div class="nav-group">
     <div class="nav-group-name">${group.label}</div>
-    <div class="nav-group-links">${group.items.map(([id,title]) => `<a class="nav-section-link" href="#${id}" data-nav-target="${id}"><span class="nav-label">${title}</span><span class="nav-state-icon" aria-hidden="true"></span></a>`).join('')}</div>
+    <div class="nav-group-links">${group.items.map(([id,title]) => reportNavLink(id,title)).join('')}</div>
   </div>`).join('');
+  const toolGroup = `<div class="nav-group nav-group-tools">
+    <div class="nav-group-name">工具</div>
+    <div class="nav-group-links">
+      ${reportNavLink('sec-deep','问知星','reader-tool-link reader-tool-deep')}
+      ${reportNavLink('sec-qian','本命签','reader-tool-link reader-tool-qian')}
+    </div>
+  </div>`;
+  nav.innerHTML = chapterGroups + toolGroup;
+  const mobileNav = $('readerMobileNav');
+  if (mobileNav){
+    mobileNav.innerHTML = REPORT_READING_IDS.concat(REPORT_TOOL_IDS).map(id => {
+      const toolClass = id === 'sec-deep' ? ' reader-tool-deep' : id === 'sec-qian' ? ' reader-tool-qian' : '';
+      return reportNavLink(id,REPORT_MOBILE_TITLES[id],`reader-mobile-nav-item${toolClass}`);
+    }).join('');
+  }
 
   const sections = [$('reportReader')].filter(Boolean);
   document.querySelectorAll('[data-nav-target]').forEach(link => {

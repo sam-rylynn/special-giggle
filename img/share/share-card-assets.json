@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "contractDate": "2026-07-21",
+  "contractDate": "2026-07-22",
   "status": "approved_static_visuals_runtime_selected",
   "sourceArchive": "/Users/hao/projects/zhixing-assets/report-cards/2026-07-13/本命签-全量改版/",
   "sourceArchiveStatus": {
@@ -16,15 +16,16 @@
     "qianReviewStatus": "approved_2026_07_13"
   },
   "runtimeSelection": {
-    "dayMaster": "approved_asset_with_dynamic_fact_slots",
+    "dayMaster": "approved_asset_with_official_qr",
     "dayMasterVersion": "2026-07-10",
-    "qian": "approved_asset_with_dynamic_fact_slots",
+    "qian": "approved_asset_with_dynamic_date_and_official_qr",
     "qianVersion": "2026-07-13",
     "assetFailurePolicy": "fail_closed_no_visual_fallback",
-    "canvasRole": "export_and_signed_qr_compositor_only",
-    "qrVerified": false,
+    "canvasRole": "export_dynamic_date_and_official_qr_compositor_only",
+    "qrVerified": true,
+    "officialQrUrl": "https://zhixing.cn/",
     "qianSafeSourceHeightRatio": 0.82,
-    "note": "Approved day-master and qian artwork is the only visual source. Runtime compositing may replace baked example facts, production date and QR slots, but must never draw a second fallback card design."
+    "note": "Approved day-master and qian artwork is the only visual source. Day-master cards retain no runtime text overlays; Canvas only exports, replaces the qian production date and draws the compact official-domain QR. Signed entitlement links remain separate share text and must never be represented by the fixed card QR."
   },
   "target": {
     "dayMasterSizing": {
@@ -83,7 +84,7 @@
         "width": 750,
         "height": 1500,
         "format": "webp",
-        "bytes": 157622,
+        "bytes": 138248,
         "compressionQuality": 83
       },
       "source": {
@@ -110,7 +111,7 @@
         "width": 750,
         "height": 1500,
         "format": "webp",
-        "bytes": 163666,
+        "bytes": 143772,
         "compressionQuality": 83
       },
       "source": {
@@ -137,7 +138,7 @@
         "width": 750,
         "height": 1406,
         "format": "webp",
-        "bytes": 140654,
+        "bytes": 119006,
         "compressionQuality": 83
       },
       "source": {
@@ -164,7 +165,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 114974,
+        "bytes": 99894,
         "compressionQuality": 83
       },
       "source": {
@@ -191,7 +192,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 122700,
+        "bytes": 104782,
         "compressionQuality": 83
       },
       "source": {
@@ -218,7 +219,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 114234,
+        "bytes": 98368,
         "compressionQuality": 83
       },
       "source": {
@@ -245,7 +246,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 131222,
+        "bytes": 109936,
         "compressionQuality": 83
       },
       "source": {
@@ -272,7 +273,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 142230,
+        "bytes": 123972,
         "compressionQuality": 83
       },
       "source": {
@@ -299,7 +300,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 88452,
+        "bytes": 75094,
         "compressionQuality": 83
       },
       "source": {
@@ -328,7 +329,7 @@
         "width": 750,
         "height": 1333,
         "format": "webp",
-        "bytes": 120858,
+        "bytes": 103258,
         "compressionQuality": 83
       },
       "source": {
