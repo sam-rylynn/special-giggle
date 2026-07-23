@@ -315,7 +315,7 @@
   <a class="report-my-link" id="myPageLink" href="../web/account.html">我的</a>
 </nav>
 <div class="cover">
-  <img src="./img/cover.jpg" alt="">
+  <img src="./img/cover.jpg" srcset="./img/cover.jpg 1280w, ./img/cover-hd.webp 2560w" sizes="100vw" alt="">
   <div class="tt">
     <span class="badge">个 人 发 展 参 考</span>
     <h1>深度本命报告</h1>
@@ -1044,7 +1044,8 @@ function drawQianPosterAsset(q,img,posterDate,shareUrl=''){
 
 function coverQianLegacyQr(x){
   const image=x.getImageData(0,0,750,1000),data=image.data;
-  const rect={left:592,top:822,right:678,bottom:904,feather:5};
+  // 定稿图内含制作期二维码与说明；完整清除后再只绘制一次官网码，避免边缘残影叠码。
+  const rect={left:584,top:814,right:688,bottom:934,feather:8};
   const pixel=(px,py,channel)=>data[(py*750+px)*4+channel];
   for(let py=rect.top;py<=rect.bottom;py+=1){
     for(let px=rect.left;px<=rect.right;px+=1){
@@ -1066,6 +1067,11 @@ function drawQianOfficialQr(x){
   const qr=window.ZxShareQr.drawOfficial(x,{x:602,y:830,size:66,quietZone:4});
   x.strokeStyle='#C9A85C';x.lineWidth=1;
   x.strokeRect(qr.left-1,qr.top-1,qr.actualSize+2,qr.actualSize+2);
+  x.save();
+  x.textAlign='center';x.fillStyle='#9f8649';
+  x.font='10px "Noto Serif SC","Songti SC","STSong",serif';
+  x.fillText('扫码抽你的本命签',qr.left+qr.actualSize/2,925);
+  x.restore();
 }
 
 function qianShareLink(token){
