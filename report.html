@@ -120,6 +120,10 @@
   .reader-edit-dock{width:min(100%,720px);margin:12px auto 0;padding:0 4px}
   .reader-edit-dock .navedit{margin-top:0}
   .reader-edit-dock .row{margin-top:10px;padding:12px;border:1px solid rgba(201,168,92,.16);border-radius:10px;background:rgba(20,28,48,.72)}
+  .deep-composer{margin-top:10px}
+  .deep-composer input{width:100%}
+  .deep-composer button{width:100%;margin-top:8px}
+  .deep-composer.is-followup{margin-top:18px;padding-top:16px;border-top:1px dashed rgba(201,168,92,.24)}
 
   /* 星盘轮 */
   .wheel{display:block;width:min(100%,320px);margin:8px auto 4px}
@@ -857,7 +861,7 @@ const REPORT_SOURCE_TREE = /\/v1\/report\.html$/.test(location.pathname);
 const ACCOUNT_PAGE_AVAILABLE = true;
 const ACCOUNT_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/account.html' : './account.html';
 const HOME_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/index.html' : './app.html';
-const MEMBER_ACTIVE_BODY = '会员可不限次使用问知星，并默认保存最近 50 个问答轮次。';
+const MEMBER_ACTIVE_BODY = '会员每月含 60 次问知星，并默认保存最近 50 个问答轮次。';
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
 const MODEL_PROCESSING_NOTICE = '提问会发送盘面摘要、本次问题、最近几轮对话摘要和当日本命签，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
 const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
@@ -944,8 +948,10 @@ function deepCard(){
     ${LAB ? `<div class="deep-key"><input type="password" id="deepKey" placeholder="内测 · Anthropic Key(仅存本机,不上传)" style="width:100%"><small>内测通道:粘贴你的 Key 后点「问知星」即出真答。公开访问看不到此栏,只显示预告。</small></div>` : ''}
     <div class="ai-interaction">你正在与人工智能服务互动</div>
     <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">隐私政策页尚未开放：正式运营主体、联系邮箱和生效日期完成核验前，不展示未确认的信息。</div></div>
-    <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?" style="width:100%;margin-top:10px">
-    <button id="deepAsk" class="ghost" style="width:100%;margin-top:8px">问知星</button>
+    <div class="deep-composer" id="deepComposer" aria-label="问知星提问区">
+      <input type="text" id="deepQ" placeholder="比如:现在这份工作,要不要换?">
+      <button id="deepAsk" class="ghost">问知星</button>
+    </div>
     <div id="deepEcho"></div>
   </div></div>`;
 }
@@ -1045,7 +1051,7 @@ function drawQianPosterAsset(q,img,posterDate,shareUrl=''){
 function coverQianLegacyQr(x){
   const image=x.getImageData(0,0,750,1000),data=image.data;
   // 定稿图内含制作期二维码与说明；完整清除后再只绘制一次官网码，避免边缘残影叠码。
-  const rect={left:584,top:814,right:688,bottom:934,feather:8};
+  const rect={left:584,top:814,right:688,bottom:950,feather:8};
   const pixel=(px,py,channel)=>data[(py*750+px)*4+channel];
   for(let py=rect.top;py<=rect.bottom;py+=1){
     for(let px=rect.left;px<=rect.right;px+=1){
@@ -1756,6 +1762,13 @@ function rememberDeepTurn(question, ans){
 function deepUpsell(){
   return `<div class="da-more">可以继续追问。建议补一条具体背景,比如时间、对象、代价、你最纠结的点。</div>`;
 }
+function moveDeepComposerAfterAnswer(){
+  const composer = $('deepComposer');
+  const echo = $('deepEcho');
+  if (!composer || !echo) return;
+  echo.insertAdjacentElement('afterend', composer);
+  composer.classList.add('is-followup');
+}
 /* 无 Key(未走内测通道 / 公开访问):优雅降级为预告,不暴露直连 */
 function deepTeaser(q){
   return `<div class="deep-echo"><b style="color:var(--gold)">问知星暂不可用</b><br>本次问题未能提交。你仍可查看本命报告与本命签。</div>`;
@@ -1786,6 +1799,7 @@ async function askDeep(chart){
     echo.innerHTML = priorHtml + renderDeep(ans, q);
     $('deepQ').value = '';
     $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
+    moveDeepComposerAfterAnswer();
   } catch (e) {
     if (e && e.paywall){ echo.innerHTML = priorHtml + deepPaywall(e.nextAvailableAt); return; }
     echo.innerHTML = priorHtml + `<div class="deep-echo">推演暂时没有接上，请稍后再试。你也可以先把本命签给的方向拿稳。</div>`;

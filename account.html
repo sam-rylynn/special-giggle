@@ -18,22 +18,40 @@
   .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px;margin-bottom:26px;border-bottom:1px solid var(--line)}
   .brand{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700}
   .back{display:inline-flex;align-items:center;min-height:38px;color:var(--mist);font-size:13px;text-decoration:none}
-  header{padding:4px 0 22px}
-  h1{margin:0;font-family:var(--serif);font-size:clamp(26px,5vw,36px);letter-spacing:0}
   .account-grid{display:grid;grid-template-columns:1fr;gap:14px}
   .panel{padding:20px;background:var(--panel);border:1px solid rgba(201,168,92,.18);border-radius:8px;scroll-margin-top:18px}
   .profile-panel{background:linear-gradient(145deg,rgba(201,168,92,.1),rgba(26,34,51,.96) 42%,rgba(19,26,41,.98));border-color:rgba(201,168,92,.3)}
-  .profile-identity{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:2px 0 15px;border-bottom:1px solid var(--line)}
+  .profile-identity{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;padding:2px 0 18px;border-bottom:1px solid var(--line)}
   .profile-name-label{display:block;color:var(--gold-dim);font-size:11px}
   .profile-name{display:block;margin-top:2px;color:#f2ead5;font-family:var(--serif);font-size:clamp(22px,4vw,30px);font-weight:700}
   .profile-name-tools{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:8px}
   .profile-name-tools .btn{min-height:32px;padding:0 11px;font-size:12px}
   .profile-name-hint{color:#788397;font-size:11px}
-  .profile-day-master{color:var(--gold);font-family:var(--serif);font-size:14px;text-align:right}
-  .profile-facts{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:14px 0 0}
-  .profile-facts div{min-width:0;padding:10px 12px;border-top:1px solid rgba(201,168,92,.1)}
-  .profile-facts dt{color:#788397;font-size:11px}
-  .profile-facts dd{margin:3px 0 0;color:#d8d3c7;font-family:var(--serif);font-size:13px;overflow-wrap:anywhere}
+  .profile-day-master{color:var(--gold);font-family:var(--serif);font-size:13px;text-align:right}
+  .report-library{margin-top:18px}
+  .report-library-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:12px}
+  .report-list{display:grid;gap:10px}
+  .report-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:15px;border:1px solid rgba(201,168,92,.16);border-radius:7px;background:rgba(8,13,23,.42)}
+  .report-item.pending{border-style:dashed;border-color:rgba(201,168,92,.42);background:rgba(201,168,92,.045)}
+  .report-item.over-limit{opacity:.72}
+  .report-kicker{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-bottom:4px;color:var(--gold-dim);font-size:11px}
+  .report-relation{padding:1px 7px;border:1px solid rgba(201,168,92,.28);border-radius:999px;color:#d6bb75}
+  .report-item h3{margin:0;color:#eee7d8;font-family:var(--serif);font-size:16px}
+  .report-meta{margin:5px 0 0;color:#8f99aa;font-size:12px;overflow-wrap:anywhere}
+  .report-summary{margin:4px 0 0;color:#c8ced8;font-family:var(--serif);font-size:12px;overflow-wrap:anywhere}
+  .report-item-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px}
+  .report-item-actions .btn{min-height:34px;padding:0 11px;font-size:12px}
+  .report-empty{padding:18px;border:1px dashed rgba(201,168,92,.25);border-radius:7px;color:#8f99aa;text-align:center}
+  .report-library-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .report-library-foot .actions{margin-top:0}
+  .upgrade-panel{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(201,168,92,.13),rgba(26,34,51,.98) 48%);border-color:rgba(201,168,92,.3)}
+  .upgrade-panel::after{content:"";position:absolute;right:-52px;bottom:-74px;width:170px;height:170px;border:1px solid rgba(201,168,92,.14);border-radius:50%;box-shadow:0 0 0 22px rgba(201,168,92,.025),0 0 0 44px rgba(201,168,92,.018);pointer-events:none}
+  .member-price{position:relative;z-index:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:5px;color:#d7c080}
+  .member-price strong{color:#f0d695;font-family:var(--serif);font-size:30px;line-height:1}
+  .member-price span{color:#8d97a8;font-size:11px}
+  .member-benefits{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin:15px 0 0;padding:0;list-style:none;color:#c5ccd7;font-size:12px}
+  .member-benefits li::before{content:"·";margin-right:6px;color:var(--gold)}
+  .upgrade-note{position:relative;z-index:1;margin:10px 0 0;color:#788397;font-size:11px}
   .qian-panel{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(181,71,47,.12),rgba(26,34,51,.98) 48%)}
   .qian-date{color:#7f8999;font-size:11px}
   .qian-signature{margin:7px 0 0;color:#efd6a0;font-family:var(--serif);font-size:28px;letter-spacing:.22em}
@@ -41,7 +59,7 @@
   .qian-guidance{margin:12px 0 0;padding:11px 12px;border-left:2px solid rgba(181,71,47,.62);background:rgba(8,13,23,.38);color:#aeb7c6}
   .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px}
   .eyebrow{margin-bottom:3px;color:var(--gold-dim);font-size:11px}
-  h2{margin:0;color:#f1ead8;font-family:var(--serif);font-size:18px;letter-spacing:0}
+  h1.panel-title,h2{margin:0;color:#f1ead8;font-family:var(--serif);font-size:18px;letter-spacing:0}
   .badge{flex:none;min-width:58px;padding:3px 8px;border:1px solid rgba(201,168,92,.34);border-radius:999px;color:var(--gold);font-size:11px;text-align:center}
   .state-title{margin:0 0 5px;color:#e8e4d8;font-family:var(--serif);font-size:15px;font-weight:700}
   .state-body{margin:0;color:#adb7c6;overflow-wrap:anywhere}
@@ -65,14 +83,14 @@
   .dialog-body h2{margin-bottom:9px;color:var(--gold)}
   .dialog-copy{margin:0;color:#b5becb}
   .dialog-field{display:grid;gap:7px;margin-top:16px;color:var(--gold-dim);font-size:12px}
-  .dialog-field input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(201,168,92,.3);border-radius:6px;background:#111827;color:var(--moon)}
+  .dialog-field input,.dialog-field select{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(201,168,92,.3);border-radius:6px;background:#111827;color:var(--moon)}
   .dialog-error{min-height:20px;margin:7px 0 0;color:#efb0a3;font-size:12px}
   .confirm-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;padding:11px;background:#111827;color:#c8ced7;font-size:13px;cursor:pointer}
   .confirm-check input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold)}
   .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
   .dialog-actions .btn{width:100%}
   @media(min-width:760px){.account-grid{grid-template-columns:1fr 1fr}.panel-wide{grid-column:1/-1}}
-  @media(max-width:480px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.profile-identity{display:block}.profile-day-master{margin-top:8px;text-align:left}.profile-facts{grid-template-columns:1fr}.profile-facts div{padding-left:0;padding-right:0}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.dialog-actions{grid-template-columns:1fr}}
+  @media(max-width:600px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.profile-identity{display:block}.profile-day-master{margin-top:8px;text-align:left}.report-item{grid-template-columns:1fr}.report-item-actions{justify-content:flex-start}.report-item-actions .btn{flex:1}.report-library-foot{display:block}.report-library-foot .actions{display:grid;margin-top:10px}.member-benefits{grid-template-columns:1fr}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.dialog-actions{grid-template-columns:1fr}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none;transform:none}}
 </style>
 </head>
@@ -83,31 +101,31 @@
     <a class="back" id="reportLink" href="../v1/report.html">返回本命报告</a>
   </nav>
 
-  <header>
-    <h1>我的</h1>
-  </header>
-
   <main class="account-grid">
     <section class="panel panel-wide profile-panel" id="profile-summary">
       <div class="panel-head">
-        <div><div class="eyebrow">本命资料</div><h2>我的命盘</h2></div>
-        <span class="badge" id="profileBadge">本机</span>
+        <div><div class="eyebrow">本命资料</div><h1 class="panel-title">我的命盘</h1></div>
+        <span class="badge" id="profileBadge">本机档案</span>
       </div>
       <div class="profile-identity">
         <div>
-          <span class="profile-name-label">名称</span>
+          <span class="profile-name-label">我的名称</span>
           <strong class="profile-name" id="profileName">正在生成</strong>
           <div class="profile-name-tools"><button class="btn" id="profileRenameBtn" type="button">更改名称</button><span class="profile-name-hint" id="profileNameHint">每 30 天可更改一次</span></div>
         </div>
-        <div class="profile-day-master" id="profileDayMaster">正在读取本命盘</div>
+        <div class="profile-day-master" id="profileDayMaster">正在读取本命报告</div>
       </div>
-      <dl class="profile-facts">
-        <div><dt>出生信息</dt><dd id="profileBirth">正在读取</dd></div>
-        <div><dt>生辰八字</dt><dd id="profilePillars">正在排定</dd></div>
-        <div><dt>日主</dt><dd id="profileStem">正在排定</dd></div>
-        <div><dt>星盘三要素</dt><dd id="profileAstro">正在排定</dd></div>
-      </dl>
-      <div class="actions"><a class="btn primary" id="profileReportLink" href="../v1/report.html">查看本命报告</a></div>
+      <div class="report-library" aria-labelledby="reportLibraryTitle">
+        <div class="report-library-head">
+          <div><div class="eyebrow">本命报告</div><h2 id="reportLibraryTitle">已保存的报告</h2></div>
+          <span class="badge" id="reportCount">0 / 2</span>
+        </div>
+        <div class="report-list" id="reportList"></div>
+        <div class="report-library-foot">
+          <div class="live" id="reportLive" aria-live="polite"></div>
+          <div class="actions"><a class="btn primary" id="newReportLink" href="./index.html">生成新命盘</a></div>
+        </div>
+      </div>
     </section>
 
     <section class="panel" id="account-status">
@@ -127,8 +145,24 @@
       </div>
       <h3 class="state-title" id="memberTitle">正在读取会员状态</h3>
       <p class="state-body" id="memberBody">读取完成前，你仍可查看本命报告与本命签。</p>
-      <p class="policy" id="memberPolicy" hidden>会员可不限次使用问知星，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
+      <p class="policy" id="memberPolicy" hidden>会员每月含 60 次问知星，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
       <div class="actions" id="memberActions"></div>
+    </section>
+
+    <section class="panel upgrade-panel" id="member-upgrade" aria-labelledby="upgradeTitle">
+      <div class="panel-head">
+        <div><div class="eyebrow">提升会员等级</div><h2 id="upgradeTitle">知星会员</h2></div>
+        <span class="badge" id="upgradeBadge">即将开放</span>
+      </div>
+      <div class="member-price" id="memberPrice"><strong>¥29</strong><span>/ 月　·　¥228 / 年</span></div>
+      <ul class="member-benefits" aria-label="知星会员权益">
+        <li>保存 6 份本命报告</li>
+        <li>每月 60 次问知星</li>
+        <li>最近 50 轮问答存档</li>
+        <li>报告与本命签跨设备同步</li>
+      </ul>
+      <div class="actions" id="upgradeActions"></div>
+      <p class="upgrade-note" id="upgradeNote">账号与支付通道接通前不会收取费用。</p>
     </section>
 
     <section class="panel panel-wide" id="cloud-sync">
@@ -210,6 +244,34 @@
   </form>
 </dialog>
 
+<dialog id="saveReportDialog" aria-labelledby="saveReportTitle">
+  <form class="dialog-body" id="saveReportForm" method="dialog">
+    <h2 id="saveReportTitle">保存这份本命报告</h2>
+    <p class="dialog-copy">保存后会占用一个本机档案位。账号云端同步接通前，资料只保存在当前浏览器。</p>
+    <label class="dialog-field" for="saveReportName">档案称呼
+      <input id="saveReportName" name="reportName" type="text" minlength="2" maxlength="8" autocomplete="off" placeholder="2—8 个字">
+    </label>
+    <label class="dialog-field" for="saveReportRelation">与我的关系
+      <select id="saveReportRelation" name="reportRelation">
+        <option value="本人">本人</option>
+        <option value="伴侣">伴侣</option>
+        <option value="家人">家人</option>
+        <option value="朋友">朋友</option>
+        <option value="其他">其他</option>
+      </select>
+    </label>
+    <label class="confirm-check" id="saveReportConsentWrap" hidden>
+      <input type="checkbox" id="saveReportConsent">
+      <span>我已获得对方同意保存其出生资料与本命报告。</span>
+    </label>
+    <p class="dialog-error" id="saveReportError" aria-live="polite"></p>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="saveReportCancel">取消</button>
+      <button class="btn primary" type="submit" id="saveReportPrimary">确认保存</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
 'use strict';
 (function(){
@@ -217,14 +279,19 @@
   const ARCHIVE_GRACE_MS = 30 * DAY_MS;
   const NAME_CHANGE_MS = 30 * DAY_MS;
   const PROFILE_NAME_KEY = 'zx_profile_name_v1';
+  const REPORT_ARCHIVE_KEY = 'zx_saved_reports_v1';
+  const FREE_REPORT_LIMIT = 2;
+  const MEMBER_REPORT_LIMIT = 6;
+  const MAX_REPORT_LIMIT = 12;
   const sourceTree = /\/web\/account\.html$/.test(location.pathname);
   const memberScriptPath = sourceTree ? '../member.js' : './member.js';
+  const minimumAgeScriptPath = './minimum-age.js';
   const engineScriptPath = sourceTree ? '../v1/bazi-engine.js' : './bazi-engine.js';
   const explainerScriptPath = sourceTree ? '../v1/explainer.js' : './explainer.js';
   const reportPath = sourceTree ? '../v1/report.html' : './report.html';
   const homePath = sourceTree ? './index.html' : './app.html';
   document.getElementById('reportLink').href = reportPath;
-  document.getElementById('profileReportLink').href = reportPath;
+  document.getElementById('newReportLink').href = homePath;
   document.getElementById('qianReportLink').href = reportPath + '#sec-qian';
 
   const COPY = {
@@ -238,7 +305,7 @@
       unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。'},
       loading:{title:'正在读取会员状态',badge:'加载中',body:'读取完成前，你仍可查看本命报告与本命签。'},
       nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以继续使用问知星的基础体验。'},
-      active:{title:'会员有效至',badge:'会员',body:'会员可不限次使用问知星，并默认保存最近 50 个问答轮次。'},
+      active:{title:'会员有效至',badge:'会员',body:'会员每月含 60 次问知星，并默认保存最近 50 个问答轮次。'},
       grace:{title:'会员已到期',badge:'存档保留中',body:'问答存档仍可查看至 {date}。超过该日期后，存档将自动删除且无法恢复。'},
       removed:{title:'存档保留期已结束',badge:'已结束',body:'原会员问答存档已删除，无法恢复。'},
       error:{title:'暂时无法读取会员状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。'}
@@ -286,6 +353,9 @@
   let confirmAction = null;
   let currentProfileRef = '';
   let currentProfileName = null;
+  let currentReportRecord = null;
+  let reportArchive = [];
+  let pendingSaveRecord = null;
 
   function addScript(src){
     return new Promise(resolve => {
@@ -308,6 +378,21 @@
     }
   }
 
+  function normalizedReportInput(data){
+    if (!data || !data.d) return null;
+    const input = {
+      d:String(data.d || ''),
+      t:String(data.t || ''),
+      c:String(data.c || '').trim(),
+      g:data.g === '男' || data.g === '女' ? data.g : ''
+    };
+    if (window.ZxMinimumAge) {
+      const age = ZxMinimumAge.evaluateMinimumAge(input.d);
+      if (!age.valid || !age.allowed) return null;
+    }
+    return input;
+  }
+
   function engineInput(data){
     const [y,m,d] = String(data.d || '').split('-').map(Number);
     if (!y || !m || !d) return null;
@@ -320,8 +405,6 @@
     if (data.g === '男' || data.g === '女') input.gender = data.g;
     return input;
   }
-
-  function pillarText(pillar){ return pillar ? pillar.stem + pillar.branch : '时辰未提供'; }
 
   function hashText(value){
     let hash = 2166136261;
@@ -338,6 +421,76 @@
       return saved && typeof saved.name === 'string' ? saved : null;
     } catch (_) {
       return null;
+    }
+  }
+
+  function reportReference(data, chart){
+    return [data.d,data.t,data.c,data.g,chart.pillars.day.stem,chart.pillars.day.branch].filter(Boolean).join('|');
+  }
+
+  function readReportArchive(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(REPORT_ARCHIVE_KEY) || 'null');
+      const items = Array.isArray(saved) ? saved : saved && Array.isArray(saved.items) ? saved.items : [];
+      return items.filter(item => item && item.id && normalizedReportInput(item.input)).slice(0, MAX_REPORT_LIMIT);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function writeReportArchive(items){
+    const clean = items.slice(0, MAX_REPORT_LIMIT).map(item => ({
+      id:String(item.id),
+      ref:String(item.ref),
+      name:String(item.name),
+      relation:String(item.relation),
+      primary:!!item.primary,
+      input:normalizedReportInput(item.input),
+      createdAt:Number(item.createdAt || Date.now()),
+      updatedAt:Number(item.updatedAt || Date.now()),
+      permissionConfirmedAt:item.permissionConfirmedAt ? Number(item.permissionConfirmedAt) : null
+    })).filter(item => item.input);
+    localStorage.setItem(REPORT_ARCHIVE_KEY, JSON.stringify({ version:1,items:clean }));
+    reportArchive = clean;
+  }
+
+  function currentReportLimit(){ return memberMode === 'active' ? MEMBER_REPORT_LIMIT : FREE_REPORT_LIMIT; }
+
+  function buildReportRecord(data, chart){
+    const input = normalizedReportInput(data);
+    if (!input) return null;
+    const ref = reportReference(input,chart);
+    const baseName = generatedChartName(chart,ref);
+    const usedNames = new Set(readReportArchive().map(item => item.name));
+    const suffixes = ['·二','·三','·四','·五','·六','·七','·八','·九'];
+    const uniqueName = usedNames.has(baseName)
+      ? (suffixes.map(suffix => baseName + suffix).find(name => !usedNames.has(name)) || baseName)
+      : baseName;
+    return {
+      id:'report-' + hashText(ref).toString(36),
+      ref,
+      name:uniqueName,
+      relation:'朋友',
+      primary:false,
+      input,
+      createdAt:Date.now(),
+      updatedAt:Date.now(),
+      chart
+    };
+  }
+
+  function reportDetails(record){
+    try {
+      const chart = record.chart || BaziEngine.computeChart(engineInput(record.input));
+      const dm = chart.dayMaster;
+      const strength = chart.fiveElements.dayMasterStrength.label;
+      const astro = chart.astro || {};
+      return {
+        birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · '),
+        summary:[`${dm.stem}${dm.element} · ${strength}`,`太阳${astro.sun && astro.sun.sign || '未定'}`,`月亮${astro.moon && astro.moon.sign || '未定'}`].join('　')
+      };
+    } catch (_) {
+      return { birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · '),summary:'报告可继续打开查看' };
     }
   }
 
@@ -362,12 +515,13 @@
   }
 
   function renderProfileName(chart, data){
-    currentProfileRef = [data.d,data.t,data.c,data.g,chart.pillars.day.stem,chart.pillars.day.branch].filter(Boolean).join('|');
+    const activeRef = reportReference(data,chart);
     let saved = readProfileName();
-    if (!saved || saved.chartRef !== currentProfileRef){
-      saved = { chartRef:currentProfileRef,name:generatedChartName(chart,currentProfileRef),changedAt:null };
+    if (!saved){
+      saved = { chartRef:activeRef,name:generatedChartName(chart,activeRef),changedAt:null };
       localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(saved));
     }
+    currentProfileRef = saved.chartRef || activeRef;
     currentProfileName = saved;
     $('profileName').textContent = saved.name;
     const nextAt = Number(saved.changedAt || 0) + NAME_CHANGE_MS;
@@ -377,20 +531,177 @@
     $('profileNameHint').textContent = locked ? `${formatNextNameDate(nextAt)}后可再改` : '每 30 天可更改一次';
   }
 
+  function renderStoredProfileName(){
+    const saved = readProfileName();
+    if (!saved) return false;
+    currentProfileRef = saved.chartRef || '';
+    currentProfileName = saved;
+    $('profileName').textContent = saved.name;
+    const nextAt = Number(saved.changedAt || 0) + NAME_CHANGE_MS;
+    const locked = !!saved.changedAt && nextAt > Date.now();
+    $('profileRenameBtn').disabled = locked;
+    $('profileRenameBtn').textContent = locked ? '暂不可更改' : '更改名称';
+    $('profileNameHint').textContent = locked ? `${formatNextNameDate(nextAt)}后可再改` : '每 30 天可更改一次';
+    return true;
+  }
+
+  function openSavedReport(record){
+    try { localStorage.setItem('zx_input', JSON.stringify(record.input)); } catch (_) {}
+    location.href = reportPath;
+  }
+
+  function removeSavedReport(record){
+    openConfirm({
+      title:'删除这份本命报告',
+      body:`“${record.name}”会从当前浏览器的本命报告列表中移除，删除后无法恢复。`,
+      primary:'删除报告',
+      secondary:'取消'
+    }, () => {
+      try {
+        writeReportArchive(readReportArchive().filter(item => item.id !== record.id));
+        $('reportLive').textContent = '这份报告已从本机档案中删除。';
+        renderReportLibrary();
+      } catch (_) {
+        $('reportLive').textContent = '删除没有完成，请稍后重试。';
+      }
+    });
+  }
+
+  function reportItem(record, index, limit){
+    const details = reportDetails(record);
+    const article = document.createElement('article');
+    article.className = 'report-item' + (index >= limit ? ' over-limit' : '');
+
+    const content = document.createElement('div');
+    const kicker = document.createElement('div');
+    kicker.className = 'report-kicker';
+    const relation = document.createElement('span');
+    relation.className = 'report-relation';
+    relation.textContent = record.primary ? '本人' : record.relation;
+    kicker.append(relation);
+    if (index >= limit) kicker.append(document.createTextNode('会员档案 · 只读保留'));
+
+    const title = document.createElement('h3');
+    title.textContent = record.name;
+    const meta = document.createElement('p');
+    meta.className = 'report-meta';
+    meta.textContent = details.birth;
+    const summary = document.createElement('p');
+    summary.className = 'report-summary';
+    summary.textContent = details.summary;
+    content.append(kicker,title,meta,summary);
+
+    const actions = document.createElement('div');
+    actions.className = 'report-item-actions';
+    actions.append(button('查看报告', () => openSavedReport(record), 'primary'));
+    actions.append(button('删除', () => removeSavedReport(record)));
+    article.append(content,actions);
+    return article;
+  }
+
+  function pendingReportItem(record, full){
+    const details = reportDetails(record);
+    const article = document.createElement('article');
+    article.className = 'report-item pending';
+    const content = document.createElement('div');
+    const kicker = document.createElement('div');
+    kicker.className = 'report-kicker';
+    const state = document.createElement('span');
+    state.className = 'report-relation';
+    state.textContent = '当前测试';
+    kicker.append(state,document.createTextNode('尚未保存'));
+    const title = document.createElement('h3');
+    title.textContent = record.name;
+    const meta = document.createElement('p');
+    meta.className = 'report-meta';
+    meta.textContent = details.birth;
+    const summary = document.createElement('p');
+    summary.className = 'report-summary';
+    summary.textContent = details.summary;
+    content.append(kicker,title,meta,summary);
+    const actions = document.createElement('div');
+    actions.className = 'report-item-actions';
+    const save = button(full ? '名额已满' : '保存到我的', () => openSaveReport(record), full ? '' : 'primary');
+    save.disabled = full;
+    actions.append(save);
+    article.append(content,actions);
+    return article;
+  }
+
+  function renderReportLibrary(){
+    const list = $('reportList');
+    const limit = currentReportLimit();
+    reportArchive = readReportArchive();
+    $('reportCount').textContent = `${reportArchive.length} / ${limit}`;
+    $('profileBadge').textContent = '本机档案';
+    $('profileDayMaster').textContent = `${reportArchive.length} 份已保存 · 当前上限 ${limit} 份`;
+    list.replaceChildren();
+
+    if (!reportArchive.length && !currentReportRecord) {
+      const empty = document.createElement('div');
+      empty.className = 'report-empty';
+      empty.textContent = '还没有保存的本命报告。生成命盘后，第一份报告会保存为“本人”。';
+      list.append(empty);
+    } else {
+      reportArchive.forEach((record,index) => list.append(reportItem(record,index,limit)));
+    }
+
+    const savedCurrent = currentReportRecord && reportArchive.some(item => item.ref === currentReportRecord.ref);
+    if (currentReportRecord && !savedCurrent) list.append(pendingReportItem(currentReportRecord,reportArchive.length >= limit));
+
+    if (reportArchive.length > limit) {
+      $('reportLive').textContent = `会员到期后仍保留全部报告；超出的 ${reportArchive.length-limit} 份暂为只读，不会自动删除。`;
+    } else if (currentReportRecord && !savedCurrent && reportArchive.length >= limit) {
+      $('reportLive').textContent = `当前测试尚未保存。普通用户最多保存 ${limit} 份，请先删除一份或等待会员通道开放。`;
+    } else {
+      $('reportLive').textContent = '生成次数不限；只有保存到这里的报告会占用档案位。';
+    }
+  }
+
+  function ensureInitialReport(record){
+    reportArchive = readReportArchive();
+    const existing = reportArchive.find(item => item.ref === record.ref);
+    if (existing) return;
+    if (reportArchive.length) return;
+    const first = Object.assign({},record,{
+      name:currentProfileName && currentProfileName.name || record.name,
+      relation:'本人',
+      primary:true
+    });
+    try { writeReportArchive([first]); } catch (_) {}
+  }
+
+  function syncSaveConsent(){
+    const requiresConsent = $('saveReportRelation').value !== '本人';
+    $('saveReportConsentWrap').hidden = !requiresConsent;
+    if (!requiresConsent) $('saveReportConsent').checked = false;
+  }
+
+  function openSaveReport(record){
+    if (!record || readReportArchive().length >= currentReportLimit()) return;
+    pendingSaveRecord = record;
+    const hasPrimary = readReportArchive().some(item => item.primary);
+    const selfOption = Array.from($('saveReportRelation').options).find(option => option.value === '本人');
+    selfOption.disabled = hasPrimary;
+    $('saveReportRelation').value = hasPrimary ? '朋友' : '本人';
+    $('saveReportName').value = hasPrimary ? record.name : currentProfileName && currentProfileName.name || record.name;
+    $('saveReportConsent').checked = false;
+    $('saveReportError').textContent = '';
+    syncSaveConsent();
+    $('saveReportDialog').showModal();
+    setTimeout(() => $('saveReportName').select(), 0);
+  }
+
   function showProfileEmpty(){
-    currentProfileRef = '';
-    currentProfileName = null;
-    $('profileName').textContent = '等待你的命盘';
-    $('profileRenameBtn').disabled = true;
-    $('profileNameHint').textContent = '生成命盘后自动命名';
-    $('profileBadge').textContent = '本机暂无';
-    $('profileDayMaster').textContent = '还没有可读取的本命盘';
-    $('profileBirth').textContent = '请先生成日主';
-    $('profilePillars').textContent = '—';
-    $('profileStem').textContent = '—';
-    $('profileAstro').textContent = '—';
-    $('profileReportLink').textContent = '去生成日主';
-    $('profileReportLink').href = homePath;
+    currentReportRecord = null;
+    if (!renderStoredProfileName()) {
+      currentProfileRef = '';
+      currentProfileName = null;
+      $('profileName').textContent = '等待你的命盘';
+      $('profileRenameBtn').disabled = true;
+      $('profileNameHint').textContent = '生成命盘后自动命名';
+    }
+    renderReportLibrary();
     $('qianBadge').textContent = '待生成';
     $('qianDate').textContent = new Date().toLocaleDateString('zh-CN');
     $('qianSignature').textContent = '待启';
@@ -398,31 +709,36 @@
     $('qianGuidance').textContent = '本命签按你的日主五行与强弱确定，同一天保持一致。';
     $('qianReportLink').textContent = '去生成日主';
     $('qianReportLink').href = homePath;
+    $('qianReportLink').onclick = null;
   }
 
   function renderPersonalSummary(){
-    const data = readLocalInput();
-    if (!data || !window.BaziEngine || !window.Explainer){ showProfileEmpty(); return; }
+    reportArchive = readReportArchive();
+    const primary = reportArchive.find(item => item.primary) || reportArchive[0] || null;
+    const localData = readLocalInput();
+    const identityData = primary && primary.input || localData;
+    const activeData = localData || identityData;
+    if (!identityData || !activeData || !window.BaziEngine || !window.Explainer){ showProfileEmpty(); return; }
     try {
-      const input = engineInput(data);
-      if (!input) { showProfileEmpty(); return; }
-      const chart = BaziEngine.computeChart(input);
-      const p = chart.pillars;
-      const dm = chart.dayMaster;
-      const strength = chart.fiveElements.dayMasterStrength.label;
-      const astro = chart.astro || {};
-      const birthBits = [data.d, data.t, data.c, data.g].filter(Boolean);
-      renderProfileName(chart,data);
-      $('profileBadge').textContent = '本机命盘';
-      $('profileDayMaster').textContent = `${dm.stem}${dm.element} · ${strength}`;
-      $('profileBirth').textContent = birthBits.join(' · ');
-      $('profilePillars').textContent = [p.year,p.month,p.day,p.hour].map(pillarText).join('  ');
-      $('profileStem').textContent = `${dm.yinyang}${dm.element} · ${dm.stem}${p.day.branch}日 · ${strength}`;
-      $('profileAstro').textContent = [`太阳${astro.sun && astro.sun.sign || '未定'}`,`月亮${astro.moon && astro.moon.sign || '未定'}`,astro.asc ? `上升${astro.asc.sign}` : '上升未计算'].join(' · ');
-      $('profileReportLink').textContent = '查看本命报告';
-      $('profileReportLink').href = reportPath;
+      const identityInput = normalizedReportInput(identityData);
+      const activeInput = normalizedReportInput(activeData);
+      if (!identityInput || !activeInput) { showProfileEmpty(); return; }
+      const identityChart = BaziEngine.computeChart(engineInput(identityInput));
+      const activeChart = reportReference(activeInput,identityChart) === reportReference(identityInput,identityChart)
+        ? identityChart
+        : BaziEngine.computeChart(engineInput(activeInput));
+      if (!localData && primary) {
+        try { localStorage.setItem('zx_input', JSON.stringify(activeInput)); } catch (_) {}
+      }
+      renderProfileName(identityChart,identityInput);
+      currentReportRecord = buildReportRecord(activeInput,activeChart);
+      ensureInitialReport(currentReportRecord);
+      renderReportLibrary();
 
-      const qian = Explainer.drawQian(chart,new Date());
+      const qianChart = primary ? identityChart : activeChart;
+      const dm = qianChart.dayMaster;
+      const strength = qianChart.fiveElements.dayMasterStrength.label;
+      const qian = Explainer.drawQian(qianChart,new Date());
       $('qianBadge').textContent = dm.element + ' · ' + strength;
       $('qianDate').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
       $('qianSignature').textContent = qian.hex;
@@ -430,6 +746,9 @@
       $('qianGuidance').textContent = `宜：${qian.yi.join(' · ')}　忌：${qian.ji.join(' · ')}`;
       $('qianReportLink').textContent = '进入本命签';
       $('qianReportLink').href = reportPath + '#sec-qian';
+      $('qianReportLink').onclick = () => {
+        try { localStorage.setItem('zx_input', JSON.stringify(identityInput)); } catch (_) {}
+      };
     } catch (_) {
       showProfileEmpty();
     }
@@ -461,6 +780,26 @@
   function replaceActions(id, items){
     const wrap = $(id);
     wrap.replaceChildren(...items);
+  }
+
+  function disabledButton(label){
+    const el = button(label, () => {});
+    el.disabled = true;
+    return el;
+  }
+
+  function renderUpgrade(){
+    if (memberMode === 'active') {
+      $('upgradeBadge').textContent = '已开通';
+      $('memberPrice').hidden = true;
+      $('upgradeNote').textContent = '当前已享有 6 个报告档案位；扩容包将在支付通道接通后开放。';
+      replaceActions('upgradeActions', [linkButton('查看会员存档', '#qa-archive', 'primary')]);
+      return;
+    }
+    $('upgradeBadge').textContent = memberMode === 'grace' ? '已到期' : '即将开放';
+    $('memberPrice').hidden = false;
+    $('upgradeNote').textContent = '账号与支付通道接通前不会收取费用；档案扩容包为 ¥18 / 2 个永久档案位。';
+    replaceActions('upgradeActions', [disabledButton(memberMode === 'grace' ? '重新开通即将开放' : '会员服务即将开放')]);
   }
 
   function timestamp(value){
@@ -495,6 +834,7 @@
   }
 
   function renderUnavailable(){
+    memberMode = 'non-member';
     $('account-status').hidden = true;
     $('cloud-sync').hidden = true;
     $('delete-account').hidden = true;
@@ -507,6 +847,8 @@
     replaceActions('deleteActions', []);
     $('memberPolicy').hidden = true;
     $('archiveList').replaceChildren();
+    renderUpgrade();
+    renderReportLibrary();
   }
 
   function renderLoading(){
@@ -517,6 +859,7 @@
     setState('member', COPY.member.loading.title, COPY.member.loading.body, COPY.member.loading.badge);
     setState('cloud', COPY.account.loading.title, COPY.account.loading.body, '加载中');
     setState('archive', COPY.archive.loading.title, COPY.archive.loading.body, '加载中');
+    renderUpgrade();
   }
 
   function renderError(){
@@ -531,6 +874,8 @@
     replaceActions('cloudActions', []);
     replaceActions('archiveActions', []);
     replaceActions('deleteActions', []);
+    renderUpgrade();
+    renderReportLibrary();
   }
 
   function renderReady(){
@@ -555,6 +900,8 @@
       setState('member', COPY.member.nonMember.title, COPY.member.nonMember.body, COPY.member.nonMember.badge);
       replaceActions('memberActions', []);
     }
+    renderUpgrade();
+    renderReportLibrary();
     renderCloud();
     renderDeleteAccount();
   }
@@ -795,7 +1142,56 @@
     $('renameDialog').close();
   });
 
-  Promise.all([addMemberScript(),addScript(engineScriptPath),addScript(explainerScriptPath)]).then(initializePage);
+  $('saveReportRelation').addEventListener('change', syncSaveConsent);
+  $('saveReportCancel').addEventListener('click', () => {
+    pendingSaveRecord = null;
+    $('saveReportDialog').close();
+  });
+  $('saveReportDialog').addEventListener('cancel', () => { pendingSaveRecord = null; });
+  $('saveReportForm').addEventListener('submit', event => {
+    event.preventDefault();
+    if (!pendingSaveRecord) return;
+    const name = $('saveReportName').value.trim();
+    const relation = $('saveReportRelation').value;
+    const length = Array.from(name).length;
+    const saved = readReportArchive();
+    if (length < 2 || length > 8) {
+      $('saveReportError').textContent = '请输入 2—8 个字的档案称呼。';
+      return;
+    }
+    if (saved.length >= currentReportLimit()) {
+      $('saveReportError').textContent = `当前最多保存 ${currentReportLimit()} 份报告，请先删除一份。`;
+      return;
+    }
+    if (relation === '本人' && saved.some(item => item.primary)) {
+      $('saveReportError').textContent = '“本人”档案已经存在，请选择其他关系。';
+      return;
+    }
+    if (relation !== '本人' && !$('saveReportConsent').checked) {
+      $('saveReportError').textContent = '保存他人资料前，请确认已获得对方同意。';
+      return;
+    }
+    const now = Date.now();
+    const record = Object.assign({},pendingSaveRecord,{
+      name,
+      relation,
+      primary:relation === '本人',
+      createdAt:now,
+      updatedAt:now,
+      permissionConfirmedAt:relation === '本人' ? null : now
+    });
+    try {
+      writeReportArchive(saved.concat(record));
+      pendingSaveRecord = null;
+      $('saveReportDialog').close();
+      $('reportLive').textContent = `已保存“${name}”。`;
+      renderReportLibrary();
+    } catch (_) {
+      $('saveReportError').textContent = '保存没有完成，请检查浏览器存储后重试。';
+    }
+  });
+
+  Promise.all([addMemberScript(),addScript(minimumAgeScriptPath),addScript(engineScriptPath),addScript(explainerScriptPath)]).then(initializePage);
 })();
 </script>
 </body>
