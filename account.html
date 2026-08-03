@@ -13,11 +13,12 @@
   body{margin:0;background:var(--night);color:var(--moon);font-family:var(--sans);font-size:14px;line-height:1.75}
   button,input{font:inherit}
   a{color:var(--gold);text-underline-offset:3px}
-  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
   .shell{width:min(100% - 32px,820px);margin:0 auto;padding:22px 0 max(56px,env(safe-area-inset-bottom))}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:42px;margin-bottom:26px;border-bottom:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:44px;margin-bottom:26px;border-bottom:1px solid var(--line)}
   .brand{font-family:var(--serif);color:var(--gold);font-size:14px;font-weight:700}
-  .back{display:inline-flex;align-items:center;min-height:38px;color:var(--mist);font-size:13px;text-decoration:none}
+  .back{display:inline-flex;align-items:center;min-height:44px;color:var(--mist);font-size:13px;text-decoration:none}
   .account-grid{display:grid;grid-template-columns:1fr;gap:14px}
   .panel{padding:20px;background:var(--panel);border:1px solid rgba(201,168,92,.18);border-radius:8px;scroll-margin-top:18px}
   .profile-panel{background:linear-gradient(145deg,rgba(201,168,92,.1),rgba(26,34,51,.96) 42%,rgba(19,26,41,.98));border-color:rgba(201,168,92,.3)}
@@ -25,8 +26,8 @@
   .profile-name-label{display:block;color:var(--gold-dim);font-size:11px}
   .profile-name{display:block;margin-top:2px;color:#f2ead5;font-family:var(--serif);font-size:clamp(22px,4vw,30px);font-weight:700}
   .profile-name-tools{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin-top:8px}
-  .profile-name-tools .btn{min-height:32px;padding:0 11px;font-size:12px}
-  .profile-name-hint{color:#788397;font-size:11px}
+  .profile-name-tools .btn{min-height:44px;padding:0 11px;font-size:12px}
+  .profile-name-hint{color:#98a2b3;font-size:11px}
   .profile-day-master{color:var(--gold);font-family:var(--serif);font-size:13px;text-align:right}
   .report-library{margin-top:18px}
   .report-library-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:12px}
@@ -40,18 +41,31 @@
   .report-meta{margin:5px 0 0;color:#8f99aa;font-size:12px;overflow-wrap:anywhere}
   .report-summary{margin:4px 0 0;color:#c8ced8;font-family:var(--serif);font-size:12px;overflow-wrap:anywhere}
   .report-item-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:7px}
-  .report-item-actions .btn{min-height:34px;padding:0 11px;font-size:12px}
+  .report-item-actions .btn{min-height:44px;padding:0 11px;font-size:12px}
   .report-empty{padding:18px;border:1px dashed rgba(201,168,92,.25);border-radius:7px;color:#8f99aa;text-align:center}
   .report-library-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:12px}
   .report-library-foot .actions{margin-top:0}
   .upgrade-panel{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(201,168,92,.13),rgba(26,34,51,.98) 48%);border-color:rgba(201,168,92,.3)}
   .upgrade-panel::after{content:"";position:absolute;right:-52px;bottom:-74px;width:170px;height:170px;border:1px solid rgba(201,168,92,.14);border-radius:50%;box-shadow:0 0 0 22px rgba(201,168,92,.025),0 0 0 44px rgba(201,168,92,.018);pointer-events:none}
-  .member-price{position:relative;z-index:1;display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:5px;color:#d7c080}
-  .member-price strong{color:#f0d695;font-family:var(--serif);font-size:30px;line-height:1}
-  .member-price span{color:#8d97a8;font-size:11px}
+  .plan-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .plan-card{position:relative;display:block;padding:13px;border:1px solid rgba(201,168,92,.24);border-radius:7px;background:rgba(8,13,23,.38);cursor:pointer}
+  .plan-card:has(input:checked){border-color:#e6c777;background:rgba(201,168,92,.13);box-shadow:0 0 0 1px rgba(230,199,119,.2)}
+  .plan-card:has(input:disabled){cursor:not-allowed}
+  .plan-card input{position:absolute;top:13px;right:13px;width:18px;height:18px;margin:0;accent-color:var(--gold)}
+  .plan-name{color:#a99157;font-size:11px}
+  .plan-price{display:block;margin:2px 0 4px;color:#f0d695;font-family:var(--serif);font-size:24px;line-height:1.25}
+  .plan-renewal{color:#8993a4;font-size:10px}
   .member-benefits{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin:15px 0 0;padding:0;list-style:none;color:#c5ccd7;font-size:12px}
   .member-benefits li::before{content:"·";margin-right:6px;color:var(--gold)}
-  .upgrade-note{position:relative;z-index:1;margin:10px 0 0;color:#788397;font-size:11px}
+  .upgrade-note{position:relative;z-index:1;margin:10px 0 0;color:#98a2b3;font-size:11px}
+  .order-list{display:grid;gap:9px;margin-top:13px}
+  .order-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:14px;border:1px solid rgba(201,168,92,.16);border-radius:7px;background:rgba(8,13,23,.42)}
+  .order-title{margin:0;color:#eee7d8;font-family:var(--serif);font-size:15px}
+  .order-meta{margin:4px 0 0;color:#8490a2;font-size:11px;overflow-wrap:anywhere}
+  .order-status{display:flex;align-items:flex-end;flex-direction:column;gap:7px;color:var(--gold);font-size:11px}
+  .order-status .btn{min-height:44px;padding:0 10px;font-size:11px}
+  .service-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;color:#818b9c;font-size:11px}
+  .service-links .unavailable{color:#697386;text-decoration:none}
   .qian-panel{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(181,71,47,.12),rgba(26,34,51,.98) 48%)}
   .qian-date{color:#7f8999;font-size:11px}
   .qian-signature{margin:7px 0 0;color:#efd6a0;font-family:var(--serif);font-size:28px;letter-spacing:.22em}
@@ -65,7 +79,7 @@
   .state-body{margin:0;color:#adb7c6;overflow-wrap:anywhere}
   .policy{margin:12px 0 0;padding:11px 12px;border-left:2px solid var(--gold);background:rgba(201,168,92,.055);color:#bdc5d1;font-size:12px}
   .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 15px;border:1px solid rgba(201,168,92,.38);border-radius:6px;background:transparent;color:var(--gold);text-decoration:none;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+  .btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 15px;border:1px solid rgba(201,168,92,.38);border-radius:6px;background:transparent;color:var(--gold);text-decoration:none;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
   .btn:hover{background:rgba(201,168,92,.08);border-color:rgba(240,214,149,.75);transform:translateY(-1px)}
   .btn.primary{background:var(--gold);border-color:var(--gold);color:#241c0c;font-weight:700}
   .btn.danger{border-color:rgba(214,123,104,.5);color:#efb0a3}
@@ -75,9 +89,9 @@
   .archive-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px;color:#707b8d;font-size:11px}
   .archive-question{margin:0;color:#e4dfd2;font-family:var(--serif);font-size:14px;font-weight:700;overflow-wrap:anywhere}
   .archive-answer{display:-webkit-box;margin:7px 0 0;color:#aeb7c6;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:3}
-  .archive-item .btn{min-height:34px;margin-top:10px;padding:0 11px;font-size:12px}
+  .archive-item .btn{min-height:44px;margin-top:10px;padding:0 11px;font-size:12px}
   .live{min-height:20px;margin-top:10px;color:var(--gold-dim);font-size:12px}
-  dialog{width:min(calc(100% - 32px),430px);padding:0;border:1px solid rgba(201,168,92,.38);border-radius:8px;background:var(--panel);color:var(--moon);box-shadow:0 24px 70px rgba(0,0,0,.55)}
+  dialog{width:min(calc(100% - 32px),430px);max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);padding:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;border:1px solid rgba(201,168,92,.38);border-radius:8px;background:var(--panel);color:var(--moon);box-shadow:0 24px 70px rgba(0,0,0,.55)}
   dialog::backdrop{background:rgba(6,9,16,.82)}
   .dialog-body{padding:22px}
   .dialog-body h2{margin-bottom:9px;color:var(--gold)}
@@ -87,25 +101,40 @@
   .dialog-error{min-height:20px;margin:7px 0 0;color:#efb0a3;font-size:12px}
   .confirm-check{display:flex;align-items:flex-start;gap:10px;margin:16px 0 0;padding:11px;background:#111827;color:#c8ced7;font-size:13px;cursor:pointer}
   .confirm-check input{flex:none;width:18px;height:18px;margin:2px 0 0;accent-color:var(--gold)}
-  .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+  .auth-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}
+  .auth-row .dialog-field{margin-top:0}
+  .auth-row .btn{min-height:44px}
+  .checkout-summary{display:grid;gap:8px;margin-top:15px;padding:13px;border:1px solid rgba(201,168,92,.2);background:#111827}
+  .checkout-summary-row{display:flex;justify-content:space-between;gap:16px;color:#b8c1cf}
+  .checkout-summary-row strong{color:#f0d695;text-align:right}
+  .checkout-benefits{margin:14px 0 0;padding-left:19px;color:#b8c1cf}
+  .checkout-benefits li+li{margin-top:4px}
+  .notice{margin:14px 0 0;padding:12px 13px;border:1px solid rgba(201,168,92,.34);border-left:3px solid var(--gold);background:rgba(201,168,92,.08);color:#d6d1c5;font-size:13px}
+  .checkout-policies{margin-top:14px;color:#909bad;font-size:12px}
+  .checkout-policies a{margin-right:10px}
+  .checkout-policies .unavailable{color:#747f91}
+  .site-footer{margin-top:18px;padding:18px 4px 0;border-top:1px solid var(--line);color:#727d8f;font-size:11px;text-align:center}
+  .site-footer nav{display:flex;justify-content:center;flex-wrap:wrap;gap:0 13px;margin-bottom:7px}
+  .site-footer nav a,.service-links a{display:inline-flex;align-items:center;min-height:44px}
+  .dialog-actions{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px;padding-top:12px;background:linear-gradient(180deg,rgba(26,34,51,0),var(--panel) 24%)}
   .dialog-actions .btn{width:100%}
   @media(min-width:760px){.account-grid{grid-template-columns:1fr 1fr}.panel-wide{grid-column:1/-1}}
-  @media(max-width:600px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.profile-identity{display:block}.profile-day-master{margin-top:8px;text-align:left}.report-item{grid-template-columns:1fr}.report-item-actions{justify-content:flex-start}.report-item-actions .btn{flex:1}.report-library-foot{display:block}.report-library-foot .actions{display:grid;margin-top:10px}.member-benefits{grid-template-columns:1fr}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.dialog-actions{grid-template-columns:1fr}}
+  @media(max-width:600px){.shell{width:min(100% - 28px,820px);padding-top:14px}.topbar{margin-bottom:20px}.panel{padding:17px}.panel-head{gap:8px}.profile-identity{display:block}.profile-day-master{margin-top:8px;text-align:left}.report-item,.order-item{grid-template-columns:1fr}.report-item-actions{justify-content:flex-start}.report-item-actions .btn{flex:1}.order-status{align-items:flex-start}.report-library-foot{display:block}.report-library-foot .actions{display:grid;margin-top:10px}.plan-grid,.member-benefits{grid-template-columns:1fr}.actions{display:grid;grid-template-columns:1fr}.actions .btn{width:100%}.dialog-actions,.auth-row{grid-template-columns:1fr}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none;transform:none}}
 </style>
 </head>
 <body>
 <div class="shell">
   <nav class="topbar" aria-label="页面导航">
-    <span class="brand">知星 · 命盘研究所</span>
-    <a class="back" id="reportLink" href="../v1/report.html">返回本命报告</a>
+    <span class="brand">知星</span>
+    <a class="back" id="reportLink" href="../v1/report.html">返回深度发展报告</a>
   </nav>
 
   <main class="account-grid">
     <section class="panel panel-wide profile-panel" id="profile-summary">
       <div class="panel-head">
-        <div><div class="eyebrow">本命资料</div><h1 class="panel-title">我的命盘</h1></div>
-        <span class="badge" id="profileBadge">本机档案</span>
+        <div><div class="eyebrow">个人文化图谱</div><h1 class="panel-title">我的图谱</h1></div>
+        <span class="badge" id="profileBadge">账号档案</span>
       </div>
       <div class="profile-identity">
         <div>
@@ -113,17 +142,17 @@
           <strong class="profile-name" id="profileName">正在生成</strong>
           <div class="profile-name-tools"><button class="btn" id="profileRenameBtn" type="button">更改名称</button><span class="profile-name-hint" id="profileNameHint">每 30 天可更改一次</span></div>
         </div>
-        <div class="profile-day-master" id="profileDayMaster">正在读取本命报告</div>
+        <div class="profile-day-master" id="profileDayMaster">正在读取深度发展报告</div>
       </div>
       <div class="report-library" aria-labelledby="reportLibraryTitle">
         <div class="report-library-head">
-          <div><div class="eyebrow">本命报告</div><h2 id="reportLibraryTitle">已保存的报告</h2></div>
+          <div><div class="eyebrow">深度发展报告</div><h2 id="reportLibraryTitle">已保存的报告</h2></div>
           <span class="badge" id="reportCount">0 / 2</span>
         </div>
         <div class="report-list" id="reportList"></div>
         <div class="report-library-foot">
           <div class="live" id="reportLive" aria-live="polite"></div>
-          <div class="actions"><a class="btn primary" id="newReportLink" href="./index.html">生成新命盘</a></div>
+          <div class="actions"><a class="btn primary" id="newReportLink" href="./index.html">生成新图谱</a></div>
         </div>
       </div>
     </section>
@@ -144,30 +173,58 @@
         <span class="badge" id="memberBadge">加载中</span>
       </div>
       <h3 class="state-title" id="memberTitle">正在读取会员状态</h3>
-      <p class="state-body" id="memberBody">读取完成前，你仍可查看本命报告与本命签。</p>
-      <p class="policy" id="memberPolicy" hidden>会员每月含 60 次问知星，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
+      <p class="state-body" id="memberBody">读取完成前，你仍可查看深度发展报告与今日知星卡。</p>
+      <p class="policy" id="memberPolicy" hidden>会员可保存 6 份深度发展报告，每个服务月含 60 次情境梳理，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
       <div class="actions" id="memberActions"></div>
     </section>
 
-    <section class="panel upgrade-panel" id="member-upgrade" aria-labelledby="upgradeTitle">
+    <section class="panel upgrade-panel" id="member-upgrade" aria-labelledby="upgradeTitle" hidden>
       <div class="panel-head">
         <div><div class="eyebrow">提升会员等级</div><h2 id="upgradeTitle">知星会员</h2></div>
-        <span class="badge" id="upgradeBadge">即将开放</span>
+        <span class="badge" id="upgradeBadge">不可购买</span>
       </div>
-      <div class="member-price" id="memberPrice"><strong>¥29</strong><span>/ 月　·　¥228 / 年</span></div>
+      <h3 class="state-title" id="upgradeStateTitle">会员购买当前不可用</h3>
+      <fieldset class="plan-grid" id="memberPlans" aria-describedby="upgradeNote">
+        <legend class="sr-only">选择知星会员方案</legend>
+        <label class="plan-card" for="planMonthly">
+          <input id="planMonthly" name="memberPlan" type="radio" value="member_monthly_v1" disabled>
+          <span class="plan-name">月度会员</span>
+          <strong class="plan-price" id="planMonthlyPrice">¥29 / 月</strong>
+          <span class="plan-renewal">单周期服务，到期不会自动扣款</span>
+        </label>
+        <label class="plan-card" id="planAnnualCard" for="planAnnual" hidden>
+          <input id="planAnnual" name="memberPlan" type="radio" value="member_annual_v1" disabled>
+          <span class="plan-name">年度会员</span>
+          <strong class="plan-price" id="planAnnualPrice">¥228 / 年</strong>
+          <span class="plan-renewal">自支付成功起 12 个月，到期不会自动扣款</span>
+        </label>
+      </fieldset>
       <ul class="member-benefits" aria-label="知星会员权益">
-        <li>保存 6 份本命报告</li>
-        <li>每月 60 次问知星</li>
-        <li>最近 50 轮问答存档</li>
-        <li>报告与本命签跨设备同步</li>
+        <li>保存 6 份深度发展报告</li>
+        <li>每个服务月 60 次情境梳理</li>
+        <li>最近 50 个问答轮次</li>
+        <li>登录同一手机号可查看已保存报告；个人图谱同步可另行开启</li>
       </ul>
       <div class="actions" id="upgradeActions"></div>
-      <p class="upgrade-note" id="upgradeNote">账号与支付通道接通前不会收取费用。</p>
+      <p class="upgrade-note" id="upgradeNote" aria-live="polite">当前没有可完成的购买流程，请勿通过其他入口付款。</p>
+    </section>
+
+    <section class="panel panel-wide" id="order-center" aria-labelledby="orderTitle">
+      <div class="panel-head">
+        <div><div class="eyebrow">微信支付</div><h2 id="orderTitle">我的订单</h2></div>
+        <span class="badge" id="orderBadge">需登录</span>
+      </div>
+      <h3 class="state-title" id="orderStateTitle">手机号登录后可查看订单</h3>
+      <p class="state-body" id="orderStateBody">支付结果只以知星后端确认的订单状态为准。</p>
+      <div class="actions" id="orderActions"></div>
+      <div class="live" id="orderLive" role="status" aria-live="polite"></div>
+      <div class="order-list" id="orderList"></div>
+      <div class="service-links" id="orderServiceLinks" aria-label="订单售后"></div>
     </section>
 
     <section class="panel panel-wide" id="cloud-sync">
       <div class="panel-head">
-        <div><div class="eyebrow">资料管理</div><h2>本命盘云端同步</h2></div>
+        <div><div class="eyebrow">资料管理</div><h2>个人图谱云端同步</h2></div>
         <span class="badge" id="cloudBadge">加载中</span>
       </div>
       <h3 class="state-title" id="cloudTitle">正在读取账号状态</h3>
@@ -178,19 +235,19 @@
 
     <section class="panel panel-wide qian-panel" id="daily-qian">
       <div class="panel-head">
-        <div><div class="eyebrow">同日同签 · 隔日流转</div><h2>今日本命签</h2></div>
+        <div><div class="eyebrow">同日同卡 · 隔日更新</div><h2>今日知星卡</h2></div>
         <span class="badge" id="qianBadge">今日</span>
       </div>
       <div class="qian-date" id="qianDate">正在读取日期</div>
       <div class="qian-signature" id="qianSignature">待启</div>
-      <p class="qian-hook" id="qianHook">生成本命盘后即可查看今天的签。</p>
-      <p class="qian-guidance" id="qianGuidance">本命签按你的日主五行与强弱确定，同一天保持一致。</p>
-      <div class="actions"><a class="btn" id="qianReportLink" href="../v1/report.html#sec-qian">进入本命签</a></div>
+      <p class="qian-hook" id="qianHook">生成个人文化图谱后即可查看今天的卡片。</p>
+      <p class="qian-guidance" id="qianGuidance">今日知星卡按你的日主五行与强弱生成，同一天保持一致。</p>
+      <div class="actions"><a class="btn" id="qianReportLink" href="../v1/report.html#sec-qian">进入今日知星卡</a></div>
     </section>
 
     <section class="panel panel-wide" id="qa-archive">
       <div class="panel-head">
-        <div><div class="eyebrow">问知星</div><h2>问答存档</h2></div>
+        <div><div class="eyebrow">情境梳理</div><h2>问答存档</h2></div>
         <span class="badge" id="archiveBadge">加载中</span>
       </div>
       <h3 class="state-title" id="archiveTitle">正在读取问答存档</h3>
@@ -200,21 +257,41 @@
       <div class="archive-list" id="archiveList"></div>
     </section>
 
+    <section class="panel panel-wide" id="local-data">
+      <div class="panel-head">
+        <div><div class="eyebrow">隐私与本机资料</div><h2>管理当前浏览器中的资料</h2></div>
+        <span class="badge">本机</span>
+      </div>
+      <p class="state-body">可以导出出生资料、已保存报告和隐私选择，也可以清除知星在当前浏览器保存的全部资料。导出文件不包含账号令牌或内测 API Key。</p>
+      <div class="actions">
+        <button class="btn" id="exportLocalData" type="button">导出本机资料</button>
+        <button class="btn danger" id="clearLocalData" type="button">清除全部本机资料</button>
+        <a class="btn" id="privacyPageLink" href="./privacy.html">资料处理说明</a>
+      </div>
+      <div class="live" id="localDataLive" aria-live="polite"></div>
+    </section>
+
     <section class="panel panel-wide" id="delete-account">
       <div class="panel-head">
         <div><div class="eyebrow">账号与安全</div><h2>注销账号</h2></div>
         <span class="badge" id="deleteBadge" hidden></span>
       </div>
       <h3 class="state-title" id="deleteTitle">注销账号</h3>
-      <p class="state-body" id="deleteBody">注销后，云端盘面和问知星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。</p>
+      <p class="state-body" id="deleteBody">注销后，云端图谱和情境梳理存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。</p>
       <div class="actions" id="deleteActions"></div>
       <div class="live" id="deleteLive" aria-live="polite"></div>
     </section>
   </main>
 
+  <footer class="site-footer">
+    <nav aria-label="服务协议">
+      <a href="./terms.html">用户协议</a><a href="./privacy.html">隐私政策</a><a href="./membership-rules.html">会员服务规则</a><a href="./refund-policy.html">退款规则</a><a href="./ai-disclosure.html">AI 服务说明</a>
+    </nav>
+    <div>贵州天云稀泉科技有限公司 · 黔ICP备2026012575号</div>
+  </footer>
 </div>
 
-<dialog id="confirmDialog" aria-labelledby="confirmTitle">
+<dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmBody">
   <div class="dialog-body">
     <h2 id="confirmTitle">确认操作</h2>
     <p class="dialog-copy" id="confirmBody"></p>
@@ -229,12 +306,12 @@
   </div>
 </dialog>
 
-<dialog id="renameDialog" aria-labelledby="renameTitle">
+<dialog id="renameDialog" aria-labelledby="renameTitle" aria-describedby="renameDescription">
   <form class="dialog-body" id="renameForm" method="dialog">
     <h2 id="renameTitle">更改名称</h2>
-    <p class="dialog-copy">这是你在知星里的称呼。确认后，30 天内不能再次更改。</p>
+    <p class="dialog-copy" id="renameDescription">这是你在知星里的称呼。确认后，30 天内不能再次更改。</p>
     <label class="dialog-field" for="renameInput">新名称
-      <input id="renameInput" name="name" type="text" minlength="2" maxlength="8" autocomplete="nickname" placeholder="2—8 个字">
+      <input id="renameInput" name="name" type="text" minlength="2" maxlength="8" autocomplete="nickname" aria-describedby="renameError" placeholder="2—8 个字">
     </label>
     <p class="dialog-error" id="renameError" aria-live="polite"></p>
     <div class="dialog-actions">
@@ -244,15 +321,15 @@
   </form>
 </dialog>
 
-<dialog id="saveReportDialog" aria-labelledby="saveReportTitle">
+<dialog id="saveReportDialog" aria-labelledby="saveReportTitle" aria-describedby="saveReportDescription">
   <form class="dialog-body" id="saveReportForm" method="dialog">
-    <h2 id="saveReportTitle">保存这份本命报告</h2>
-    <p class="dialog-copy">保存后会占用一个本机档案位。账号云端同步接通前，资料只保存在当前浏览器。</p>
+    <h2 id="saveReportTitle">保存这份深度发展报告</h2>
+    <p class="dialog-copy" id="saveReportDescription">确认后会保存到当前知星账号并占用一个报告位。账号服务未确认写入成功时，页面不会显示为已保存。</p>
     <label class="dialog-field" for="saveReportName">档案称呼
-      <input id="saveReportName" name="reportName" type="text" minlength="2" maxlength="8" autocomplete="off" placeholder="2—8 个字">
+      <input id="saveReportName" name="reportName" type="text" minlength="2" maxlength="8" autocomplete="off" aria-describedby="saveReportError" placeholder="2—8 个字">
     </label>
     <label class="dialog-field" for="saveReportRelation">与我的关系
-      <select id="saveReportRelation" name="reportRelation">
+      <select id="saveReportRelation" name="reportRelation" aria-describedby="saveReportError">
         <option value="本人">本人</option>
         <option value="伴侣">伴侣</option>
         <option value="家人">家人</option>
@@ -262,7 +339,7 @@
     </label>
     <label class="confirm-check" id="saveReportConsentWrap" hidden>
       <input type="checkbox" id="saveReportConsent">
-      <span>我已获得对方同意保存其出生资料与本命报告。</span>
+      <span>我已获得对方同意保存其出生资料与深度发展报告，并了解对方可以提出删除请求。</span>
     </label>
     <p class="dialog-error" id="saveReportError" aria-live="polite"></p>
     <div class="dialog-actions">
@@ -272,6 +349,69 @@
   </form>
 </dialog>
 
+<dialog id="phoneLoginDialog" aria-labelledby="phoneLoginTitle" aria-describedby="phoneLoginDescription">
+  <form class="dialog-body" id="phoneLoginForm" novalidate>
+    <h2 id="phoneLoginTitle">手机号登录</h2>
+    <p class="dialog-copy" id="phoneLoginDescription">手机号用于找回会员与订单。微信只用于完成付款，不作为登录方式。</p>
+    <label class="dialog-field" for="loginPhone">手机号
+      <input id="loginPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="11" aria-describedby="phoneLoginError" placeholder="请输入 11 位手机号" required>
+    </label>
+    <div class="auth-row">
+      <label class="dialog-field" for="loginCode">短信验证码
+        <input id="loginCode" name="code" type="password" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-describedby="phoneLoginError" placeholder="6 位验证码" required>
+      </label>
+      <button class="btn" id="sendSmsButton" type="button">获取验证码</button>
+    </div>
+    <p class="dialog-error" id="phoneLoginError" role="alert" aria-live="assertive"></p>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="phoneLoginCancel">取消</button>
+      <button class="btn primary" type="submit" id="phoneLoginPrimary">验证并登录</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="purchaseDialog" aria-labelledby="purchaseTitle" aria-describedby="purchaseDescription">
+  <form class="dialog-body" id="purchaseForm" novalidate>
+    <h2 id="purchaseTitle">确认会员方案</h2>
+    <p class="dialog-copy" id="purchaseDescription">请确认商品、权益和服务规则后再付款。</p>
+    <div class="checkout-summary" aria-label="订单商品摘要">
+      <div class="checkout-summary-row"><span>商品</span><strong id="purchaseProduct">—</strong></div>
+      <div class="checkout-summary-row"><span>应付金额</span><strong id="purchaseAmount">—</strong></div>
+      <div class="checkout-summary-row"><span>服务期</span><strong id="purchaseDuration">—</strong></div>
+      <div class="checkout-summary-row"><span>续费方式</span><strong>到期不自动扣款</strong></div>
+      <div class="checkout-summary-row"><span>支付渠道</span><strong>微信支付 H5</strong></div>
+      <div class="checkout-summary-row"><span>商户主体</span><strong id="purchaseMerchant">尚未配置</strong></div>
+    </div>
+    <ul class="checkout-benefits">
+      <li>每个会员服务月含 60 次情境梳理，未使用次数不结转</li>
+      <li>会员期间最多保存 6 份深度发展报告</li>
+      <li>默认保存最近 50 个问答轮次，会员到期后可查看 30 天</li>
+      <li>登录同一手机号可跨设备查看账号报告和问答；开启云同步后可恢复当前个人图谱</li>
+    </ul>
+    <p class="notice"><strong>退款显著提示：</strong>首次购买月度会员且依法适用预付式消费七日退款规则的，可在付款后七日内申请退款。其他订单按《退款规则》人工审核；提交申请不代表退款获批，也不是即时到账。</p>
+    <p class="checkout-policies" id="purchasePolicyLinks"></p>
+    <label class="confirm-check" for="purchaseAdultConsent">
+      <input type="checkbox" id="purchaseAdultConsent" aria-describedby="purchaseError">
+      <span>我确认本人已满 18 周岁，并由本人完成本次付费决定。</span>
+    </label>
+    <label class="confirm-check" for="purchaseConsent">
+      <input type="checkbox" id="purchaseConsent" aria-describedby="purchaseError">
+      <span>我已阅读并同意《用户协议》《会员服务规则》和《退款规则》，已阅读《隐私政策》《AI 服务说明》及本购买确认摘要。</span>
+    </label>
+    <label class="confirm-check" for="purchasePaymentConsent">
+      <input type="checkbox" id="purchasePaymentConsent" aria-describedby="purchaseError">
+      <span>我确认商品、金额、服务期、权益和“不自动续费”信息，并同意通过微信支付完成本次付款。</span>
+    </label>
+    <p class="dialog-error" id="purchaseError" role="alert" aria-live="assertive"></p>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="purchaseCancel">取消</button>
+      <button class="btn primary" type="submit" id="purchasePrimary" disabled>确认并支付</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="./public-config.js"></script>
+<script src="./analytics.js"></script>
 <script>
 'use strict';
 (function(){
@@ -279,11 +419,10 @@
   const ARCHIVE_GRACE_MS = 30 * DAY_MS;
   const NAME_CHANGE_MS = 30 * DAY_MS;
   const PROFILE_NAME_KEY = 'zx_profile_name_v1';
-  const REPORT_ARCHIVE_KEY = 'zx_saved_reports_v1';
   const FREE_REPORT_LIMIT = 2;
   const MEMBER_REPORT_LIMIT = 6;
-  const MAX_REPORT_LIMIT = 12;
   const sourceTree = /\/web\/account\.html$/.test(location.pathname);
+  const privacyScriptPath = sourceTree ? '../privacy-consent.js' : './privacy-consent.js';
   const memberScriptPath = sourceTree ? '../member.js' : './member.js';
   const minimumAgeScriptPath = './minimum-age.js';
   const engineScriptPath = sourceTree ? '../v1/bazi-engine.js' : './bazi-engine.js';
@@ -296,66 +435,79 @@
 
   const COPY = {
     account: {
-      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。'},
+      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看深度发展报告与今日知星卡；登录、云端同步和问答存档暂不可用。'},
       loading:{title:'正在读取账号状态',badge:'加载中',body:'读取完成前，你仍可查看当前页面。'},
-      guest:{title:'当前设备',badge:'未登录',body:'你可以继续使用基础功能。登录后，可查看账号下的会员状态；确认云同步后，可跨设备查看本命盘。'},
+      guest:{title:'当前设备',badge:'未登录',body:'你可以继续使用基础功能。登录后，可查看账号下的会员状态；确认云同步后，可跨设备查看个人图谱。'},
       error:{title:'暂时无法读取账号状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。',action:'重新读取'}
     },
     member: {
-      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看本命报告与本命签；登录、云端同步和问答存档暂不可用。'},
-      loading:{title:'正在读取会员状态',badge:'加载中',body:'读取完成前，你仍可查看本命报告与本命签。'},
-      nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以继续使用问知星的基础体验。'},
-      active:{title:'会员有效至',badge:'会员',body:'会员每月含 60 次问知星，并默认保存最近 50 个问答轮次。'},
+      unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看深度发展报告与今日知星卡；登录、云端同步和问答存档暂不可用。'},
+      loading:{title:'正在读取会员状态',badge:'加载中',body:'读取完成前，你仍可查看深度发展报告与今日知星卡。'},
+      nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以保存 2 份深度发展报告；情境梳理仅向有效会员开放。'},
+      active:{title:'会员有效至',badge:'会员',body:'会员可保存 6 份深度发展报告，每个服务月含 60 次情境梳理，并默认保存最近 50 个问答轮次。'},
       grace:{title:'会员已到期',badge:'存档保留中',body:'问答存档仍可查看至 {date}。超过该日期后，存档将自动删除且无法恢复。'},
       removed:{title:'存档保留期已结束',badge:'已结束',body:'原会员问答存档已删除，无法恢复。'},
       error:{title:'暂时无法读取会员状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。'}
     },
     cloud: {
-      off:{title:'本命盘云端同步未开启',body:'当前盘面只保存在本机。开启后，可在登录同一账号的设备上继续查看。',action:'开启云端同步'},
-      confirmEnable:{title:'开启本命盘云端同步',body:'开启后，你的出生资料与盘面会保存到账户后端，用于跨设备查看和报告更新。会员问答会按会员存档规则单独保存。你可以随时关闭同步并删除云端盘面。',check:'我已了解本命盘云端同步会保存出生资料与盘面',primary:'确认开启',secondary:'暂不开启'},
+      off:{title:'个人图谱云端同步未开启',body:'当前图谱只保存在本机。开启后，可在登录同一账号的设备上继续查看。',action:'开启云端同步'},
+      confirmEnable:{title:'开启个人图谱云端同步',body:'开启后，你的出生资料与图谱会保存到账户后端，用于跨设备查看和报告更新。会员问答会按会员存档规则单独保存。你可以随时关闭同步并删除云端图谱。',check:'我已了解个人图谱云端同步会保存出生资料与图谱',primary:'确认开启',secondary:'暂不开启'},
       enabling:{title:'正在开启云端同步',body:'请保持当前页面打开。'},
-      on:{title:'本命盘云端同步已开启',body:'出生资料与盘面已保存到账户后端，可在登录同一账号的设备上继续查看。',action:'关闭云端同步'},
-      confirmDisable:{title:'关闭本命盘云端同步',body:'关闭后，新的出生资料和盘面不再上传，已有云端盘面会从账号中删除；当前浏览器内已保存的盘面不受影响。会员问答仍按会员存档规则保存。',primary:'关闭并删除云端盘面',secondary:'继续同步'},
+      on:{title:'个人图谱云端同步已开启',body:'出生资料与图谱已保存到账户后端，可在登录同一账号的设备上继续查看。',action:'关闭云端同步'},
+      confirmDisable:{title:'关闭个人图谱云端同步',body:'关闭后，新的出生资料和图谱不再上传，已有云端图谱会从账号中删除；当前浏览器内已保存的图谱不受影响。会员问答仍按会员存档规则保存。',primary:'关闭并删除云端图谱',secondary:'继续同步'},
       disabling:{title:'正在关闭云端同步',body:'请保持当前页面打开。'},
-      disabled:{title:'云端同步已关闭',body:'已有云端盘面已从账号中删除；当前浏览器内已保存的盘面不受影响。'},
+      disabled:{title:'云端同步已关闭',body:'已有云端图谱已从账号中删除；当前浏览器内已保存的图谱不受影响。'},
       error:{title:'云端同步状态没有更新',body:'请稍后重试。若状态仍未变化，可前往账号与安全查看。',action:'重试'}
     },
     archive: {
       memberOnly:{title:'问答存档',body:'会员问答会默认保存最近 50 个问答轮次，方便跨设备回看和继续追问。'},
       loading:{title:'正在读取问答存档',body:'请稍候。'},
-      emptyActive:{title:'还没有保存的问答',body:'成功完成一次问知星问答后，记录会显示在这里。',action:'去问知星'},
+      emptyActive:{title:'还没有保存的问答',body:'成功完成一次情境梳理后，记录会显示在这里。',action:'去梳理情境'},
       emptyGrace:{title:'当前没有可查看的问答存档',body:'你的会员已到期，存档查看期至 {date}。'},
       ready:{title:'问答存档',body:'已保存 {count} / 50 个问答轮次。一次提问和一次完整答复计为一个轮次。',action:'清空全部'},
       loadError:{title:'暂时无法读取问答存档',body:'你的存档没有因此被删除，请稍后重试。',action:'重新读取'},
       grace:{title:'会员已到期',body:'问答存档可查看至 {date}。你仍可删除单条、清空全部或注销账号；超过该日期后，存档将自动删除且无法恢复。'},
       removed:{title:'问答存档已删除',body:'会员到期后的 30 天查看期已结束，原存档无法恢复。'},
-      confirmDelete:{title:'删除这个问答轮次',body:'删除后，这个问答轮次会立即从账号存档和后续追问上下文中移除，无法恢复。此操作不会影响你的本命盘和会员状态。',primary:'删除',secondary:'取消'},
+      confirmDelete:{title:'删除这个问答轮次',body:'删除后，这个问答轮次会立即从账号存档和后续追问上下文中移除，无法恢复。此操作不会影响你的个人图谱和会员状态。',primary:'删除',secondary:'取消'},
       deleting:{title:'正在删除问答',body:'请保持当前页面打开。'},
       deleted:{title:'问答已删除',body:'这条记录已从账号存档和后续追问上下文中移除。'},
-      confirmClear:{title:'清空全部问答存档',body:'清空后，账号中的问知星存档会立即全部移除，无法恢复；本命盘和会员状态不受影响。',primary:'清空全部',secondary:'取消'},
+      confirmClear:{title:'清空全部问答存档',body:'清空后，账号中的情境梳理存档会立即全部移除，无法恢复；个人图谱和会员状态不受影响。',primary:'清空全部',secondary:'取消'},
       clearing:{title:'正在清空问答存档',body:'请保持当前页面打开。'},
-      cleared:{title:'问答存档已清空',body:'账号中已没有问知星存档。'},
+      cleared:{title:'问答存档已清空',body:'账号中已没有情境梳理存档。'},
       mutationError:{title:'操作没有完成',body:'当前存档未发生变化，请稍后重试。',action:'重试'}
     },
     deletion: {
-      confirm:{title:'注销账号',body:'注销后，云端盘面和问知星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。',check:'我已了解注销后账号资料和会员权益无法恢复',primary:'确认注销',secondary:'取消'},
+      confirm:{title:'注销账号',body:'注销后，云端图谱和情境梳理存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。',check:'我已了解注销后账号资料和会员权益无法恢复',primary:'确认注销',secondary:'取消'},
       deleting:{title:'正在注销账号',body:'请保持当前页面打开。'},
-      success:{title:'账号已注销',body:'云端盘面和问知星存档已从账号中移除。'},
+      success:{title:'账号已注销',body:'云端图谱和情境梳理存档已从账号中移除。'},
       error:{title:'账号注销没有完成',body:'账号资料未发生变化，请稍后重试。',action:'重试'}
     }
   };
 
   const $ = id => document.getElementById(id);
-  let memberState = { configured:false, ready:false, memberUntil:null, cloudSyncEnabled:false };
+  const trackEvent=(name,details)=>{try{return !!(window.ZxAnalytics&&ZxAnalytics.track(name,details))}catch(_){return false}};
+  let memberState = {
+    configured:false,
+    serviceConfigured:false,
+    consentRequired:false,
+    ready:false,
+    memberUntil:null,
+    cloudSyncEnabled:false
+  };
   let memberMode = 'loading';
   let archiveData = null;
   let accountDeleted = false;
   let confirmAction = null;
   let currentProfileRef = '';
   let currentProfileName = null;
+  let profileData = null;
+  let profileServiceReady = false;
   let currentReportRecord = null;
   let reportArchive = [];
+  let reportStorageMode = 'unavailable';
+  let reportCapacityLimit = FREE_REPORT_LIMIT;
   let pendingSaveRecord = null;
+  const dialogReturnFocus = new WeakMap();
 
   function addScript(src){
     return new Promise(resolve => {
@@ -369,7 +521,33 @@
 
   function addMemberScript(){ return addScript(memberScriptPath); }
 
+  function showManagedDialog(dialog, initialFocus){
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active !== document.body) {
+      dialogReturnFocus.set(dialog, active);
+    }
+    dialog.showModal();
+    setTimeout(() => {
+      if (!dialog.open || !initialFocus) return;
+      initialFocus.focus();
+      if (typeof initialFocus.select === 'function') initialFocus.select();
+    }, 0);
+  }
+
+  document.querySelectorAll('dialog').forEach(dialog => {
+    dialog.addEventListener('close', () => {
+      const target = dialogReturnFocus.get(dialog);
+      dialogReturnFocus.delete(dialog);
+      if (target && target.isConnected && typeof target.focus === 'function') target.focus();
+    });
+  });
+
+  function birthProcessingGranted(){
+    return !!(window.ZxPrivacyConsent && ZxPrivacyConsent.has('birth_local'));
+  }
+
   function readLocalInput(){
+    if (!birthProcessingGranted()) return null;
     try {
       const data = JSON.parse(localStorage.getItem('zx_input') || 'null');
       return data && data.d ? data : null;
@@ -416,6 +594,7 @@
   }
 
   function readProfileName(){
+    if (!birthProcessingGranted()) return null;
     try {
       const saved = JSON.parse(localStorage.getItem(PROFILE_NAME_KEY) || 'null');
       return saved && typeof saved.name === 'string' ? saved : null;
@@ -428,40 +607,86 @@
     return [data.d,data.t,data.c,data.g,chart.pillars.day.stem,chart.pillars.day.branch].filter(Boolean).join('|');
   }
 
-  function readReportArchive(){
+  function mapRemoteReport(item){
+    const input = normalizedReportInput(item && item.payload);
+    if (!input || !window.BaziEngine) return null;
+    const chart = BaziEngine.computeChart(engineInput(input));
+    return {
+      id:String(item.report_id || ''),
+      ref:reportReference(input,chart),
+      serverRef:String(item.chart_ref || ''),
+      name:String(item.display_name || ''),
+      relation:String(item.relation_label || ''),
+      primary:item.is_primary === true || Number(item.is_primary) === 1,
+      input,
+      createdAt:Number(item.created_at || Date.now()),
+      updatedAt:Number(item.updated_at || Date.now()),
+      permissionConfirmedAt:item.permission_confirmed_at == null
+        ? null
+        : Number(item.permission_confirmed_at),
+      chart
+    };
+  }
+
+  async function loadReports(){
+    if (!memberState.configured || !window.zxMember || typeof zxMember.reports !== 'function') {
+      reportStorageMode = 'unavailable';
+      reportArchive = [];
+      reportCapacityLimit = memberMode === 'active' ? MEMBER_REPORT_LIMIT : FREE_REPORT_LIMIT;
+      return false;
+    }
     try {
-      const saved = JSON.parse(localStorage.getItem(REPORT_ARCHIVE_KEY) || 'null');
-      const items = Array.isArray(saved) ? saved : saved && Array.isArray(saved.items) ? saved.items : [];
-      return items.filter(item => item && item.id && normalizedReportInput(item.input)).slice(0, MAX_REPORT_LIMIT);
+      const result = await zxMember.reports();
+      const items = Array.isArray(result && result.items) ? result.items : [];
+      reportArchive = items.map(mapRemoteReport).filter(Boolean);
+      const limit = Number(result && result.capacity && result.capacity.limit);
+      reportCapacityLimit = Number.isSafeInteger(limit) && limit >= 0
+        ? limit
+        : (memberMode === 'active' ? MEMBER_REPORT_LIMIT : FREE_REPORT_LIMIT);
+      reportStorageMode = 'remote';
+      return true;
     } catch (_) {
-      return [];
+      reportStorageMode = 'error';
+      reportArchive = [];
+      reportCapacityLimit = memberMode === 'active' ? MEMBER_REPORT_LIMIT : FREE_REPORT_LIMIT;
+      return false;
     }
   }
 
-  function writeReportArchive(items){
-    const clean = items.slice(0, MAX_REPORT_LIMIT).map(item => ({
-      id:String(item.id),
-      ref:String(item.ref),
-      name:String(item.name),
-      relation:String(item.relation),
-      primary:!!item.primary,
-      input:normalizedReportInput(item.input),
-      createdAt:Number(item.createdAt || Date.now()),
-      updatedAt:Number(item.updatedAt || Date.now()),
-      permissionConfirmedAt:item.permissionConfirmedAt ? Number(item.permissionConfirmedAt) : null
-    })).filter(item => item.input);
-    localStorage.setItem(REPORT_ARCHIVE_KEY, JSON.stringify({ version:1,items:clean }));
-    reportArchive = clean;
+  async function loadProfile(){
+    if (!memberState.configured || !window.zxMember || typeof zxMember.profile !== 'function') {
+      profileServiceReady = false;
+      profileData = null;
+      return false;
+    }
+    try {
+      profileData = await zxMember.profile();
+      profileServiceReady = true;
+      return true;
+    } catch (_) {
+      profileServiceReady = false;
+      profileData = null;
+      return false;
+    }
   }
 
-  function currentReportLimit(){ return memberMode === 'active' ? MEMBER_REPORT_LIMIT : FREE_REPORT_LIMIT; }
+  async function initializeRemoteProfile(){
+    if (!profileServiceReady || remoteProfileRecord() || !currentProfileName ||
+        !window.zxMember || typeof zxMember.saveProfile !== 'function') return;
+    try {
+      profileData = await zxMember.saveProfile(currentProfileName.name);
+      profileServiceReady = true;
+    } catch (_) {}
+  }
+
+  function currentReportLimit(){ return reportCapacityLimit; }
 
   function buildReportRecord(data, chart){
     const input = normalizedReportInput(data);
     if (!input) return null;
     const ref = reportReference(input,chart);
     const baseName = generatedChartName(chart,ref);
-    const usedNames = new Set(readReportArchive().map(item => item.name));
+    const usedNames = new Set(reportArchive.map(item => item.name));
     const suffixes = ['·二','·三','·四','·五','·六','·七','·八','·九'];
     const uniqueName = usedNames.has(baseName)
       ? (suffixes.map(suffix => baseName + suffix).find(name => !usedNames.has(name)) || baseName)
@@ -514,34 +739,52 @@
     return new Date(value).toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
   }
 
-  function renderProfileName(chart, data){
-    const activeRef = reportReference(data,chart);
-    let saved = readProfileName();
-    if (!saved){
-      saved = { chartRef:activeRef,name:generatedChartName(chart,activeRef),changedAt:null };
-      localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(saved));
-    }
-    currentProfileRef = saved.chartRef || activeRef;
+  function remoteProfileRecord(){
+    const source = profileData && (profileData.profile || profileData);
+    const name = String(source && (source.profile_name || source.name) || '').trim();
+    if (!name) return null;
+    return {
+      chartRef:'',
+      name,
+      changedAt:Number(source.profile_name_changed_at || source.changed_at || 0) || null,
+      nextChangeAt:Number(source.next_name_change_at || source.next_change_at || 0) || null,
+      remote:true
+    };
+  }
+
+  function applyRenderedProfile(saved, fallbackRef){
+    currentProfileRef = saved.chartRef || fallbackRef || '';
     currentProfileName = saved;
     $('profileName').textContent = saved.name;
-    const nextAt = Number(saved.changedAt || 0) + NAME_CHANGE_MS;
+    const nextAt = Number(saved.nextChangeAt || 0) ||
+      (Number(saved.changedAt || 0) + NAME_CHANGE_MS);
     const locked = !!saved.changedAt && nextAt > Date.now();
-    $('profileRenameBtn').disabled = locked;
+    $('profileRenameBtn').disabled = locked || (memberState.configured && !saved.remote);
     $('profileRenameBtn').textContent = locked ? '暂不可更改' : '更改名称';
-    $('profileNameHint').textContent = locked ? `${formatNextNameDate(nextAt)}后可再改` : '每 30 天可更改一次';
+    $('profileNameHint').textContent = locked
+      ? `${formatNextNameDate(nextAt)}后可再改`
+      : '每 30 天可更改一次';
+  }
+
+  function renderProfileName(chart, data){
+    const activeRef = reportReference(data,chart);
+    const primary = reportStorageMode === 'remote'
+      ? reportArchive.find(item => item.primary) || null
+      : null;
+    let saved = remoteProfileRecord() || (primary
+      ? { chartRef:primary.ref,name:primary.name,changedAt:null,remote:false }
+      : (!memberState.configured ? readProfileName() : null));
+    if (!saved){
+      saved = { chartRef:activeRef,name:generatedChartName(chart,activeRef),changedAt:null };
+      if (!memberState.configured) localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(saved));
+    }
+    applyRenderedProfile(saved,activeRef);
   }
 
   function renderStoredProfileName(){
-    const saved = readProfileName();
+    const saved = remoteProfileRecord() || (!memberState.configured ? readProfileName() : null);
     if (!saved) return false;
-    currentProfileRef = saved.chartRef || '';
-    currentProfileName = saved;
-    $('profileName').textContent = saved.name;
-    const nextAt = Number(saved.changedAt || 0) + NAME_CHANGE_MS;
-    const locked = !!saved.changedAt && nextAt > Date.now();
-    $('profileRenameBtn').disabled = locked;
-    $('profileRenameBtn').textContent = locked ? '暂不可更改' : '更改名称';
-    $('profileNameHint').textContent = locked ? `${formatNextNameDate(nextAt)}后可再改` : '每 30 天可更改一次';
+    applyRenderedProfile(saved,'');
     return true;
   }
 
@@ -552,17 +795,23 @@
 
   function removeSavedReport(record){
     openConfirm({
-      title:'删除这份本命报告',
-      body:`“${record.name}”会从当前浏览器的本命报告列表中移除，删除后无法恢复。`,
+      title:'删除这份深度发展报告',
+      body:`“${record.name}”会从当前账号的深度发展报告列表中移除，删除后无法恢复。`,
       primary:'删除报告',
       secondary:'取消'
-    }, () => {
+    }, async () => {
       try {
-        writeReportArchive(readReportArchive().filter(item => item.id !== record.id));
-        $('reportLive').textContent = '这份报告已从本机档案中删除。';
+        if (reportStorageMode !== 'remote' || !window.zxMember ||
+            typeof zxMember.deleteReport !== 'function') {
+          throw new Error('report service unavailable');
+        }
+        await zxMember.deleteReport(record.id);
+        await loadReports();
+        $('reportLive').textContent = '这份报告已从当前账号档案中删除。';
+        renderPersonalSummary();
         renderReportLibrary();
       } catch (_) {
-        $('reportLive').textContent = '删除没有完成，请稍后重试。';
+        $('reportLive').textContent = '删除没有完成，账号档案未被页面假定为已变更。请稍后重试。';
       }
     });
   }
@@ -608,7 +857,7 @@
     kicker.className = 'report-kicker';
     const state = document.createElement('span');
     state.className = 'report-relation';
-    state.textContent = '当前测试';
+    state.textContent = '当前图谱';
     kicker.append(state,document.createTextNode('尚未保存'));
     const title = document.createElement('h3');
     title.textContent = record.name;
@@ -621,7 +870,8 @@
     content.append(kicker,title,meta,summary);
     const actions = document.createElement('div');
     actions.className = 'report-item-actions';
-    const save = button(full ? '名额已满' : '保存到我的', () => openSaveReport(record), full ? '' : 'primary');
+    const unavailable = reportStorageMode !== 'remote';
+    const save = button(unavailable ? '账号未连接' : (full ? '名额已满' : '保存到我的'), () => openSaveReport(record), full ? '' : 'primary');
     save.disabled = full;
     actions.append(save);
     article.append(content,actions);
@@ -631,44 +881,48 @@
   function renderReportLibrary(){
     const list = $('reportList');
     const limit = currentReportLimit();
-    reportArchive = readReportArchive();
     $('reportCount').textContent = `${reportArchive.length} / ${limit}`;
-    $('profileBadge').textContent = '本机档案';
+    $('profileBadge').textContent = reportStorageMode === 'remote' ? '账号档案' : '档案未连接';
     $('profileDayMaster').textContent = `${reportArchive.length} 份已保存 · 当前上限 ${limit} 份`;
     list.replaceChildren();
+
+    if (!birthProcessingGranted()) {
+      const empty = document.createElement('div');
+      empty.className = 'report-empty';
+      empty.textContent = '当前没有已确认可处理的本机图谱。你仍可在下方导出或清除已有知星资料。';
+      list.append(empty);
+      $('reportLive').textContent = '生成新图谱并确认资料处理后，报告才会显示在这里。';
+      return;
+    }
 
     if (!reportArchive.length && !currentReportRecord) {
       const empty = document.createElement('div');
       empty.className = 'report-empty';
-      empty.textContent = '还没有保存的本命报告。生成命盘后，第一份报告会保存为“本人”。';
+      empty.textContent = reportStorageMode === 'remote'
+        ? '还没有保存的深度发展报告。生成个人文化图谱后，可明确确认并保存为“本人”。'
+        : '账号档案暂时无法读取。当前页面不会把本机缓存冒充为账号存档。';
       list.append(empty);
     } else {
       reportArchive.forEach((record,index) => list.append(reportItem(record,index,limit)));
     }
 
     const savedCurrent = currentReportRecord && reportArchive.some(item => item.ref === currentReportRecord.ref);
-    if (currentReportRecord && !savedCurrent) list.append(pendingReportItem(currentReportRecord,reportArchive.length >= limit));
+    if (currentReportRecord && !savedCurrent) {
+      list.append(pendingReportItem(
+        currentReportRecord,
+        reportStorageMode !== 'remote' || reportArchive.length >= limit
+      ));
+    }
 
     if (reportArchive.length > limit) {
       $('reportLive').textContent = `会员到期后仍保留全部报告；超出的 ${reportArchive.length-limit} 份暂为只读，不会自动删除。`;
+    } else if (reportStorageMode !== 'remote') {
+      $('reportLive').textContent = '账号档案当前无法确认，保存与删除保持关闭；已生成的普通报告仍可直接查看。';
     } else if (currentReportRecord && !savedCurrent && reportArchive.length >= limit) {
-      $('reportLive').textContent = `当前测试尚未保存。普通用户最多保存 ${limit} 份，请先删除一份或等待会员通道开放。`;
+      $('reportLive').textContent = `当前图谱尚未保存。普通用户最多保存 ${limit} 份，请先删除一份，或查看会员方案。`;
     } else {
-      $('reportLive').textContent = '生成次数不限；只有保存到这里的报告会占用档案位。';
+      $('reportLive').textContent = '生成次数不限；只有账号后端确认保存成功的报告会占用档案位。';
     }
-  }
-
-  function ensureInitialReport(record){
-    reportArchive = readReportArchive();
-    const existing = reportArchive.find(item => item.ref === record.ref);
-    if (existing) return;
-    if (reportArchive.length) return;
-    const first = Object.assign({},record,{
-      name:currentProfileName && currentProfileName.name || record.name,
-      relation:'本人',
-      primary:true
-    });
-    try { writeReportArchive([first]); } catch (_) {}
   }
 
   function syncSaveConsent(){
@@ -678,9 +932,12 @@
   }
 
   function openSaveReport(record){
-    if (!record || readReportArchive().length >= currentReportLimit()) return;
+    if (!record || reportStorageMode !== 'remote' || reportArchive.length >= currentReportLimit()) {
+      $('reportLive').textContent = '账号档案当前不可写入，页面不会把本机缓存显示为已保存。';
+      return;
+    }
     pendingSaveRecord = record;
-    const hasPrimary = readReportArchive().some(item => item.primary);
+    const hasPrimary = reportArchive.some(item => item.primary);
     const selfOption = Array.from($('saveReportRelation').options).find(option => option.value === '本人');
     selfOption.disabled = hasPrimary;
     $('saveReportRelation').value = hasPrimary ? '朋友' : '本人';
@@ -688,8 +945,7 @@
     $('saveReportConsent').checked = false;
     $('saveReportError').textContent = '';
     syncSaveConsent();
-    $('saveReportDialog').showModal();
-    setTimeout(() => $('saveReportName').select(), 0);
+    showManagedDialog($('saveReportDialog'), $('saveReportName'));
   }
 
   function showProfileEmpty(){
@@ -697,23 +953,23 @@
     if (!renderStoredProfileName()) {
       currentProfileRef = '';
       currentProfileName = null;
-      $('profileName').textContent = '等待你的命盘';
+      $('profileName').textContent = '等待你的图谱';
       $('profileRenameBtn').disabled = true;
-      $('profileNameHint').textContent = '生成命盘后自动命名';
+      $('profileNameHint').textContent = '生成图谱后自动命名';
     }
     renderReportLibrary();
     $('qianBadge').textContent = '待生成';
     $('qianDate').textContent = new Date().toLocaleDateString('zh-CN');
     $('qianSignature').textContent = '待启';
-    $('qianHook').textContent = '生成本命盘后即可查看今天的签。';
-    $('qianGuidance').textContent = '本命签按你的日主五行与强弱确定，同一天保持一致。';
-    $('qianReportLink').textContent = '去生成日主';
+    $('qianHook').textContent = '生成个人文化图谱后即可查看今天的卡片。';
+    $('qianGuidance').textContent = '今日知星卡按你的日主五行与强弱生成，同一天保持一致。';
+    $('qianReportLink').textContent = '去生成个人图谱';
     $('qianReportLink').href = homePath;
     $('qianReportLink').onclick = null;
   }
 
   function renderPersonalSummary(){
-    reportArchive = readReportArchive();
+    if (!birthProcessingGranted()) { showProfileEmpty(); return; }
     const primary = reportArchive.find(item => item.primary) || reportArchive[0] || null;
     const localData = readLocalInput();
     const identityData = primary && primary.input || localData;
@@ -732,7 +988,6 @@
       }
       renderProfileName(identityChart,identityInput);
       currentReportRecord = buildReportRecord(activeInput,activeChart);
-      ensureInitialReport(currentReportRecord);
       renderReportLibrary();
 
       const qianChart = primary ? identityChart : activeChart;
@@ -743,8 +998,8 @@
       $('qianDate').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
       $('qianSignature').textContent = qian.hex;
       $('qianHook').textContent = qian.line;
-      $('qianGuidance').textContent = `宜：${qian.yi.join(' · ')}　忌：${qian.ji.join(' · ')}`;
-      $('qianReportLink').textContent = '进入本命签';
+      $('qianGuidance').textContent = `适：${qian.yi.join(' · ')}　缓：${qian.ji.join(' · ')}`;
+      $('qianReportLink').textContent = '进入今日知星卡';
       $('qianReportLink').href = reportPath + '#sec-qian';
       $('qianReportLink').onclick = () => {
         try { localStorage.setItem('zx_input', JSON.stringify(identityInput)); } catch (_) {}
@@ -782,24 +1037,45 @@
     wrap.replaceChildren(...items);
   }
 
-  function disabledButton(label){
-    const el = button(label, () => {});
-    el.disabled = true;
-    return el;
+  function exportLocalData(){
+    if (!window.ZxPrivacyConsent) {
+      $('localDataLive').textContent = '本机资料工具暂时不可用，请刷新后重试。';
+      return;
+    }
+    try {
+      const data = ZxPrivacyConsent.exportLocalData();
+      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `知星-本机资料-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      $('localDataLive').textContent = '本机资料已导出。文件不包含账号令牌或内测 API Key。';
+    } catch (_) {
+      $('localDataLive').textContent = '导出没有完成，请检查浏览器下载设置后重试。';
+    }
+  }
+
+  function confirmClearLocalData(){
+    openConfirm({
+      title:'清除全部本机资料',
+      body:'将删除当前浏览器中的出生资料、已保存报告、名称、隐私选择、匿名设备标识、登录状态和内测设置。云端账号资料不会因此自动删除。此操作无法恢复。',
+      primary:'确认清除',
+      secondary:'取消'
+    }, () => {
+      if (!window.ZxPrivacyConsent) return;
+      ZxPrivacyConsent.clearAllLocalData();
+      location.href = homePath;
+    });
   }
 
   function renderUpgrade(){
-    if (memberMode === 'active') {
-      $('upgradeBadge').textContent = '已开通';
-      $('memberPrice').hidden = true;
-      $('upgradeNote').textContent = '当前已享有 6 个报告档案位；扩容包将在支付通道接通后开放。';
-      replaceActions('upgradeActions', [linkButton('查看会员存档', '#qa-archive', 'primary')]);
-      return;
-    }
-    $('upgradeBadge').textContent = memberMode === 'grace' ? '已到期' : '即将开放';
-    $('memberPrice').hidden = false;
-    $('upgradeNote').textContent = '账号与支付通道接通前不会收取费用；档案扩容包为 ¥18 / 2 个永久档案位。';
-    replaceActions('upgradeActions', [disabledButton(memberMode === 'grace' ? '重新开通即将开放' : '会员服务即将开放')]);
+    // 正式价格、权益、支付与退款链路未完成生产核验前，不展示候选方案。
+    $('member-upgrade').hidden = true;
+    replaceActions('upgradeActions', []);
   }
 
   function timestamp(value){
@@ -828,22 +1104,67 @@
   }
 
   function snapshot(){
-    if (!window.zxMember || !zxMember.configured || !zxMember.snapshot) return { configured:false,ready:false,memberUntil:null,cloudSyncEnabled:false };
+    if (!window.zxMember || !zxMember.configured || !zxMember.snapshot) {
+      return {
+        configured:false,
+        serviceConfigured:false,
+        consentRequired:false,
+        ready:false,
+        memberUntil:null,
+        cloudSyncEnabled:false
+      };
+    }
     const data = zxMember.snapshot();
-    return { configured:!!zxMember.configured(),ready:!!data.ready,memberUntil:data.memberUntil || null,cloudSyncEnabled:!!data.cloudSyncEnabled };
+    return {
+      configured:!!zxMember.configured(),
+      serviceConfigured:!!(zxMember.serviceConfigured && zxMember.serviceConfigured()),
+      consentRequired:data.consentRequired === true,
+      ready:!!data.ready,
+      memberUntil:data.memberUntil || null,
+      cloudSyncEnabled:!!data.cloudSyncEnabled
+    };
+  }
+
+  function confirmEnableAccountFeatures(){
+    trackEvent('device_account_consent_shown',{outcome:'shown'});
+    openConfirm({
+      title:'启用设备与账号功能',
+      body:'确认后，知星会在当前浏览器生成随机设备标识，并允许连接账号服务，用于手机号登录、会员状态、订单和已确认资料的账号保存。云端个人图谱同步仍需另行开启。',
+      primary:'确认启用',
+      secondary:'暂不启用'
+    }, async () => {
+      if (!window.ZxPrivacyConsent) {
+        $('accountBody').textContent = '隐私选择工具暂时不可用，请刷新后重试。';
+        return;
+      }
+      try {
+        ZxPrivacyConsent.grant('device_account');
+        trackEvent('device_account_consent_granted',{outcome:'granted'});
+        await initializePage();
+        if (window.ZxPaidH5) await window.ZxPaidH5.mountAccount();
+      } catch (_) {
+        $('accountBody').textContent = '设备与账号功能没有启用，请稍后重试。';
+      }
+    }, { checkbox:'我同意生成随机设备标识并连接设备与账号服务' });
   }
 
   function renderUnavailable(){
     memberMode = 'non-member';
-    $('account-status').hidden = true;
+    const needsConsent = memberState.serviceConfigured && memberState.consentRequired;
+    $('account-status').hidden = !needsConsent;
     $('cloud-sync').hidden = true;
     $('delete-account').hidden = true;
-    setState('member', '当前为普通用户', '你可以查看本命盘、每日签与基础报告。', '普通用户');
-    setState('archive', '还没有问知星记录', '完成一次问知星后，你的对话会显示在这里。', '0 条');
-    replaceActions('accountActions', []);
+    if (needsConsent) {
+      setState('account', '设备与账号功能尚未启用', '当前不会生成设备标识、发送验证码或连接账号服务。确认后才会启用手机号登录、会员和订单功能。', '待确认');
+      replaceActions('accountActions', [button('启用设备与账号功能', confirmEnableAccountFeatures, 'primary')]);
+    } else {
+      replaceActions('accountActions', []);
+    }
+    setState('member', '当前为普通用户', '你可以保存 2 份深度发展报告；情境梳理仅向有效会员开放。', '普通用户');
+    setState('archive', '还没有情境梳理记录', '完成一次情境梳理后，你的对话会显示在这里。', '0 条');
     replaceActions('memberActions', []);
     replaceActions('cloudActions', []);
-    replaceActions('archiveActions', [linkButton('去问知星', reportPath + '#sec-deep')]);
+    replaceActions('archiveActions', [linkButton('去梳理情境', reportPath + '#sec-deep')]);
     replaceActions('deleteActions', []);
     $('memberPolicy').hidden = true;
     $('archiveList').replaceChildren();
@@ -999,7 +1320,7 @@
     $('confirmCheck').checked = false;
     $('confirmPrimary').disabled = !!settings.checkbox;
     confirmAction = action;
-    $('confirmDialog').showModal();
+    showManagedDialog($('confirmDialog'), $('confirmCancel'));
   }
 
   function confirmEnableCloud(){
@@ -1007,9 +1328,25 @@
       $('cloudLive').textContent = COPY.cloud.enabling.title + '。' + COPY.cloud.enabling.body;
       try {
         await zxMember.enableCloudSync();
+        const primary = reportArchive.find(item => item.primary) || reportArchive[0] || null;
+        const payload = normalizedReportInput(
+          currentReportRecord && currentReportRecord.input ||
+          primary && primary.input ||
+          readLocalInput()
+        );
+        if (payload) {
+          try {
+            await zxMember.syncChart(payload);
+          } catch (error) {
+            await zxMember.disableCloudSync().catch(() => {});
+            throw error;
+          }
+        }
         memberState = snapshot();
         renderCloud();
-        $('cloudLive').textContent = COPY.cloud.on.title;
+        $('cloudLive').textContent = payload
+          ? COPY.cloud.on.title
+          : '云端同步已开启；生成个人文化图谱后会保存已确认的出生资料与图谱。';
       } catch (_) {
         $('cloudLive').textContent = COPY.cloud.error.body;
       }
@@ -1083,23 +1420,41 @@
     return false;
   }
 
+  async function restoreCloudChart(){
+    if (!memberState.cloudSyncEnabled || readLocalInput() ||
+        !window.zxMember || typeof zxMember.loadChart !== 'function') return;
+    try {
+      const payload = normalizedReportInput(await zxMember.loadChart());
+      if (payload) localStorage.setItem('zx_input', JSON.stringify(payload));
+    } catch (_) {}
+  }
+
   async function initializePage(){
     accountDeleted = false;
     archiveData = null;
-    renderPersonalSummary();
     memberState = snapshot();
     if (!memberState.configured) {
+      reportStorageMode = 'unavailable';
+      reportArchive = [];
+      reportCapacityLimit = FREE_REPORT_LIMIT;
+      renderPersonalSummary();
       renderUnavailable();
       return;
     }
     renderLoading();
+    try { await zxMember.start(); }
+    catch (_) { renderUnavailable(); return; }
     const ready = await waitForMemberReady();
     if (!ready) {
       renderError();
       return;
     }
-    try { await zxMember.me(); } catch (_) {}
     memberState = snapshot();
+    memberMode = classifyMember();
+    await Promise.all([loadReports(),loadProfile()]);
+    await restoreCloudChart();
+    renderPersonalSummary();
+    await initializeRemoteProfile();
     renderPersonalSummary();
     renderReady();
     await loadArchive();
@@ -1119,28 +1474,49 @@
     if (!currentProfileName || $('profileRenameBtn').disabled) return;
     $('renameInput').value = currentProfileName.name;
     $('renameError').textContent = '';
-    $('renameDialog').showModal();
-    setTimeout(() => $('renameInput').select(), 0);
+    showManagedDialog($('renameDialog'), $('renameInput'));
   });
   $('renameCancel').addEventListener('click', () => $('renameDialog').close());
-  $('renameForm').addEventListener('submit', event => {
+  $('renameForm').addEventListener('submit', async event => {
     event.preventDefault();
     if (!currentProfileName || !currentProfileRef) return;
     const name = $('renameInput').value.trim();
     const length = Array.from(name).length;
     if (length < 2 || length > 8){
       $('renameError').textContent = '请输入 2—8 个字的名称。';
+      $('renameInput').focus();
+      return;
+    }
+    if (memberState.configured) {
+      if (!profileServiceReady || !window.zxMember || typeof zxMember.saveProfile !== 'function') {
+        $('renameError').textContent = '名称服务当前不可用，页面不会只在本机显示一个未同步的名称。';
+        return;
+      }
+      try {
+        profileData = await zxMember.saveProfile(name);
+        renderPersonalSummary();
+        $('renameDialog').close();
+      } catch (error) {
+        const errorDetail = error && error.data && error.data.error;
+        const nextAt = Number(errorDetail && typeof errorDetail === 'object' &&
+          (errorDetail.next_name_change_at || errorDetail.next_change_at) || 0);
+        $('renameError').textContent = Number(error && error.status) === 409
+          ? (nextAt > Date.now()
+              ? `${formatNextNameDate(nextAt)}后可再次更改。`
+              : '30 天名称锁仍在生效，请稍后再试。')
+          : '名称没有更新，账号中的原名称保持不变。';
+      }
       return;
     }
     const changedAt = Date.now();
     currentProfileName = { chartRef:currentProfileRef,name,changedAt };
     localStorage.setItem(PROFILE_NAME_KEY, JSON.stringify(currentProfileName));
-    $('profileName').textContent = name;
-    $('profileRenameBtn').disabled = true;
-    $('profileRenameBtn').textContent = '暂不可更改';
-    $('profileNameHint').textContent = `${formatNextNameDate(changedAt + NAME_CHANGE_MS)}后可再改`;
+    applyRenderedProfile(currentProfileName,currentProfileRef);
     $('renameDialog').close();
   });
+
+  $('exportLocalData').addEventListener('click', exportLocalData);
+  $('clearLocalData').addEventListener('click', confirmClearLocalData);
 
   $('saveReportRelation').addEventListener('change', syncSaveConsent);
   $('saveReportCancel').addEventListener('click', () => {
@@ -1148,15 +1524,16 @@
     $('saveReportDialog').close();
   });
   $('saveReportDialog').addEventListener('cancel', () => { pendingSaveRecord = null; });
-  $('saveReportForm').addEventListener('submit', event => {
+  $('saveReportForm').addEventListener('submit', async event => {
     event.preventDefault();
     if (!pendingSaveRecord) return;
     const name = $('saveReportName').value.trim();
     const relation = $('saveReportRelation').value;
     const length = Array.from(name).length;
-    const saved = readReportArchive();
+    const saved = reportArchive.slice();
     if (length < 2 || length > 8) {
       $('saveReportError').textContent = '请输入 2—8 个字的档案称呼。';
+      $('saveReportName').focus();
       return;
     }
     if (saved.length >= currentReportLimit()) {
@@ -1165,34 +1542,61 @@
     }
     if (relation === '本人' && saved.some(item => item.primary)) {
       $('saveReportError').textContent = '“本人”档案已经存在，请选择其他关系。';
+      $('saveReportRelation').focus();
       return;
     }
     if (relation !== '本人' && !$('saveReportConsent').checked) {
       $('saveReportError').textContent = '保存他人资料前，请确认已获得对方同意。';
+      $('saveReportConsent').focus();
       return;
     }
-    const now = Date.now();
-    const record = Object.assign({},pendingSaveRecord,{
-      name,
-      relation,
-      primary:relation === '本人',
-      createdAt:now,
-      updatedAt:now,
-      permissionConfirmedAt:relation === '本人' ? null : now
-    });
+    if (reportStorageMode !== 'remote' || !window.zxMember ||
+        typeof zxMember.saveReport !== 'function') {
+      $('saveReportError').textContent = '账号档案当前不可写入，页面不会把本机缓存显示为已保存。';
+      return;
+    }
+    const record = pendingSaveRecord;
+    $('saveReportPrimary').disabled = true;
+    $('saveReportError').textContent = '正在写入账号档案…';
     try {
-      writeReportArchive(saved.concat(record));
+      await zxMember.saveReport({
+        displayName:name,
+        relation,
+        primary:relation === '本人',
+        storageConfirmed:true,
+        permissionConfirmed:relation === '本人' || $('saveReportConsent').checked,
+        payload:record.input
+      });
+      let chartSynced = true;
+      if (memberState.cloudSyncEnabled && relation === '本人') {
+        try { await zxMember.syncChart(record.input); } catch (_) { chartSynced = false; }
+      }
+      await loadReports();
       pendingSaveRecord = null;
       $('saveReportDialog').close();
-      $('reportLive').textContent = `已保存“${name}”。`;
-      renderReportLibrary();
-    } catch (_) {
-      $('saveReportError').textContent = '保存没有完成，请检查浏览器存储后重试。';
+      $('reportLive').textContent = chartSynced
+        ? `已保存“${name}”到账号档案。`
+        : `已保存“${name}”到账号档案；个人图谱云同步暂未完成，请稍后重试同步。`;
+      renderPersonalSummary();
+    } catch (error) {
+      $('saveReportError').textContent = Number(error && error.status) === 409
+        ? `当前最多保存 ${currentReportLimit()} 份报告，请先删除一份。`
+        : '保存没有完成，账号档案未发生页面可确认的变化，请稍后重试。';
+    } finally {
+      $('saveReportPrimary').disabled = false;
     }
   });
 
-  Promise.all([addMemberScript(),addScript(minimumAgeScriptPath),addScript(engineScriptPath),addScript(explainerScriptPath)]).then(initializePage);
+  addScript(privacyScriptPath)
+    .then(() => Promise.all([addMemberScript(),addScript(minimumAgeScriptPath),addScript(engineScriptPath),addScript(explainerScriptPath)]))
+    .then(async () => {
+      await initializePage();
+      if (window.ZxPaidH5) {
+        try { await window.ZxPaidH5.mountAccount(); } catch (_) {}
+      }
+    });
 })();
 </script>
+<script src="./paid-h5.js"></script>
 </body>
 </html>

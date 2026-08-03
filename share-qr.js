@@ -2,12 +2,12 @@
 (function (global) {
   'use strict';
 
-  var OFFICIAL_SITE_URL = 'https://zhixing.cn/';
+  var OFFICIAL_SITE_URL = 'https://zhixng.cn/';
 
   function signedShareUrl(value) {
     var url;
     try {
-      url = new URL(String(value || ''), global.location && global.location.href || 'https://zhixing.cn/');
+      url = new URL(String(value || ''), global.location && global.location.href || 'https://zhixng.cn/');
     } catch (_) {
       throw new Error('invalid share url');
     }
