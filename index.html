@@ -22,7 +22,7 @@
   #flash{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;
     background:radial-gradient(circle at var(--fx,50%) var(--fy,46%),rgba(255,243,216,.96),rgba(212,178,104,.8) 30%,rgba(20,26,44,.9) 72%,#0E1220 100%)}
   #blackout{position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;background:#0E1220}
-  body.warping .lockup,body.warping .enter,body.warping .hint{opacity:0!important;transition:opacity .5s}
+  body.warping .lockup,body.warping .enter,body.warping .hint,body.warping .filing-footer{opacity:0!important;transition:opacity .5s}
   .enter{transition:background .3s,box-shadow .3s,opacity .5s}
 
   .lockup{position:fixed;left:50%;top:max(68px,calc(env(safe-area-inset-top) + 52px));width:min(90vw,520px);
@@ -36,7 +36,7 @@
   .lockup .studio::before,.lockup .studio::after{content:"";width:36px;height:1px;background:rgba(201,168,92,.62)}
   .lockup .tagline{font-size:13px;letter-spacing:.28em;text-indent:.28em;color:var(--moon);opacity:.9;margin-top:12px}
 
-  .enter{position:fixed;left:50%;transform:translateX(-50%);bottom:max(26px,env(safe-area-inset-bottom));z-index:5;
+  .enter{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(8px,env(safe-area-inset-bottom)) + 42px);z-index:5;
     font-family:var(--serif);font-size:14px;letter-spacing:.3em;text-indent:.3em;color:var(--moon);
     text-decoration:none;padding:11px 30px;border:1px solid rgba(201,168,92,.55);border-radius:999px;
     background:rgba(14,18,32,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
@@ -48,6 +48,10 @@
     white-space:nowrap;pointer-events:none;opacity:.9;transition:opacity 1.2s}
   .hint.off{opacity:0}
 
+  .filing-footer{position:fixed;left:50%;bottom:max(4px,env(safe-area-inset-bottom));z-index:5;transform:translateX(-50%);white-space:nowrap;color:#B8A36C;font-family:var(--serif);font-size:10px;line-height:1.2;text-align:center;transition:opacity .5s}
+  .filing-footer a{display:inline-flex;align-items:center;min-height:32px;color:inherit;text-decoration:underline;text-underline-offset:3px}
+  .filing-footer a:focus-visible,.enter:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+
   @media (max-width:520px){
     .lockup{top:max(42px,calc(env(safe-area-inset-top) + 34px));left:50%;width:calc(100vw - 36px)}
     .lockup b{font-size:56px}
@@ -55,7 +59,7 @@
     .lockup .studio::before,.lockup .studio::after{width:28px}
     .lockup .tagline{font-size:11px;letter-spacing:.24em;text-indent:.24em;margin-top:10px}
     .enter{font-size:13px;padding:10px 24px}
-    .hint{top:auto;bottom:calc(max(26px,env(safe-area-inset-bottom)) + 62px)}
+    .hint{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 104px)}
   }
 </style>
 </head>
@@ -72,6 +76,7 @@
 </div>
 <a class="enter" href="./app.html">进 入 知 星</a>
 <div class="hint" id="hint">拖 动 太 极 拨 转 · 轻 点 见 流 光</div>
+<footer class="filing-footer">贵州天云稀泉科技有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">黔ICP备2026013593号-1</a></footer>
 
 <script>
 'use strict';

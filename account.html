@@ -116,6 +116,7 @@
   .site-footer{margin-top:18px;padding:18px 4px 0;border-top:1px solid var(--line);color:#727d8f;font-size:11px;text-align:center}
   .site-footer nav{display:flex;justify-content:center;flex-wrap:wrap;gap:0 13px;margin-bottom:7px}
   .site-footer nav a,.service-links a{display:inline-flex;align-items:center;min-height:44px}
+  .site-footer .filing-link{display:inline-flex;align-items:center;min-height:32px;color:inherit;text-decoration:underline}
   .dialog-actions{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px;padding-top:12px;background:linear-gradient(180deg,rgba(26,34,51,0),var(--panel) 24%)}
   .dialog-actions .btn{width:100%}
   @media(min-width:760px){.account-grid{grid-template-columns:1fr 1fr}.panel-wide{grid-column:1/-1}}
@@ -174,7 +175,7 @@
       </div>
       <h3 class="state-title" id="memberTitle">正在读取会员状态</h3>
       <p class="state-body" id="memberBody">读取完成前，你仍可查看深度发展报告与今日知星卡。</p>
-      <p class="policy" id="memberPolicy" hidden>会员可保存 6 份深度发展报告，每个服务月含 60 次情境梳理，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
+      <p class="policy" id="memberPolicy" hidden>会员可保存 6 份深度发展报告，每个服务月含 60 次问星，并默认保存最近 50 个问答轮次。会员到期后，问答存档仍可查看 30 天。</p>
       <div class="actions" id="memberActions"></div>
     </section>
 
@@ -201,7 +202,7 @@
       </fieldset>
       <ul class="member-benefits" aria-label="知星会员权益">
         <li>保存 6 份深度发展报告</li>
-        <li>每个服务月 60 次情境梳理</li>
+        <li>每个服务月 60 次问星</li>
         <li>最近 50 个问答轮次</li>
         <li>登录同一手机号可查看已保存报告；个人图谱同步可另行开启</li>
       </ul>
@@ -247,7 +248,7 @@
 
     <section class="panel panel-wide" id="qa-archive">
       <div class="panel-head">
-        <div><div class="eyebrow">情境梳理</div><h2>问答存档</h2></div>
+        <div><div class="eyebrow">问星</div><h2>问答存档</h2></div>
         <span class="badge" id="archiveBadge">加载中</span>
       </div>
       <h3 class="state-title" id="archiveTitle">正在读取问答存档</h3>
@@ -277,7 +278,7 @@
         <span class="badge" id="deleteBadge" hidden></span>
       </div>
       <h3 class="state-title" id="deleteTitle">注销账号</h3>
-      <p class="state-body" id="deleteBody">注销后，云端图谱和情境梳理存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。</p>
+      <p class="state-body" id="deleteBody">注销后，云端图谱和问星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。</p>
       <div class="actions" id="deleteActions"></div>
       <div class="live" id="deleteLive" aria-live="polite"></div>
     </section>
@@ -287,7 +288,7 @@
     <nav aria-label="服务协议">
       <a href="./terms.html">用户协议</a><a href="./privacy.html">隐私政策</a><a href="./membership-rules.html">会员服务规则</a><a href="./refund-policy.html">退款规则</a><a href="./ai-disclosure.html">AI 服务说明</a>
     </nav>
-    <div>贵州天云稀泉科技有限公司 · 黔ICP备2026012575号</div>
+    <div>贵州天云稀泉科技有限公司 · <a class="filing-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">黔ICP备2026013593号-1</a></div>
   </footer>
 </div>
 
@@ -383,7 +384,7 @@
       <div class="checkout-summary-row"><span>商户主体</span><strong id="purchaseMerchant">尚未配置</strong></div>
     </div>
     <ul class="checkout-benefits">
-      <li>每个会员服务月含 60 次情境梳理，未使用次数不结转</li>
+      <li>每个会员服务月含 60 次问星，未使用次数不结转</li>
       <li>会员期间最多保存 6 份深度发展报告</li>
       <li>默认保存最近 50 个问答轮次，会员到期后可查看 30 天</li>
       <li>登录同一手机号可跨设备查看账号报告和问答；开启云同步后可恢复当前个人图谱</li>
@@ -429,9 +430,37 @@
   const explainerScriptPath = sourceTree ? '../v1/explainer.js' : './explainer.js';
   const reportPath = sourceTree ? '../v1/report.html' : './report.html';
   const homePath = sourceTree ? './index.html' : './app.html';
-  document.getElementById('reportLink').href = reportPath;
-  document.getElementById('newReportLink').href = homePath;
-  document.getElementById('qianReportLink').href = reportPath + '#sec-qian';
+  function isLocalDebugHost(hostname){
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+  }
+  function localDeepEndpoint(){
+    const raw = new URLSearchParams(location.search).get('deep');
+    if (!raw || (location.protocol !== 'file:' && !isLocalDebugHost(location.hostname))) return '';
+    try {
+      const endpoint = new URL(raw, location.href);
+      return /^https?:$/.test(endpoint.protocol) && isLocalDebugHost(endpoint.hostname) ? endpoint.href : '';
+    } catch (_) {
+      return '';
+    }
+  }
+  function localDeepMode(){
+    const endpoint = localDeepEndpoint();
+    if (!endpoint) return '';
+    const mode = new URLSearchParams(location.search).get('deepMode');
+    if (mode === 'real') return location.protocol === 'http:' && location.hostname === '127.0.0.1' && endpoint === 'http://127.0.0.1:9001/' ? 'real' : '';
+    return mode === 'mock' ? 'mock' : '';
+  }
+  function withLocalDeepEndpoint(path){
+    const endpoint = localDeepEndpoint();
+    if (!endpoint) return path;
+    const mode = localDeepMode();
+    return `${path}?deep=${encodeURIComponent(endpoint)}${mode ? `&deepMode=${mode}` : ''}`;
+  }
+  const reportHref = withLocalDeepEndpoint(reportPath);
+  const homeHref = withLocalDeepEndpoint(homePath);
+  document.getElementById('reportLink').href = reportHref;
+  document.getElementById('newReportLink').href = homeHref;
+  document.getElementById('qianReportLink').href = reportHref + '#sec-qian';
 
   const COPY = {
     account: {
@@ -443,8 +472,8 @@
     member: {
       unavailable:{title:'账号服务尚未开放',badge:'暂不可用',body:'当前可继续查看深度发展报告与今日知星卡；登录、云端同步和问答存档暂不可用。'},
       loading:{title:'正在读取会员状态',badge:'加载中',body:'读取完成前，你仍可查看深度发展报告与今日知星卡。'},
-      nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以保存 2 份深度发展报告；情境梳理仅向有效会员开放。'},
-      active:{title:'会员有效至',badge:'会员',body:'会员可保存 6 份深度发展报告，每个服务月含 60 次情境梳理，并默认保存最近 50 个问答轮次。'},
+      nonMember:{title:'当前未开通会员',badge:'非会员',body:'你可以保存 2 份深度发展报告；问星仅向有效会员开放。'},
+      active:{title:'会员有效至',badge:'会员',body:'会员可保存 6 份深度发展报告，每个服务月含 60 次问星，并默认保存最近 50 个问答轮次。'},
       grace:{title:'会员已到期',badge:'存档保留中',body:'问答存档仍可查看至 {date}。超过该日期后，存档将自动删除且无法恢复。'},
       removed:{title:'存档保留期已结束',badge:'已结束',body:'原会员问答存档已删除，无法恢复。'},
       error:{title:'暂时无法读取会员状态',badge:'读取失败',body:'当前页面内容不受影响，请稍后重试。'}
@@ -462,7 +491,7 @@
     archive: {
       memberOnly:{title:'问答存档',body:'会员问答会默认保存最近 50 个问答轮次，方便跨设备回看和继续追问。'},
       loading:{title:'正在读取问答存档',body:'请稍候。'},
-      emptyActive:{title:'还没有保存的问答',body:'成功完成一次情境梳理后，记录会显示在这里。',action:'去梳理情境'},
+      emptyActive:{title:'还没有保存的问答',body:'成功完成一次问星后，记录会显示在这里。',action:'去问星'},
       emptyGrace:{title:'当前没有可查看的问答存档',body:'你的会员已到期，存档查看期至 {date}。'},
       ready:{title:'问答存档',body:'已保存 {count} / 50 个问答轮次。一次提问和一次完整答复计为一个轮次。',action:'清空全部'},
       loadError:{title:'暂时无法读取问答存档',body:'你的存档没有因此被删除，请稍后重试。',action:'重新读取'},
@@ -471,15 +500,15 @@
       confirmDelete:{title:'删除这个问答轮次',body:'删除后，这个问答轮次会立即从账号存档和后续追问上下文中移除，无法恢复。此操作不会影响你的个人图谱和会员状态。',primary:'删除',secondary:'取消'},
       deleting:{title:'正在删除问答',body:'请保持当前页面打开。'},
       deleted:{title:'问答已删除',body:'这条记录已从账号存档和后续追问上下文中移除。'},
-      confirmClear:{title:'清空全部问答存档',body:'清空后，账号中的情境梳理存档会立即全部移除，无法恢复；个人图谱和会员状态不受影响。',primary:'清空全部',secondary:'取消'},
+      confirmClear:{title:'清空全部问答存档',body:'清空后，账号中的问星存档会立即全部移除，无法恢复；个人图谱和会员状态不受影响。',primary:'清空全部',secondary:'取消'},
       clearing:{title:'正在清空问答存档',body:'请保持当前页面打开。'},
-      cleared:{title:'问答存档已清空',body:'账号中已没有情境梳理存档。'},
+      cleared:{title:'问答存档已清空',body:'账号中已没有问星存档。'},
       mutationError:{title:'操作没有完成',body:'当前存档未发生变化，请稍后重试。',action:'重试'}
     },
     deletion: {
-      confirm:{title:'注销账号',body:'注销后，云端图谱和情境梳理存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。',check:'我已了解注销后账号资料和会员权益无法恢复',primary:'确认注销',secondary:'取消'},
+      confirm:{title:'注销账号',body:'注销后，云端图谱和问星存档会立即从账号中移除且无法恢复，会员权益同时终止。依法需要保留的最小记录会按规定期限保存。',check:'我已了解注销后账号资料和会员权益无法恢复',primary:'确认注销',secondary:'取消'},
       deleting:{title:'正在注销账号',body:'请保持当前页面打开。'},
-      success:{title:'账号已注销',body:'云端图谱和情境梳理存档已从账号中移除。'},
+      success:{title:'账号已注销',body:'云端图谱和问星存档已从账号中移除。'},
       error:{title:'账号注销没有完成',body:'账号资料未发生变化，请稍后重试。',action:'重试'}
     }
   };
@@ -790,7 +819,7 @@
 
   function openSavedReport(record){
     try { localStorage.setItem('zx_input', JSON.stringify(record.input)); } catch (_) {}
-    location.href = reportPath;
+    location.href = reportHref;
   }
 
   function removeSavedReport(record){
@@ -964,7 +993,7 @@
     $('qianHook').textContent = '生成个人文化图谱后即可查看今天的卡片。';
     $('qianGuidance').textContent = '今日知星卡按你的日主五行与强弱生成，同一天保持一致。';
     $('qianReportLink').textContent = '去生成个人图谱';
-    $('qianReportLink').href = homePath;
+    $('qianReportLink').href = homeHref;
     $('qianReportLink').onclick = null;
   }
 
@@ -1000,7 +1029,7 @@
       $('qianHook').textContent = qian.line;
       $('qianGuidance').textContent = `适：${qian.yi.join(' · ')}　缓：${qian.ji.join(' · ')}`;
       $('qianReportLink').textContent = '进入今日知星卡';
-      $('qianReportLink').href = reportPath + '#sec-qian';
+      $('qianReportLink').href = reportHref + '#sec-qian';
       $('qianReportLink').onclick = () => {
         try { localStorage.setItem('zx_input', JSON.stringify(identityInput)); } catch (_) {}
       };
@@ -1160,11 +1189,11 @@
     } else {
       replaceActions('accountActions', []);
     }
-    setState('member', '当前为普通用户', '你可以保存 2 份深度发展报告；情境梳理仅向有效会员开放。', '普通用户');
-    setState('archive', '还没有情境梳理记录', '完成一次情境梳理后，你的对话会显示在这里。', '0 条');
+    setState('member', '当前为普通用户', '你可以保存 2 份深度发展报告；问星仅向有效会员开放。', '普通用户');
+    setState('archive', '还没有问星记录', '完成一次问星后，你的对话会显示在这里。', '0 条');
     replaceActions('memberActions', []);
     replaceActions('cloudActions', []);
-    replaceActions('archiveActions', [linkButton('去梳理情境', reportPath + '#sec-deep')]);
+    replaceActions('archiveActions', [linkButton('去问星', reportHref + '#sec-deep')]);
     replaceActions('deleteActions', []);
     $('memberPolicy').hidden = true;
     $('archiveList').replaceChildren();
@@ -1295,7 +1324,7 @@
       if (!items.length) {
         const empty = memberMode === 'grace' ? COPY.archive.emptyGrace : COPY.archive.emptyActive;
         setState('archive', empty.title, empty.body.replace('{date}', deleteAt), '0 / 50');
-        replaceActions('archiveActions', memberMode === 'active' ? [linkButton(COPY.archive.emptyActive.action, reportPath + '#sec-deep')] : []);
+        replaceActions('archiveActions', memberMode === 'active' ? [linkButton(COPY.archive.emptyActive.action, reportHref + '#sec-deep')] : []);
         return;
       }
       const readyBody = COPY.archive.ready.body.replace('{count}', String(items.length));
