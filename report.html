@@ -493,7 +493,9 @@
 <script src="./analytics.js"></script>
 <script src="./member.js"></script>
 <script src="./bazi-engine.js"></script>
-<script src="./confirmed-content-v1.js"></script>
+<script src="./content-home-v1.js"></script>
+<script src="./content-relation-v1.js"></script>
+<script src="./content-action-time-v1.js"></script>
 <script src="./explainer.js"></script>
 <script>
 'use strict';
@@ -886,8 +888,8 @@ function chapterCard(id, title, content){
   return `<article class="card report-chapter" id="${id}"><div class="pad"><h2 tabindex="-1">${esc(title)}</h2>${content}</div></article>`;
 }
 
-function confirmedProfileSection(section){
-  return !!(section && section.profile === 'confirmed-content-v1' && Array.isArray(section.blocks));
+function structuredProfileSection(section){
+  return !!(section && typeof section.profile === 'string' && Array.isArray(section.blocks));
 }
 
 function structuredList(block){
@@ -1453,15 +1455,12 @@ function render(chart, sections){
   CHART = chart;
   const byId = Object.fromEntries(sections.map(section => [section.id,section]));
   const useSection = (section, fallbackTitle) => section
-    ? (confirmedProfileSection(section) ? structuredSection(section) : sectionCard(section,chart,{title:fallbackTitle}))
+    ? (structuredProfileSection(section) ? structuredSection(section) : sectionCard(section,chart,{title:fallbackTitle}))
     : '';
-  const confirmedSample = confirmedProfileSection(byId.overview);
-  const overview = confirmedSample
-    ? structuredSection(byId.overview) + useSection(byId.skeleton,'性格骨架')
-    : useSection(byId.overview,'核心气质与主要矛盾') + useSection(byId.skeleton,'性格骨架') + astroInterpretation(chart,'太阳');
+  const overview = useSection(byId.overview,'核心气质与主要矛盾') + useSection(byId.skeleton,'性格骨架');
   const chartContent = useSection(byId.energy,'五行、强弱与主要十神') + astroCard(chart) + chartCard(chart);
-  const relationContent = useSection(byId.relation,'关系与协作') + (confirmedProfileSection(byId.relation) ? '' : astroInterpretation(chart,'月亮'));
-  const actionContent = useSection(byId.action,'行动与决策') + (confirmedProfileSection(byId.action) ? '' : astroInterpretation(chart,'上升'));
+  const relationContent = useSection(byId.relation,'关系与协作');
+  const actionContent = useSection(byId.action,'行动与决策');
   let h = chapterCard('sec-overview','总览',overview)
     + chapterCard('sec-chart','盘面',chartContent)
     + chapterCard('sec-relation','关系',relationContent)
@@ -1484,15 +1483,15 @@ function render(chart, sections){
 }
 
 function updateReportHero(chart, overview){
-  const confirmed = window.ZxConfirmedContentV1;
-  const sample = !!(confirmed && confirmed.isSampleChart && confirmed.isSampleChart(chart));
-  const identity = sample
-    ? confirmed.HOME.identity
-    : `${chart.dayMaster.stem}${chart.dayMaster.element} × 太阳${chart.astro?.sun?.sign || '星座'}`;
+  const homeContent = window.ZhixingHomeContentV1;
+  const home = homeContent && typeof homeContent.buildHome === 'function'
+    ? homeContent.buildHome(chart)
+    : null;
+  const identity = home?.identity || `${chart.dayMaster.stem}${chart.dayMaster.element} × 太阳${chart.astro?.sun?.sign || '星座'}`;
   const fallback = String(overview?.body || '先从总览开始，结合真实经历核对这张盘呈现的倾向。')
     .split(/\n\n+/)[0].replace(/\s*来源[:：].*$/s,'').trim();
   $('reportIdentity').textContent = identity;
-  $('reportJudgement').textContent = sample ? confirmed.HOME.judgement : fallback;
+  $('reportJudgement').textContent = home?.judgement || fallback;
 }
 
 const REPORT_NAV_GROUPS = [

@@ -4,10 +4,16 @@
  * ========================================================================== */
 'use strict';
 
-const CONFIRMED_CONTENT_NODE = (typeof module !== 'undefined' && module.exports)
-  ? require('./confirmed-content-v1.js')
+const HOME_CONTENT_NODE = (typeof module !== 'undefined' && module.exports)
+  ? require('./content-home-v1.js')
   : null;
-const CONFIRMED_PROFILE = 'confirmed-content-v1';
+const RELATION_CONTENT_NODE = (typeof module !== 'undefined' && module.exports)
+  ? require('./content-relation-v1.js')
+  : null;
+const ACTION_TIME_CONTENT_NODE = (typeof module !== 'undefined' && module.exports)
+  ? require('./content-action-time-v1.js')
+  : null;
+const CONTENT_PROFILE = 'zhixing-content-v1';
 
 /* ===== 深化内容库 ===== */
 
@@ -252,33 +258,59 @@ function pick(tenGods, keys){
   return out;
 }
 
-function isConfirmedChart(chart){
-  const content = CONFIRMED_CONTENT_NODE
-    || (typeof window !== 'undefined' ? window.ZxConfirmedContentV1 : null);
-  return !!(content
-    && typeof content.isSampleChart === 'function'
-    && content.isSampleChart(chart));
-}
+/* 盘面只说明可核对的行为倾向，不把十神写成职业、关系或命运结论。 */
+const TEN_GOD_PLAIN = {
+  比肩:'遇到分歧时，你更愿意先用自己的标准判断。这样不容易被带走，也可能让可借的力晚一点进来。',
+  劫财:'人和现场会带快你的反应，你也更愿意直接参与。涉及分工或分配时，越早说清各自负责什么，后面越少靠猜。',
+  食神:'兴趣和手感会明显影响投入。开头有回音时推进顺，进入重复段落后则需要固定安排接住。',
+  伤官:'你容易先看见旧做法哪里不顺，也愿意提出不同意见。真正要管的是表达时机和收尾，不让看见问题停在指出问题。',
+  偏财:'你对新入口、人和可用资源反应较快。机会同时出现时，需要先确认哪一个值得留下具体结果。',
+  正财:'你更信任能按步骤完成、可以核对的结果。谨慎能减少返工，也要防止准备一直替代第一次行动。',
+  七杀:'明确压力会让你迅速集中注意力。推进很快时，仍要预留一次校准，避免把“必须完成”变成只有硬顶一种办法。',
+  正官:'责任、规则和完成标准会影响你的选择。条件说清时你更能持续负责，条件模糊时则容易多接事、少拿决定空间。',
+  偏印:'你会把问题往深处想，也愿意研究少有人注意的部分。思考超过现实反馈时，最小的一次验证比继续推演更有用。',
+  正印:'稳定支持和清楚示范会帮助你进入状态。获得支持以后，仍要保留一段由自己判断和完成的部分。'
+};
+
+const STRENGTH_PLAIN = {
+  偏强:'盘面里可由自己调用的同类支持较多，独立推进通常不难。需要留意的是，别把“我能做”自动变成“都由我做”。',
+  中和:'盘面里的自持与外部推动相对接近。关键不是一味加速或收缩，而是看清这件事此刻缺决定、配合还是连续时间。',
+  偏弱:'盘面里长期独自供给会更费力。任务持续没有反馈、配合或明确期限时，消耗会加快；这不等于能力不足，而是推进条件要先说清。'
+};
 
 function sourced(text, source){
   return `${String(text || '').trim()}来源:${source}`;
 }
 
-function confirmedSections(){
-  const content = CONFIRMED_CONTENT_NODE
-    || (typeof window !== 'undefined' ? window.ZxConfirmedContentV1 : null);
-  const H = content.HOME;
-  const R = content.RELATION;
-  const A = content.ACTION;
-  const T = content.TIME;
+function runtimeContent(nodeValue, globalName){
+  if (nodeValue) return nodeValue;
+  return typeof window !== 'undefined' ? window[globalName] : null;
+}
+
+function contentSections(chart){
+  const homeContent = runtimeContent(HOME_CONTENT_NODE, 'ZhixingHomeContentV1');
+  const relationContent = runtimeContent(RELATION_CONTENT_NODE, 'ZhixingRelationContentV1');
+  const actionTimeContent = runtimeContent(ACTION_TIME_CONTENT_NODE, 'ZhixingActionTimeContentV1');
+  if (!homeContent || !relationContent || !actionTimeContent) {
+    throw new Error('full content contracts unavailable');
+  }
+  const H = typeof homeContent.buildHome === 'function'
+    ? homeContent.buildHome(chart)
+    : homeContent.build(chart);
+  const R = typeof relationContent.fromChart === 'function'
+    ? relationContent.fromChart(chart)
+    : relationContent.build(chart);
+  const A = actionTimeContent.buildAction(chart);
+  const T = actionTimeContent.buildTime(chart);
+  const steps = Array.isArray(H.steps) ? H.steps : (Array.isArray(H.scenes) ? H.scenes : []);
+  const overuse = Array.isArray(H.overuse)
+    ? H.overuse
+    : [H.overuse && H.overuse.body, H.overuse && H.overuse.action].filter(Boolean);
 
   const overviewBody = [
-    sourced(`${H.judgement}。${H.explanation}`, H.source),
-    sourced(H.firstImpression, H.source),
-    sourced(H.drive, H.source),
-    sourced(H.scenes.map(scene => `${scene.title}：${scene.body}`).join('\n'), H.source),
-    sourced(H.overuse.join(''), H.source),
-    sourced(H.contrast.join('\n'), H.source)
+    sourced(`${String(H.judgement || '').replace(/[。！？]+$/, '')}。${H.explanation}`, H.source),
+    sourced(steps.map(step => `${String(step.title || '').replace(/[。！？：:]+$/, '')}：${step.body}`).join('\n'), H.source),
+    sourced(overuse.join('\n'), H.source)
   ].join('\n\n');
   const relationBody = [
     sourced(R.lead, R.source),
@@ -314,28 +346,22 @@ function confirmedSections(){
 
   return {
     overview: {
-      id:'overview', title:'总览', source:H.source, profile:CONFIRMED_PROFILE,
+      id:'overview', title:'总览', source:H.source, profile:CONTENT_PROFILE,
       blocks:[
         { type:'heading', level:2, text:H.identity },
         { type:'quote', text:H.judgement },
         { type:'paragraph', text:H.explanation },
         { type:'list', style:'keywords', items:H.keywords },
-        { type:'heading', level:3, text:'你给人的第一印象' },
-        { type:'paragraph', text:H.firstImpression },
-        { type:'heading', level:3, text:'真正驱动你的东西' },
-        { type:'paragraph', text:H.drive },
-        { type:'heading', level:3, text:'你最容易发挥的两个现场' },
-        { type:'list', style:'scenes', items:H.scenes },
+        { type:'heading', level:3, text:'三步看懂自己' },
+        { type:'list', style:'scenes', items:steps },
         { type:'heading', level:3, text:'这项能力用过头时' },
-        ...H.overuse.map(text => ({ type:'paragraph', text })),
-        { type:'heading', level:3, text:'别人看到的你，与真正的你' },
-        { type:'list', style:'contrast', items:H.contrast },
+        ...overuse.map(text => ({ type:'paragraph', text })),
         { type:'source', text:H.source }
       ],
       body:overviewBody
     },
     relation: {
-      id:'relation', title:'关系', source:R.source, profile:CONFIRMED_PROFILE,
+      id:'relation', title:'关系', source:R.source, profile:CONTENT_PROFILE,
       blocks:[
         { type:'heading', level:2, text:R.title },
         { type:'paragraph', text:R.lead },
@@ -348,7 +374,7 @@ function confirmedSections(){
       body:relationBody
     },
     action: {
-      id:'action', title:'行动', source:A.source, profile:CONFIRMED_PROFILE,
+      id:'action', title:'行动', source:A.source, profile:CONTENT_PROFILE,
       blocks:[
         { type:'heading', level:2, text:A.title },
         { type:'action-layout', data:A },
@@ -357,7 +383,7 @@ function confirmedSections(){
       body:actionBody
     },
     phase: {
-      id:'phase', title:'时间', source:T.source, profile:CONFIRMED_PROFILE,
+      id:'phase', title:'时间', source:T.source, profile:CONTENT_PROFILE,
       blocks:[
         { type:'heading', level:2, text:T.title, eyebrow:T.stage },
         { type:'timeline', data:T },
@@ -370,81 +396,44 @@ function confirmedSections(){
 
 /* ---------- 章节组装(深化) ---------- */
 function buildSections(chart){
-  const p=chart.pillars, dm=chart.dayMaster, fe=chart.fiveElements, tg=chart.tenGods;
-  const ast=chart.astro||{}, st=fe.dayMasterStrength;
+  const fe=chart.fiveElements, tg=chart.tenGods, st=fe.dayMasterStrength;
   const S=[];
-  const gz=k=>p[k]?p[k].stem+p[k].branch:'—';
   const mGod = tg.month ? tg.month.stem : null;
+  const fullContent = contentSections(chart);
 
-  /* 命局总览:物象定调 + 根干花果 + 太阳短桥融合 */
-  let ov = `你是${STEM_IMG[dm.stem]}——${dm.stem}${dm.element}(${dm.yinyang}),${dm.element}主${ELEM_FLAVOR[dm.element]},这是你一生的能量底色。你生于${p.month.branch}月,四柱 ${gz('year')} ${gz('month')} ${gz('day')} ${gz('hour')};年柱是根、月柱是干、日柱是花、时柱是果,顺着这条时间轴,写着你从来处到晚景一路的气势起落。来源:四柱·日主`;
-  if (ast && ast.sun){
-    const sc = starCross(ast.sun.sign, dm.element, '太阳');
-    ov += `\n\n同一刻的天空另存了一份档案:太阳落${ast.sun.sign}——${SIGN_LINE[ast.sun.sign]}。${sc.tag},${sc.bridge};更细的参照与差异,见下一章「星盘参照」。来源:星盘辅证·太阳${ast.sun.sign}`;
+  /* 总览直接使用全量内容合同，不再先生成旧模板再覆盖。 */
+  let overview = fullContent.overview;
+  if (Array.isArray(chart.boundaries) && chart.boundaries.length){
+    const notice = `出生时间接近${chart.boundaries.map(item => item.type).join('、')}的计算分界。当前结果按你填写的时间生成；如果时间只记得大概，请先核对时间再使用后面的判断。`;
+    overview = {
+      ...overview,
+      blocks:[overview.blocks[0], overview.blocks[1], { type:'paragraph', text:notice }, ...overview.blocks.slice(2)],
+      body:`${notice}来源:出生时间边界\n\n${overview.body}`
+    };
   }
-  if (chart.boundaries.length) ov = `⚠ 你的出生时刻接近排盘边界(${chart.boundaries.map(b=>b.type).join('、')}),以下结论以精校排盘为准。来源:边界告警\n\n` + ov;
-  S.push({ id:'overview', title:'命局总览', source:'四柱+日主+太阳星座', body: ov });
+  S.push(overview);
 
-  /* 五行能量:最厚(高读)+ 最薄(低读+补位建议)+ 强弱深读 */
+  /* 盘面读图：先交代数值，再解释强弱，不用单个元素给人格下结论。 */
   const ranked = Object.entries(fe.counts).sort((a,b)=>b[1]-a[1]);
   const [maxE, minE] = [ranked[0], ranked[ranked.length-1]];
-  const eBody = `你盘中最厚的能量是${maxE[0]}(${maxE[1]}),最薄的是${minE[0]}(${minE[1]})。${ELEM_RICH[maxE[0]].high}。来源:五行分布`
-    + `\n\n最薄的一环在${minE[0]}——${ELEM_RICH[minE[0]].low}。${ELEM_RICH[minE[0]].thin}来源:五行·补${minE[0]}`
-    + `\n\n${STRENGTH[st.label]}来源:日主强弱`;
-  S.push({ id:'energy', title:'五行能量图谱', source:'五行分布+日主强弱', body: eBody });
+  const eBody = `五行数值里，${maxE[0]}为 ${maxE[1]}，${minE[0]}为 ${minE[1]}。这组数值用来比较盘面里哪些因素更集中、哪些较少，不把最高或最低的一项直接等同于性格。来源:五行分布`
+    + `\n\n日主强弱为${st.label}。${STRENGTH_PLAIN[st.label] || STRENGTH_PLAIN.中和}来源:日主强弱`;
+  S.push({ id:'energy', title:'盘面读图', source:'五行分布+日主强弱', body: eBody });
 
-  /* 性格骨架:月令十神深读 + 建议 + 年时柱十神点睛 */
+  /* 性格骨架：用可核对动作解释十神，不假定现实身份。 */
   let skBody;
-  if (mGod && TG[mGod]){
+  if (mGod && TEN_GOD_PLAIN[mGod]){
     const others = pick(tg, Object.keys(TG)).filter(x=>x.pos!=='month').slice(0,2)
-      .map(x=>`${POS_CN[x.pos]}透${x.god}——${TG[x.god].core.replace(/[。；;]+$/,'')}`).join('；');
-    skBody = `月令天干透出${mGod},这是你性格的主梁。${TG[mGod].read}来源:十神·${mGod}`
-      + `\n\n给你的一句:${TG[mGod].advice}来源:十神·${mGod}`
-      + (others ? `\n\n再看两处:${others}。年柱写着来处的印记,时柱指向你晚成的那一面。来源:十神分布` : '');
+      .map(x=>`${POS_CN[x.pos]}为${x.god}`);
+    skBody = `月干显示${mGod}。${TEN_GOD_PLAIN[mGod]}来源:十神·${mGod}`
+      + (others.length ? `\n\n另外可见${others.join('、')}。它们会在不同场景里补充动作，但不据此假定你的职业、关系状态或当前目标。来源:十神分布` : '');
   } else {
-    skBody = `你的月令天干十神不显,性格主梁更多落在日主本身与地支藏干里——${STEM_IMG[dm.stem]}的底子,决定了你待人处事的基本手势。来源:日主`;
+    skBody = `当前月干没有可单独展开的十神信息。这里保留日主与完整盘面作为观察依据，不补写现实身份或固定处境。来源:日主+十神分布`;
   }
   S.push({ id:'skeleton', title:'性格骨架', source:'日主+月令+十神', body: skBody });
 
-  /* 关系与协作:官杀印比十神(rel 深读)+ 建议 + 月亮短桥 */
-  const relHits = pick(tg, ['正官','七杀','正印','偏印','比肩','劫财']);
-  let relBody = `${REL_METAPHOR[dm.stem]}来源:日主·${dm.stem}${dm.element}`;
-  if (relHits.length){
-    const h = relHits[0];
-    relBody += `\n\n${POS_CN[h.pos]}的${h.god},为这份关系倾向补上一层观察。${TG[h.god].rel}来源:十神·${h.god}`;
-    if (relHits[1]) relBody += `\n\n旁边还搭着${POS_CN[relHits[1].pos]}的${relHits[1].god}:${TG[relHits[1].god].core}两股力叠在一起,就是你与人相处时的分寸感。来源:十神分布`;
-  } else {
-    relBody += `\n\n当前天干未见官杀印比,本段不据此补写固定的关系模式；可以把上面的日主物象作为观察入口,再用真实互动核对。来源:十神分布`;
-  }
-  if (ast && ast.moon && ast.moon.sign){
-    const mc = starCross(ast.moon.sign, dm.element, '月亮');
-    relBody += `\n\n星盘把这一章的辅证交给月亮${ast.moon.approx?'(按当日正午近似)':''}:${MOON_DEEP[ast.moon.sign].deep}太阳是你给世界看的,月亮才是关了门之后的——亲密关系里的你,更接近后者。${mc.bridge}。给你的一句:${MOON_DEEP[ast.moon.sign].advice}来源:星盘辅证·月亮${ast.moon.sign}`;
-  }
-  S.push({ id:'relation', title:'关系与协作', source:'日主+十神+月亮星座', body: relBody });
-
-  /* 行动与决策:食伤财十神(act 深读)+ 上升短桥 */
-  const actHits = pick(tg, ['食神','伤官','偏财','正财','比肩','劫财']);
-  let actBody = `${CHOICE_INSIGHT[st.label]}来源:日主强弱·${st.label}`;
-  if (actHits.length){
-    const h = actHits[0];
-    actBody += `\n\n${POS_CN[h.pos]}的${h.god},为想法落地的方式补上一层观察。${TG[h.god].act}来源:十神·${h.god}`;
-    if (actHits[1]) actBody += `\n\n另有${POS_CN[actHits[1].pos]}一股${actHits[1].god}在:${TG[actHits[1].god].core}它常在你要拍板的关口插一句。来源:十神分布`;
-  } else {
-    actBody += `\n\n当前天干未见食伤财比劫,本段不据此猜测固定的行动动因；可以结合其他可见十神、现实资源和时间条件继续核对。来源:十神分布`;
-  }
-  if (ast && ast.asc){
-    const rc = starCross(ast.asc.sign, dm.element, '上升');
-    actBody += `\n\n星盘辅证落在上升:${RISE_DEEP[ast.asc.sign].deep}上升是你启动任何事情时最先亮起的那块界面,别人对你的第一印象,多半是它。${rc.bridge}。给你的一句:${RISE_DEEP[ast.asc.sign].advice}来源:星盘辅证·上升${ast.asc.sign}`;
-  }
-  S.push({ id:'action', title:'行动与决策', source:'日主强弱+十神+上升星座', body: actBody });
-
-  /* 当前的进与收:本命底色 →(知星时间轴在报告层渲染) */
-  S.push({ id:'phase', title:'当前的进与收', source:'日主强弱+知星时间轴',
-    body: `${PHASE.intro}来源:知星时间轴\n\n${PHASE[st.label]}来源:日主强弱` });
-
-  if (!isConfirmedChart(chart)) return S;
-  const confirmed = confirmedSections();
-  return S.map(section => confirmed[section.id] || section);
+  /* 关系、行动与时间直接使用全量内容合同。 */
+  return [S[0], S[1], S[2], fullContent.relation, fullContent.action, fullContent.phase];
 }
 
 /* ---------- 星盘参照章:三点深读 + 八字融合(报告层调用) ---------- */
@@ -486,8 +475,19 @@ function validateSections(sections, chart){
     if (BANNED.test(s.body.replace(/不一定/g, ''))) issues.push('禁词/断言');
     if (!/来源[:：]/.test(s.body)) issues.push('缺来源标注');
     const allowedPairs = new Set(gzPairs);
-    if (s.id === 'phase' && s.profile === CONFIRMED_PROFILE && chart.daYun && Array.isArray(chart.daYun.steps)){
-      chart.daYun.steps.forEach(step => allowedPairs.add(step.stem + step.branch));
+    if (s.id === 'phase' && Array.isArray(s.blocks)){
+      if (chart.daYun && Array.isArray(chart.daYun.steps)) {
+        chart.daYun.steps.forEach(step => allowedPairs.add(step.stem + step.branch));
+      }
+      const timeline = s.blocks.find(block => block && block.type === 'timeline');
+      const data = timeline && timeline.data ? timeline.data : {};
+      (Array.isArray(data.rows) ? data.rows : []).forEach(row => {
+        if (Array.isArray(row) && /^[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]$/.test(row[1] || '')) allowedPairs.add(row[1]);
+      });
+      [data.stage, data.year, data.nextTitle, data.source, s.source].forEach(value => {
+        const found = String(value || '').match(/[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]/g) || [];
+        found.forEach(pair => allowedPairs.add(pair));
+      });
     }
     const pairs = s.body.match(/[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]/g) || [];
     for (const pr of pairs) if (!allowedPairs.has(pr)) { issues.push('干支越界:' + pr); break; }
@@ -496,7 +496,7 @@ function validateSections(sections, chart){
 }
 
 const Explainer = { buildSections, astroReadings, drawQian, validateSections,
-  isConfirmedChart, CONFIRMED_PROFILE,
+  CONTENT_PROFILE,
   TG, SUN_DEEP, MOON_DEEP, RISE_DEEP, CROSS, ELEM_RICH, STRENGTH, DAYUN_STRATEGY, PHASE, QIAN_DRAWS, QIAN_UI,
   SIGN_LINE, SIGN_WEST, WEST2WX, GEN5, STEM_IMG, starCross };
 if (typeof module !== 'undefined' && module.exports) module.exports = Explainer;

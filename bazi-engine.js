@@ -443,11 +443,15 @@ function computeChart(input){
     }
     const diffDays = (forward ? (nextJie - birthUtc) : (birthUtc - prevJie)) / 86400000;
     const startAgeF = diffDays / 3;                       // 3 天折 1 岁
-    const startY = Math.floor(startAgeF);
-    const startM = Math.round((startAgeF - startY) * 12);
+    let startY = Math.floor(startAgeF);
+    let startM = Math.round((startAgeF - startY) * 12);
+    /* 月数四舍五入到 12 时必须向岁数进位；否则 startAge、首段年份与文案会互相矛盾。 */
+    if (startM >= 12){ startY += Math.floor(startM / 12); startM %= 12; }
+    const normalizedStartAge = +(startY + startM / 12).toFixed(1);
     const mIdx = gzIndex(monthP.stem, monthP.branch);
     const steps = [];
-    for (let k = 1; k <= 8; k++){
+    /* 覆盖 10 个连续十年段，使当前允许的 1940 年出生用户在 2026 年仍落在已算区间内。 */
+    for (let k = 1; k <= 10; k++){
       const idx = ((mIdx + (forward ? k : -k)) % 60 + 60) % 60;
       const st = STEMS[idx % 10], br = BRANCHES[idx % 12];
       const ageFrom = startY + (k - 1) * 10;
@@ -455,7 +459,7 @@ function computeChart(input){
         ageFrom, ageTo: ageFrom + 9, yearFrom: y + ageFrom, yearTo: y + ageFrom + 9 });
     }
     daYun = { forward, gender,
-      startAge: +startAgeF.toFixed(1),
+      startAge: normalizedStartAge,
       startText: startY + '岁' + (startM ? startM + '个月' : '') + '起运',
       steps };
   }

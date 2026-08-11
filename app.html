@@ -458,22 +458,6 @@
     <p class="sr-only" id="resultStatus" role="status" aria-live="polite"></p>
     <h2 class="rizhu-label result-heading" id="resultTitle" tabindex="-1">你 的 日 主</h2>
 
-    <div id="legacyHome">
-      <div class="rizhu-hero">
-        <div class="rizhu-chars" id="rzChars">壬水</div>
-        <div class="rizhu-image" id="rzImage">江河之水</div>
-        <div class="rizhu-sub" id="rzSub">日柱天干,定于你出生的那一日,六十日一轮回</div>
-      </div>
-      <div class="card">
-        <h2>本命关键词</h2>
-        <div class="kw-list" id="kwList"></div>
-      </div>
-      <div class="card">
-        <h2>简版人格画像</h2>
-        <div class="portrait" id="portrait"></div>
-      </div>
-    </div>
-
     <div class="confirmed-home" id="confirmedHome" hidden>
       <div class="confirmed-hero">
         <p class="confirmed-judgement" id="confirmedJudgement"></p>
@@ -482,24 +466,9 @@
         <p class="confirmed-read-hint"><b>继续看深度报告：</b>关系、行动与时间会在完整报告里继续展开。</p>
       </div>
       <section class="confirmed-section confirmed-entry">
-        <h3>你如何进入一件事</h3>
-        <div class="confirmed-subsection">
-          <h4>你给人的第一印象</h4>
-          <p class="confirmed-copy" id="confirmedFirstImpression"></p>
-        </div>
-        <div class="confirmed-subsection">
-          <h4>真正驱动你的东西</h4>
-          <p class="confirmed-copy" id="confirmedDrive"></p>
-        </div>
-        <div class="confirmed-subsection">
-          <h4>别人看到的你，与真正的你</h4>
-          <ul class="confirmed-list" id="confirmedContrast"></ul>
-        </div>
+        <h3>三步看懂自己</h3>
+        <div class="confirmed-scenes" id="homeSteps"></div>
         <p class="confirmed-meta"><span id="confirmedRelation"></span><span id="confirmedSource"></span></p>
-      </section>
-      <section class="confirmed-section">
-        <h3>两个现实现场</h3>
-        <div class="confirmed-scenes" id="confirmedScenes"></div>
       </section>
       <section class="confirmed-section confirmed-overuse">
         <h3>这项能力用过头时</h3>
@@ -512,10 +481,10 @@
     </div>
 
     <div class="share-gate" id="shareGate" aria-live="polite">
-      <div class="share-gate-head"><span id="shareGateTitle">分享日主海报</span> <span class="share-gate-badge" id="shareGateBadge">可直接分享</span></div>
-      <p id="shareGateBody">把这张日主海报分享给朋友。当前只分享图片，不影响报告权益。</p>
+      <div class="share-gate-head"><span id="shareGateTitle">双盘印证分享卡</span> <span class="share-gate-badge" id="shareGateBadge">只展示公开能力</span></div>
+      <p id="shareGateBody">分享卡只展示八字与太阳星座共同确认的能力，不出现强弱、关系冲突或私人处境。</p>
       <div class="share-gate-actions" id="shareGateActions">
-        <button class="btn ghost" id="shareActionBtn" type="button">分享日主海报</button>
+        <button class="btn ghost" id="shareActionBtn" type="button">生成我的双盘印证卡</button>
       </div>
       <div class="share-gate-status" id="shareGateStatus"></div>
     </div>
@@ -552,7 +521,7 @@
 </div></div>
 
 <div id="posterLayer" role="dialog" aria-modal="true" aria-labelledby="posterLayerTitle" tabindex="-1" hidden><div class="inner">
-  <h2 id="posterLayerTitle" class="sr-only">日主海报分享预览</h2>
+  <h2 id="posterLayerTitle" class="sr-only">双盘印证卡分享预览</h2>
   <canvas id="posterCanvas" width="750" height="1000" role="img" aria-label="根据当前图谱生成的知星分享卡" aria-describedby="posterEquivalent">知星分享卡图片预览</canvas>
   <p class="poster-equivalent" id="posterEquivalent"></p>
   <div class="tip">长按图片保存 / 右键另存为</div>
@@ -567,7 +536,8 @@
 <script src="./analytics.js"></script>
 <script src="./member.js"></script>
 <script src="./minimum-age.js"></script>
-<script src="./confirmed-content-v1.js"></script>
+<script src="./bazi-engine.js"></script>
+<script src="./content-home-v1.js"></script>
 <script>
 /* ============ 星空背景 ============ */
 (function(){
@@ -677,48 +647,9 @@ const USE_IMAGE_HERO=true;   // ⚠ 底图含太极:合规渠道置 false → �
     t.textContent=s;rg.appendChild(t)});
 })();
 
-/* ============ 文案库:十天干为主(V0 的灵魂) ============ */
-const STEM_LIB={
-  '甲':{el:'木',img:'参天之木',kw:['不肯弯腰的直','扛事成瘾'],
-    p:'甲木是栋梁,天生往上长,也天生不会拐弯。你宁可断,不肯弯——原则是你的骨架,也是你的软肋。"没事,我来"几乎是你的口头禅,可你真正的难处不是没人帮,是你根本开不了口说"我需要帮":扛惯了的人,把求助也当成了一种塌方。要留意的是根:长得越高越要往下扎,偶尔要问自己,一直扛着的这些,有多少是真的非你不可。'},
-  '乙':{el:'木',img:'藤蔓之木',kw:['柔软的野心','缠绕式生存'],
-    p:'乙木是藤,看着柔,其实是十天干里最会活的。你不硬碰,你迂回、借力,贴着墙也能爬到最高处。但你心里清楚:太会顺应环境的人,常常分不清"我想要"和"环境允许我要"。要留意的是方向:藤能爬上任何墙,偶尔要问自己,现在缠着的这面墙,是你选的,还是它刚好在那。'},
-  '丙':{el:'火',img:'太阳之火',kw:['不允许自己暗下来','普照式温暖'],
-    p:'丙火是太阳,你的热是给所有人的——大方、坦荡、藏不住事。可太阳有个宿命:它照亮所有人,却没法只为一个人停留;它不被允许熄灭。你最疲惫的时刻,恰恰是笑得最亮的时刻。要留意的是燃料:太阳也有日落,偶尔要问自己,上一次不发光也心安,是什么时候。'},
-  '丁':{el:'火',img:'灯烛之火',kw:['深夜灯火型的人','温柔而持久的执念'],
-    p:'丁火是烛,不夺目,但熬得住黑。你的热不是泼出去的,是一对一递过去的——认定的人和事,你能守很久很久。只是烛火照人不照己:你把别人看得透亮,轮到自己的事,反而常在黑里。要留意的是灯芯:烛能熬长夜,芯会越烧越短,偶尔要问自己,你为别人守的夜,谁来为你守。'},
-  '戊':{el:'土',img:'高山之土',kw:['沉默的承重墙','稳到没人问你累不累'],
-    p:'戊土是山,不动声色,什么都接得住。别人的兵荒马乱,到你这里就自动降速。可山的孤独在于:所有人都来靠,没有人想过山也需要靠一靠。你不是没情绪,你是把情绪压成了地层。要留意的是地层:压进去的情绪不会消失,偶尔要问自己,轮到你想靠一靠的时候,你靠谁。'},
-  '己':{el:'土',img:'田园之土',kw:['养人的体质','被需要成瘾'],
-    p:'己土是田,天生养人——你擅长把身边的人和事照料得妥妥帖帖。但田土的隐痛是:你的价值感长在"被需要"上,一旦没人需要你,你比谁都慌。你总在滋养别人,自己那块地,反而荒着。要留意的是轮作:田也需要休耕,偶尔要问自己,不被任何人需要的那一天,你还剩下什么是自己的。'},
-  '庚':{el:'金',img:'刀剑之金',kw:['一刀切中要害','锋利是保护色'],
-    p:'庚金是剑,眼里揉不得沙,话到嘴边很少拐弯。你砍问题又快又准,代价是常被说"太冲"。其实你明白:锋利是你的铠甲——你不是不会软,你是怕一软下来,就再也硬不回去。要留意的是刀鞘:剑不必永远出鞘,偶尔要问自己,不设防地软一次,真的会回不去吗。'},
-  '辛':{el:'金',img:'珠玉之金',kw:['精致的自我要求','体面即尊严'],
-    p:'辛金是玉,天生对"质感"敏感——做事要漂亮,做人要体面,粗糙的东西你忍不了。可玉的脆在于:你受不得磕碰,一句不经意的否定,你能在心里打磨很多天。你对世界的高要求,先狠狠用在了自己身上。要留意的是打磨的度:玉不琢不成器,琢过头会碎,偶尔要问自己,那句让你难受很多天的话,值得吗。'},
-  '壬':{el:'水',img:'江河之水',kw:['随和的外表,奔涌的暗流','懒得为不值得的事改道'],
-    p:'壬水是江河,格局大、能容事,和谁都处得来。可江河的真相是:表面开阔,底下有暗流——你真正的想法很少全盘托出,情绪走得又深又急。你不是没脾气,你是懒得为不值得的事改道。要留意的是流向:水往低处走最省力,却未必是你想去的地方,偶尔要问自己,这些年顺下来的路,有几步是你自己挑的。'},
-  '癸':{el:'水',img:'雨露之水',kw:['润物细无声的心思','敏感是天线不是弱点'],
-    p:'癸水是雨露,十天干里心思最细的一个。谁的语气沉了半度,你都接收得到。这份敏感是天线,也是负担:世界的噪音,你比别人多收十倍。你需要的不是变钝,是学会关机。要留意的是天线:接收得太多会满,偶尔要问自己,哪些噪音,其实可以不接。'}
-};
-const SIGN_AUX={
-  '白羊座':'你的第一反应永远是"上",热得快,也怕投入被辜负。',
-  '金牛座':'认定之前很慢,认定之后极稳——安全感是你一生的关键词。',
-  '双子座':'好奇心过载,最会聊天的你,常在最热闹时突然抽离。',
-  '巨蟹座':'壳硬心软,记性太好,消化情绪比谁都慢。',
-  '狮子座':'可以累,不能狼狈——体面是你撑出来的存在证明。',
-  '处女座':'你只对认定值得的人和事较真,对自己的标准最狠。',
-  '天秤座':'你替所有人着想,所以做决定时永远在内耗。',
-  '天蝎座':'看穿不说穿,感情没有中间档。',
-  '射手座':'困住你的从来不是难,而是"没意思"。',
-  '摩羯座':'把野心藏进沉默,你太习惯自己扛。',
-  '水瓶座':'和谁都聊得来,又不真正属于任何圈子。',
-  '双鱼座':'别人的情绪会漫进你身体里,这是天赋也是消耗。'
-};
-const SIGN_KW={'白羊座':'先开枪再瞄准','金牛座':'温柔的固执','双子座':'热闹中的旁观者','巨蟹座':'记性太好的深情','狮子座':'需要掌声的孤独','处女座':'温柔的挑剔','天秤座':'优雅地内耗','天蝎座':'温柔的控制欲','射手座':'乐观的出走者','摩羯座':'延迟满足大师','水瓶座':'人群中的局外人','双鱼座':'边界感稀薄的共情'};
-
 /* ============ 确定性计算 ============ */
-const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
-const BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const HOME_STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const HOME_BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
 function sunSign(m,d){
   const t=[[1,20,'摩羯座','水瓶座'],[2,19,'水瓶座','双鱼座'],[3,21,'双鱼座','白羊座'],[4,20,'白羊座','金牛座'],[5,21,'金牛座','双子座'],[6,22,'双子座','巨蟹座'],[7,23,'巨蟹座','狮子座'],[8,23,'狮子座','处女座'],[9,23,'处女座','天秤座'],[10,24,'天秤座','天蝎座'],[11,23,'天蝎座','射手座'],[12,22,'射手座','摩羯座']];
   const r=t[m-1];return d<r[1]?r[2]:r[3];
@@ -728,7 +659,7 @@ function dayPillar(y,m,d,hour){
   let diff=Math.round((Date.UTC(y,m-1,d)-Date.UTC(2000,0,1))/86400000);
   if(typeof hour==='number'&&hour>=23) diff+=1; // 子时换日:23 点后按次日
   const idx=((54+diff)%60+60)%60;
-  return {stem:STEMS[idx%10],branch:BRANCHES[idx%12]};
+  return {stem:HOME_STEMS[idx%10],branch:HOME_BRANCHES[idx%12]};
 }
 
 /* ============ 流程 ============ */
@@ -736,12 +667,7 @@ const $=id=>document.getElementById(id);
 const trackEvent=(name,details)=>{try{return !!(window.ZxAnalytics&&ZxAnalytics.track(name,details))}catch(_){return false}};
 trackEvent('home_view');
 let CUR=null;
-const CONFIRMED_CONTENT=window.ZxConfirmedContentV1||null;
-const SHARE_UNLOCK_COPY={
-  title:'分享日主海报',
-  badge:'可直接分享',
-  body:'把这张日主海报分享给朋友。当前只分享图片，不影响报告权益。'
-};
+const HOME_CONTENT=window.ZhixingHomeContentV1||null;
 const INBOUND_SHARE_TOKEN=new URLSearchParams(location.search).get('share')||'';
 if(INBOUND_SHARE_TOKEN){
   const cleanUrl=new URL(location.href);
@@ -832,16 +758,15 @@ function reportUrl(){
 }
 
 function renderShareGate(message){
-  const confirmed=!!(CUR&&CUR.confirmedSample&&CONFIRMED_CONTENT);
-  const share=confirmed?CONFIRMED_CONTENT.SHARE:SHARE_UNLOCK_COPY;
-  $('shareGateTitle').textContent=confirmed?`${share.identity} · ${share.title}`:share.title;
-  $('shareGateBadge').textContent=confirmed?'双盘印证':share.badge;
+  const share=CUR.dualShare;
+  $('shareGateTitle').textContent=`${share.identity} · ${share.title}`;
+  $('shareGateBadge').textContent='双盘印证';
   $('shareGateBody').textContent=share.body;
-  $('shareActionBtn').textContent=confirmed?share.button:'生成并分享日主海报';
+  $('shareActionBtn').textContent=share.button;
   $('shareGateActions').hidden=false;
   $('sharePosterBtn').hidden=false;
   $('localReportPreview').hidden=false;
-  $('deepBtn').textContent=confirmed?'查看我的深度发展报告':'查看深度发展报告';
+  $('deepBtn').textContent='查看我的深度发展报告';
   $('shareGateStatus').textContent=message||'';
 }
 
@@ -855,7 +780,7 @@ function posterBlob(){
 
 function downloadCurrentPoster(){
   const link=document.createElement('a');
-  link.download=CUR&&CUR.confirmedSample?'知星-双盘印证卡.jpg':'知星-日主海报.jpg';
+  link.download='知星-双盘印证卡.jpg';
   link.href=$('posterCanvas').toDataURL('image/jpeg',.92);
   document.body.appendChild(link);
   link.click();
@@ -864,12 +789,11 @@ function downloadCurrentPoster(){
 
 async function handoffPoster(status){
   const blob=await posterBlob();
-  const confirmed=!!(CUR&&CUR.confirmedSample&&CONFIRMED_CONTENT);
-  const filename=confirmed?'知星-双盘印证卡.jpg':'知星-日主海报.jpg';
+  const filename='知星-双盘印证卡.jpg';
   const file=blob&&typeof File==='function'?new File([blob],filename,{type:'image/jpeg'}):null;
   const canShareFile=!!(navigator.share&&file&&navigator.canShare&&navigator.canShare({files:[file]}));
   if(canShareFile){
-    const text=confirmed?CONFIRMED_CONTENT.SHARE.body:'这是我的知星日主海报。';
+    const text=CUR.dualShare.body;
     await navigator.share({title:'知星',text,files:[file]});
     trackEvent('share_completed',{method:'native_share',outcome:'completed'});
     status.textContent='已调起系统分享。';
@@ -884,11 +808,11 @@ async function openCurrentPosterPreview(){
   if(!CUR)return;
   trackEvent('share_started',{outcome:'started'});
   const status=$('shareGateStatus');
-  status.textContent=CUR.confirmedSample?'正在生成双盘印证卡……':'正在准备日主海报……';
+  status.textContent='正在生成双盘印证卡……';
   try{
     await preparePoster();
     openPosterLayer();
-    status.textContent=CUR.confirmedSample?'双盘印证卡已生成，可在预览中分享或保存。':'日主海报已生成，可在预览中分享或保存。';
+    status.textContent='双盘印证卡已生成，可在预览中分享或保存。';
   }catch(error){
     trackEvent('share_failed',{outcome:'failed',reason:'unknown'});
     status.textContent='海报暂时没有准备好，请刷新后重试。';
@@ -1012,13 +936,17 @@ $('consent').addEventListener('keydown',event=>{
 let resultTimer=null;
 function startGenerationFromForm(){
   const input=currentConfirmedInput();
-  const dp=dayPillar(input.y,input.m,input.d,input.hh);
+  if(!HOME_CONTENT||!window.BaziEngine)throw new Error('content runtime unavailable');
+  const chart=BaziEngine.computeChart(input);
+  const day=chart.pillars.day;
   CUR={
-    sign:sunSign(input.m,input.d),
-    dp,
+    sign:chart.astro.sun.sign,
+    dp:{stem:day.stem,branch:day.branch},
     late:(typeof input.hh==='number'&&input.hh>=23),
     input,
-    confirmedSample:!!(CONFIRMED_CONTENT&&CONFIRMED_CONTENT.isSampleInput(input))
+    chart,
+    home:HOME_CONTENT.buildHome(chart),
+    dualShare:HOME_CONTENT.buildShare(chart)
   };
   setViewState('result');
   $('result').hidden=true;
@@ -1101,16 +1029,14 @@ function replaceTextList(id,items){
   }));
 }
 
-function renderConfirmedHome(){
-  const home=CONFIRMED_CONTENT.HOME;
+function renderContentHome(){
+  const home=CUR.home;
   $('confirmedJudgement').textContent=home.judgement;
   $('confirmedExplanation').textContent=home.explanation;
   replaceTextList('confirmedKeywords',home.keywords);
-  $('confirmedRelation').textContent=`双盘关系 · ${home.relation}`;
+  $('confirmedRelation').textContent=`双盘关系 · ${home.fusionType}`;
   $('confirmedSource').textContent=home.source;
-  $('confirmedFirstImpression').textContent=home.firstImpression;
-  $('confirmedDrive').textContent=home.drive;
-  $('confirmedScenes').replaceChildren(...home.scenes.map(scene=>{
+  $('homeSteps').replaceChildren(...home.steps.map(scene=>{
     const article=document.createElement('article');
     article.className='confirmed-scene';
     const title=document.createElement('h4');
@@ -1120,51 +1046,33 @@ function renderConfirmedHome(){
     article.append(title,body);
     return article;
   }));
-  $('confirmedOveruse').replaceChildren(...home.overuse.map((text,index)=>{
+  const overuseItems=Array.isArray(home.overuse)
+    ? home.overuse.map((body,index)=>({title:index===0?'最重要的代价':'纠偏方向',body}))
+    : [
+        {title:home.overuse.title||'最重要的代价',body:home.overuse.body},
+        {title:'纠偏方向',body:home.overuse.action}
+      ].filter(item=>item.body);
+  $('confirmedOveruse').replaceChildren(...overuseItems.map(content=>{
     const item=document.createElement('div');
     item.className='confirmed-overuse-item';
     const title=document.createElement('h4');
-    title.textContent=index===0?'最重要的代价':'纠偏方向';
+    title.textContent=content.title;
     const body=document.createElement('p');
-    body.textContent=text;
+    body.textContent=content.body;
     item.append(title,body);
     return item;
   }));
-  replaceTextList('confirmedContrast',home.contrast);
   replaceTextList('confirmedReportQuestions',home.reportQuestions);
 }
 
 function showResult(){
   $('ritual').style.display='none';
   $('ritual').hidden=true;
-  const {sign,dp,late}=CUR, S=STEM_LIB[dp.stem];
-  if(CUR.confirmedSample&&CONFIRMED_CONTENT){
-    $('resultTitle').textContent=CONFIRMED_CONTENT.HOME.identity;
-    $('resultTitle').classList.add('is-confirmed');
-    $('legacyHome').hidden=true;
-    $('confirmedHome').hidden=false;
-    renderConfirmedHome();
-    $('resultStatus').textContent='已确认的双盘日主页已生成。';
-  }else{
-    $('resultTitle').textContent='你 的 日 主';
-    $('resultTitle').classList.remove('is-confirmed');
-    $('legacyHome').hidden=false;
-    $('confirmedHome').hidden=true;
-    $('rzChars').textContent=dp.stem+S.el;
-    $('rzImage').textContent=S.img+' · '+dp.stem+dp.branch+'日';
-    $('rzSub').textContent='日柱天干,定于你出生的那一日,六十日一轮回'+(late?'(23 点后出生,已按次日排盘)':'');
-    $('kwList').innerHTML=
-      S.kw.map(k=>`<div class="kw">${k}<small>日主 · ${dp.stem}${S.el}</small></div>`).join('')+
-      `<div class="kw aux">${SIGN_KW[sign]}<small>星盘辅证 · 太阳${sign}</small></div>`;
-    const pDeco=S.p
-      .replace(/(要留意的是[^:]+):/,'<b class="pt">$1:</b>')
-      .replace(/偶尔要问自己,([^。]+)。/,'偶尔要问自己,<b class="pq">$1。</b>');
-    $('portrait').innerHTML=
-      `<p><span class="src-tag">日主·${dp.stem}${S.el}</span>${pDeco}</p>`+
-      `<div class="aux-block"><span class="src-tag">星盘辅证·太阳${sign}</span>${SIGN_AUX[sign]}</div>`+
-      `<p class="deep-tease">这只是个人文化图谱中的<b>日柱</b>视角；完整的四柱结构、五行能量、月亮与上升、今日知星卡，都在<b>深度发展报告</b>里。</p>`;
-    $('resultStatus').textContent='日主图谱已生成。';
-  }
+  $('resultTitle').textContent=CUR.home.identity;
+  $('resultTitle').classList.add('is-confirmed');
+  $('confirmedHome').hidden=false;
+  renderContentHome();
+  $('resultStatus').textContent='双盘日主页已生成。';
   setViewState('result');
   $('result').hidden=false;
   $('result').style.display='block';
@@ -1186,7 +1094,7 @@ $('deepBtn').onclick=()=>{
   location.href=reportUrl();   // 出生信息也已存 localStorage(zx_input)兜底
 };
 
-/* ============ 分享卡:样盘用双盘印证卡，其他盘保留日主视觉 ============ */
+/* ============ 分享卡：所有组合统一使用双盘印证卡 ============ */
 let posterReturnFocus=null;
 let posterPreviousOverflow='';
 function posterFocusable(){
@@ -1221,52 +1129,17 @@ $('shareActionBtn').onclick=openCurrentPosterPreview;
 $('sharePosterBtn').onclick=sharePreparedPoster;
 confirmInboundShare();
 
-/* 视觉只认 2026-07-10 审核通过的十张日主身份卡；Canvas 仅负责导出与官网二维码，不再生成另一套卡面。 */
-const DAY_MASTER_CARD_FILES={
-  甲:'day-master-jia-wood.webp',乙:'day-master-yi-wood.webp',丙:'day-master-bing-fire.webp',丁:'day-master-ding-fire.webp',
-  戊:'day-master-wu-earth.webp',己:'day-master-ji-earth.webp',庚:'day-master-geng-metal.webp',辛:'day-master-xin-metal.webp',
-  壬:'day-master-ren-water.webp',癸:'day-master-gui-water.webp'
-};
-const DAY_MASTER_ASSET_ROOT=/\/web\/[^/]*$/.test(location.pathname)?'../v1/img/share/day-master/':'./img/share/day-master/';
-const DAY_MASTER_IMAGES=new Map();
-function loadDayMasterPosterImage(stem){
-  const file=DAY_MASTER_CARD_FILES[stem];
-  if(!file)return Promise.reject(new Error('missing day-master asset mapping'));
-  if(DAY_MASTER_IMAGES.has(stem))return DAY_MASTER_IMAGES.get(stem);
-  const pending=new Promise((resolve,reject)=>{
-    const img=new Image();
-    img.decoding='async';
-    img.onload=()=>resolve(img);
-    img.onerror=()=>reject(new Error('day-master poster unavailable'));
-    img.src=DAY_MASTER_ASSET_ROOT+file;
-  });
-  DAY_MASTER_IMAGES.set(stem,pending);
-  pending.catch(()=>DAY_MASTER_IMAGES.delete(stem));
-  return pending;
-}
 async function preparePoster(){
   if(!CUR)throw new Error('missing chart');
-  if(CUR.confirmedSample&&CONFIRMED_CONTENT){
-    drawConfirmedDualChartCard();
-    const c=$('posterCanvas');
-    c.dataset.assetId='confirmed-ren-gemini-v1';
-    c.dataset.renderMode='confirmed-dual-chart';
-    c.dataset.qrMode='official';
-    c.dataset.shareLinkMode='none';
-    $('posterLayerTitle').textContent='双盘印证卡分享预览';
-    $('sharePosterBtn').textContent='分享这张双盘印证卡';
-    return 'confirmed-dual-chart';
-  }
-  const img=await loadDayMasterPosterImage(CUR.dp.stem);
-  drawDayMasterPosterAsset(img);
+  drawDualChartCard();
   const c=$('posterCanvas');
-  c.dataset.assetId=CUR.dp.stem;
-  c.dataset.renderMode='asset';
+  c.dataset.assetId=`${CUR.dp.stem}-${CUR.sign}`;
+  c.dataset.renderMode='dual-chart';
   c.dataset.qrMode='official';
   c.dataset.shareLinkMode='none';
-  $('posterLayerTitle').textContent='日主海报分享预览';
-  $('sharePosterBtn').textContent='分享这张日主海报';
-  return 'asset';
+  $('posterLayerTitle').textContent='双盘印证卡分享预览';
+  $('sharePosterBtn').textContent='分享这张双盘印证卡';
+  return 'dual-chart';
 }
 function canvasWrappedText(context,text,x,y,maxWidth,lineHeight){
   let line='';
@@ -1284,8 +1157,8 @@ function canvasWrappedText(context,text,x,y,maxWidth,lineHeight){
   if(line){context.fillText(line,x,currentY);currentY+=lineHeight}
   return currentY;
 }
-function drawConfirmedDualChartCard(){
-  const share=CONFIRMED_CONTENT.SHARE;
+function drawDualChartCard(){
+  const share=CUR.dualShare;
   const c=$('posterCanvas'),x=c.getContext('2d');
   const W=750,H=1000;
   c.width=W;c.height=H;
@@ -1327,35 +1200,6 @@ function drawConfirmedDualChartCard(){
 
   c.setAttribute('aria-label',`知星双盘印证卡：${share.identity}，${share.title}`);
   $('posterEquivalent').textContent=`${share.identity}。${share.title}。${share.body} ${share.source}。卡片右下角为知星官网入口二维码。`;
-}
-function drawDayMasterPosterAsset(img){
-  const c=$('posterCanvas'),x=c.getContext('2d');
-  const W=img.naturalWidth||750,H=img.naturalHeight||1333,scale=W/750;
-  c.width=W;c.height=H;
-  x.clearRect(0,0,W,H);
-  x.drawImage(img,0,0,W,H);
-
-  // 定稿源图保留主体视觉；导出时覆盖旧公开品牌，统一为当前知星名称与说明语。
-  const brandTop=Math.round(H*.862),brandHeight=Math.round(H*.105);
-  const brandCover=x.createLinearGradient(0,brandTop,0,brandTop+brandHeight);
-  brandCover.addColorStop(0,'rgba(4,10,17,.82)');
-  brandCover.addColorStop(.16,'rgba(4,10,17,1)');
-  brandCover.addColorStop(1,'rgba(4,10,17,1)');
-  x.fillStyle=brandCover;x.fillRect(Math.round(W*.045),brandTop,Math.round(W*.70),brandHeight);
-  x.textAlign='left';x.fillStyle='#d7b766';x.font=`700 ${Math.round(22*scale)}px "Songti SC","STSong",serif`;
-  x.fillText('知 星',Math.round(W*.17),brandTop+Math.round(48*scale));
-  x.fillStyle='rgba(232,228,216,.84)';x.font=`${Math.round(13*scale)}px "Songti SC","STSong",serif`;
-  x.fillText('以易理观己，以星盘为证',Math.round(W*.17),brandTop+Math.round(77*scale));
-
-  // 卡面不再叠加日柱、星座、来源或额外说明；仅在既定右下角绘制与品牌标识同量级的官网入口码。
-  if(!window.ZxShareQr)throw new Error('share qr unavailable');
-  const qrSize=Math.round(W*.116),qrX=Math.round(W*.755),qrY=H-qrSize-Math.round(H*.048);
-  const qr=window.ZxShareQr.drawOfficial(x,{x:qrX,y:qrY,size:qrSize,quietZone:2});
-  x.strokeStyle='#C9A85C';x.lineWidth=Math.max(1,Math.round(2*scale));
-  x.strokeRect(qr.left-x.lineWidth,qr.top-x.lineWidth,qr.actualSize+x.lineWidth*2,qr.actualSize+x.lineWidth*2);
-  const stem=CUR.dp.stem,S=STEM_LIB[stem];
-  c.setAttribute('aria-label',`知星日主海报：${stem}${S.el}，${S.img}`);
-  $('posterEquivalent').textContent=`日主 ${stem}${S.el}，${S.img}。关键词：${S.kw.join('、')}。卡片右下角为知星官网入口二维码。`;
 }
 </script>
 </body>
