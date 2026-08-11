@@ -4,6 +4,11 @@
  * ========================================================================== */
 'use strict';
 
+const CONFIRMED_CONTENT_NODE = (typeof module !== 'undefined' && module.exports)
+  ? require('./confirmed-content-v1.js')
+  : null;
+const CONFIRMED_PROFILE = 'confirmed-content-v1';
+
 /* ===== 深化内容库 ===== */
 
 /* ===== 关系镜面:日主物象比喻 ===== */
@@ -247,6 +252,122 @@ function pick(tenGods, keys){
   return out;
 }
 
+function isConfirmedChart(chart){
+  const content = CONFIRMED_CONTENT_NODE
+    || (typeof window !== 'undefined' ? window.ZxConfirmedContentV1 : null);
+  return !!(content
+    && typeof content.isSampleChart === 'function'
+    && content.isSampleChart(chart));
+}
+
+function sourced(text, source){
+  return `${String(text || '').trim()}来源:${source}`;
+}
+
+function confirmedSections(){
+  const content = CONFIRMED_CONTENT_NODE
+    || (typeof window !== 'undefined' ? window.ZxConfirmedContentV1 : null);
+  const H = content.HOME;
+  const R = content.RELATION;
+  const A = content.ACTION;
+  const T = content.TIME;
+
+  const overviewBody = [
+    sourced(`${H.judgement}。${H.explanation}`, H.source),
+    sourced(H.firstImpression, H.source),
+    sourced(H.drive, H.source),
+    sourced(H.scenes.map(scene => `${scene.title}：${scene.body}`).join('\n'), H.source),
+    sourced(H.overuse.join(''), H.source),
+    sourced(H.contrast.join('\n'), H.source)
+  ].join('\n\n');
+  const relationBody = [
+    sourced(R.lead, R.source),
+    sourced(R.friction, R.source),
+    ...R.synthesis.map(text => sourced(text, R.source)),
+    ...R.strengths.map(item => sourced([
+      `${item.label}｜${item.title}`,
+      `适用场景：${item.scene}`,
+      `“${item.quote}”`,
+      item.returnLead || '',
+      item.returnQuote ? `“${item.returnQuote}”` : '',
+      item.why
+    ].filter(Boolean).join('\n'), R.source))
+  ].join('\n\n');
+  const actionBody = [
+    ...A.total.map(text => sourced(text, A.source)),
+    sourced(A.basis, A.source),
+    sourced([A.strategy.body, A.strategy.itemsLead, ...A.strategy.items].join('\n'), A.source),
+    sourced([A.experiment.body, A.experiment.itemsLead, ...A.experiment.items, A.experiment.close].join('\n'), A.source),
+    sourced([A.tradeoff.ruleLead, A.tradeoff.rule, A.tradeoff.questionsLead, ...A.tradeoff.questions, A.tradeoff.close].join('\n'), A.source),
+    sourced([...A.rhythm, A.close].join('\n'), A.source)
+  ].join('\n\n');
+  const timelineRows = T.rows.map(row => row.join('｜'));
+  const phaseBody = [
+    ...T.explanation.map(text => sourced(text, T.source)),
+    sourced(T.amplify.join('\n'), T.source),
+    sourced(T.pitfall, T.source),
+    sourced(T.action, T.source),
+    sourced(T.year, T.source),
+    sourced([`${T.startLead}${T.start}`, ...timelineRows].join('\n'), T.source),
+    sourced(`${T.nextLead}${T.nextTitle}：${T.next}`, T.source)
+  ].join('\n\n');
+
+  return {
+    overview: {
+      id:'overview', title:'总览', source:H.source, profile:CONFIRMED_PROFILE,
+      blocks:[
+        { type:'heading', level:2, text:H.identity },
+        { type:'quote', text:H.judgement },
+        { type:'paragraph', text:H.explanation },
+        { type:'list', style:'keywords', items:H.keywords },
+        { type:'heading', level:3, text:'你给人的第一印象' },
+        { type:'paragraph', text:H.firstImpression },
+        { type:'heading', level:3, text:'真正驱动你的东西' },
+        { type:'paragraph', text:H.drive },
+        { type:'heading', level:3, text:'你最容易发挥的两个现场' },
+        { type:'list', style:'scenes', items:H.scenes },
+        { type:'heading', level:3, text:'这项能力用过头时' },
+        ...H.overuse.map(text => ({ type:'paragraph', text })),
+        { type:'heading', level:3, text:'别人看到的你，与真正的你' },
+        { type:'list', style:'contrast', items:H.contrast },
+        { type:'source', text:H.source }
+      ],
+      body:overviewBody
+    },
+    relation: {
+      id:'relation', title:'关系', source:R.source, profile:CONFIRMED_PROFILE,
+      blocks:[
+        { type:'heading', level:2, text:R.title },
+        { type:'paragraph', text:R.lead },
+        { type:'paragraph', text:R.friction },
+        { type:'heading', level:3, text:'双盘合成判断' },
+        ...R.synthesis.map(text => ({ type:'paragraph', text })),
+        { type:'relation-strengths', data:R },
+        { type:'source', text:R.source }
+      ],
+      body:relationBody
+    },
+    action: {
+      id:'action', title:'行动', source:A.source, profile:CONFIRMED_PROFILE,
+      blocks:[
+        { type:'heading', level:2, text:A.title },
+        { type:'action-layout', data:A },
+        { type:'source', text:A.source }
+      ],
+      body:actionBody
+    },
+    phase: {
+      id:'phase', title:'时间', source:T.source, profile:CONFIRMED_PROFILE,
+      blocks:[
+        { type:'heading', level:2, text:T.title, eyebrow:T.stage },
+        { type:'timeline', data:T },
+        { type:'source', text:T.source }
+      ],
+      body:phaseBody
+    }
+  };
+}
+
 /* ---------- 章节组装(深化) ---------- */
 function buildSections(chart){
   const p=chart.pillars, dm=chart.dayMaster, fe=chart.fiveElements, tg=chart.tenGods;
@@ -321,7 +442,9 @@ function buildSections(chart){
   S.push({ id:'phase', title:'当前的进与收', source:'日主强弱+知星时间轴',
     body: `${PHASE.intro}来源:知星时间轴\n\n${PHASE[st.label]}来源:日主强弱` });
 
-  return S;
+  if (!isConfirmedChart(chart)) return S;
+  const confirmed = confirmedSections();
+  return S.map(section => confirmed[section.id] || section);
 }
 
 /* ---------- 星盘参照章:三点深读 + 八字融合(报告层调用) ---------- */
@@ -360,15 +483,20 @@ function validateSections(sections, chart){
   Object.values(chart.pillars).filter(Boolean).forEach(p => gzPairs.add(p.stem + p.branch));
   return sections.map(s => {
     const issues = [];
-    if (BANNED.test(s.body)) issues.push('禁词/断言');
+    if (BANNED.test(s.body.replace(/不一定/g, ''))) issues.push('禁词/断言');
     if (!/来源[:：]/.test(s.body)) issues.push('缺来源标注');
+    const allowedPairs = new Set(gzPairs);
+    if (s.id === 'phase' && s.profile === CONFIRMED_PROFILE && chart.daYun && Array.isArray(chart.daYun.steps)){
+      chart.daYun.steps.forEach(step => allowedPairs.add(step.stem + step.branch));
+    }
     const pairs = s.body.match(/[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]/g) || [];
-    for (const pr of pairs) if (!gzPairs.has(pr)) { issues.push('干支越界:' + pr); break; }
+    for (const pr of pairs) if (!allowedPairs.has(pr)) { issues.push('干支越界:' + pr); break; }
     return { ...s, issues };
   });
 }
 
 const Explainer = { buildSections, astroReadings, drawQian, validateSections,
+  isConfirmedChart, CONFIRMED_PROFILE,
   TG, SUN_DEEP, MOON_DEEP, RISE_DEEP, CROSS, ELEM_RICH, STRENGTH, DAYUN_STRATEGY, PHASE, QIAN_DRAWS, QIAN_UI,
   SIGN_LINE, SIGN_WEST, WEST2WX, GEN5, STEM_IMG, starCross };
 if (typeof module !== 'undefined' && module.exports) module.exports = Explainer;
