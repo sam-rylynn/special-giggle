@@ -457,6 +457,7 @@
   <section id="result" role="region" aria-labelledby="resultTitle" tabindex="-1" hidden>
     <p class="sr-only" id="resultStatus" role="status" aria-live="polite"></p>
     <h2 class="rizhu-label result-heading" id="resultTitle" tabindex="-1">你 的 日 主</h2>
+    <div class="btn-row" id="localReportPreview" hidden><button class="btn gold" id="deepBtn" type="button">查看深度发展报告</button></div>
 
     <div id="legacyHome">
       <div class="rizhu-hero">
@@ -511,7 +512,6 @@
       </section>
     </div>
 
-    <div class="btn-row" id="localReportPreview"><button class="btn gold" id="deepBtn" type="button">查看深度发展报告</button></div>
     <div class="share-gate" id="shareGate" aria-live="polite">
       <div class="share-gate-head"><span id="shareGateTitle">分享日主海报</span> <span class="share-gate-badge" id="shareGateBadge">可直接分享</span></div>
       <p id="shareGateBody">把这张日主海报分享给朋友。当前只分享图片，不影响报告权益。</p>
@@ -840,7 +840,7 @@ function renderShareGate(message){
   $('shareActionBtn').textContent=confirmed?share.button:'生成并分享日主海报';
   $('shareGateActions').hidden=false;
   $('sharePosterBtn').hidden=false;
-  $('localReportPreview').hidden=!confirmed&&!LOCAL_REPORT_PREVIEW;
+  $('localReportPreview').hidden=false;
   $('deepBtn').textContent=confirmed?'查看我的深度发展报告':'查看深度发展报告';
   $('shareGateStatus').textContent=message||'';
 }
@@ -924,7 +924,7 @@ if($('mobileStartBtn')) $('mobileStartBtn').onclick=showFormDirect;
 
 const LOCAL_REPORT_PREVIEW=location.protocol==='file:'||['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 const PUBLIC_LEGAL_INTERACTION_READY=true;
-$('localReportPreview').hidden=!LOCAL_REPORT_PREVIEW;
+$('localReportPreview').hidden=true;
 if(!LOCAL_REPORT_PREVIEW&&!PUBLIC_LEGAL_INTERACTION_READY){
   $('goBtn').disabled=true;
   $('goBtn').textContent='正式交互当前不可用';
