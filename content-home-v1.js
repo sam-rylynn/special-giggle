@@ -4,11 +4,15 @@
  */
 (function (root, factory) {
   'use strict';
-  const api = factory();
+  const api = factory(root);
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.ZhixingHomeContentV1 = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
+
+  const OPTIMIZED_COPY = (typeof module === 'object' && module.exports)
+    ? require('./content-copy-optimized-v3.js')
+    : (root && root.ZhixingCopyOptimizedV3);
 
   const SCHEMA_VERSION = 'home-content-v1';
   const DAY_STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
@@ -125,7 +129,7 @@
     金牛座:{ judge:'会先稳住', move:'稳住做法' },
     双子座:{ judge:'会快速连接', move:'连起线索' },
     巨蟹座:{ judge:'会先接顾虑', move:'接住顾虑' },
-    狮子座:{ judge:'会亮出重点', move:'说亮重点' },
+    狮子座:{ judge:'会亮出重点', move:'把重点说清' },
     处女座:{ judge:'会追到细节', move:'拆清步骤' },
     天秤座:{ judge:'会比较立场', move:'摆明各方位置' },
     天蝎座:{ judge:'会追问原因', move:'追到真正原因' },
@@ -133,6 +137,49 @@
     摩羯座:{ judge:'会排清责任', move:'排清责任期限' },
     水瓶座:{ judge:'会换个角度', move:'换个角度拆题' },
     双鱼座:{ judge:'会顺着气氛', move:'接住现场气氛' }
+  };
+
+  const DAY_OPENING = {
+    甲:'看长线',乙:'找入口',丙:'把重点讲明白',丁:'抓关键细节',戊:'稳条件',
+    己:'理清次序',庚:'做取舍',辛:'定标准',壬:'补缺口',癸:'察觉细微变化'
+  };
+
+  const SUN_OPENING = {
+    白羊座:'先起步',金牛座:'稳节奏',双子座:'连信息',巨蟹座:'接顾虑',
+    狮子座:'把重点说清',处女座:'拆步骤',天秤座:'理位置',天蝎座:'追原因',
+    射手座:'看长路',摩羯座:'定责任',水瓶座:'换角度',双鱼座:'接气氛'
+  };
+
+  /* 深度报告总览与首页分工：
+   * 首页负责快速顺序判断和三步自查；总览只讲判断门槛、
+   * 所需证据，以及事实变化以后怎样修正和承担改口成本。
+   */
+  const REPORT_DAY = {
+    甲:{ title:'长期判断需要哪些证据', heroGate:'真正相信的方向要经得起时间', evidence:'热度过去后仍愿意投入，新的事实也没有推翻原方向', pending:'时间还没拉开时，只能确认你愿意试，不能确认方向值得长期投入', correction:'指出哪条新事实改变了长期判断', delayCost:'时间会继续压在已经失效的路上', keyword:'经得起时间', reviseKeyword:'事实变了就改' },
+    乙:{ title:'调整以后，最低要求还在吗', heroGate:'可行的选择要留住自己的要求', evidence:'调整走法以后，最初要求还在，眼前也确实有一步能走', pending:'入口刚出现时，保留最低要求，不用为了继续而一路让步', correction:'说明哪项条件变了，也说清哪些最低要求仍保留', delayCost:'最初要求会在反复迁就里消失', keyword:'保留最低要求', reviseKeyword:'条件变了说明' },
+    丙:{ title:'热度退去，重点还成立吗', heroGate:'值得公开的重点要在热度退去后仍然成立', evidence:'当场热度退去以后，公开的重点仍能得到持续回应', pending:'当场反应热烈时，只能确认重点被听见，不能确认它会留下', correction:'说明原来的重点为何不再成立，以及注意力要转向哪里', delayCost:'所有回应都会继续围着过时的问题打转', keyword:'热度退后仍成立', reviseKeyword:'收回旧重点' },
+    丁:{ title:'这处细节究竟改了什么', heroGate:'能改变取舍的细节才值得留下', evidence:'这个细节确实改变结果，不只是让表面更精致', pending:'细节看起来重要时，先问它是否真的改变结果', correction:'删掉不影响结果的细节，并重新排清优先级', delayCost:'完成时间会耗在已经够用的部分', keyword:'真能改变结果', reviseKeyword:'删掉无关细节' },
+    戊:{ title:'承担以前，条件齐了吗', heroGate:'可以承担的事要让条件和责任对得上', evidence:'条件、责任和完成标准都能说清', pending:'条件没齐时，不把愿意帮忙写成完整承担', correction:'说明缺的是条件、权限还是完成标准', delayCost:'自己的时间会被拿去补别人没有说清的缺口', keyword:'条件责任齐全', reviseKeyword:'补齐再承诺' },
+    己:{ title:'哪一步最值得先做', heroGate:'能持续的安排要分清轻重和顺序', evidence:'最重要的一步已经完成，零碎要求没有抢走时间', pending:'零碎事项一起涌入时，先分出哪件不做会影响结果', correction:'重新说明哪件事提前，哪件事暂停', delayCost:'忙碌会代替真正完成', keyword:'先做最重要的', reviseKeyword:'重排轻重' },
+    庚:{ title:'前提变了，取舍也要重做', heroGate:'站得住的取舍要经得起新事实', evidence:'新事实出现以后，原来的取舍仍然成立', pending:'前提还在变化时，保留修正空间，不把第一次取舍写死', correction:'指出第一次判断依赖的哪项前提已经改变', delayCost:'速度会把你带离已经变化的事实', keyword:'按新事实重判', reviseKeyword:'前提变了重判' },
+    辛:{ title:'完成标准由谁确认', heroGate:'可交付的结果要有别人也能核对的标准', evidence:'别人能按同一标准核对结果，不必猜你心里的加分项', pending:'反馈还没回来时，沿用已经说清的标准，不偷偷增加要求', correction:'说明旧标准为什么不够，以及新增标准由谁确认', delayCost:'别人会一直不知道什么时候才算结束', keyword:'标准可以共用', reviseKeyword:'标准变化明说' },
+    壬:{ title:'所有路线用同一把尺', heroGate:'值得走的路线要经过同一组条件比较', evidence:'关键事实没有缺口，候选路线也用同一条件比较过', pending:'路线还在增加时，固定比较条件，不让每条路线换一把尺子', correction:'说明哪条路线被新事实排除，比较条件有没有变化', delayCost:'所有路线都会被反复重新打开', keyword:'同一条件比较', reviseKeyword:'排除失效路线' },
+    癸:{ title:'这个信号能重复吗', heroGate:'一次感觉不够支撑决定', evidence:'同一变化在下一步仍然出现，不只是一时感觉', pending:'信号只出现一次时，先记下，不把它直接当成结论', correction:'说明哪一个信号没有重复出现，以及下一步改查什么', delayCost:'后续动作会一直卡在等证据上', keyword:'信号重复出现', reviseKeyword:'信号失效就停' }
+  };
+
+  const REPORT_SUN = {
+    白羊座:{ heroProof:'让第一次尝试带来真实变化', proof:'第一次尝试以后，问题确实向前移动', pending:'第一次动作只负责验证，不自动升级成长期决定', correction:'把“先试一下”与“已经决定”分开说', publicCost:'动作已经做出后，别人会按原来的方向继续跟进', keyword:'尝试带来变化' },
+    金牛座:{ heroProof:'让同一做法能够稳定重复', proof:'同一套做法能够按相近节奏重复', pending:'安排刚稳定时，仍要保留依据事实改法的出口', correction:'说明哪项条件已经变化，哪些安排继续保留', publicCost:'安排重复几次后，改变做法会打乱已有节奏', keyword:'做法可以重复' },
+    双子座:{ heroProof:'让不同说法连起来后缺口更清楚', proof:'不同说法连起来以后，缺口变得更清楚', pending:'新信息只进入同一组比较条件，不重新打开所有问题', correction:'指出哪条新信息改变了判断，不必重讲全部路线', publicCost:'说法一多，改动理由容易被新信息淹没', keyword:'缺口变清楚' },
+    巨蟹座:{ heroProof:'让尚未开口的顾虑进入真实讨论', proof:'尚未开口的顾虑进入讨论以后，谈话仍能继续', pending:'接住顾虑不等于替每个人承担结果', correction:'承认哪项顾虑没有接住，再说明新的选择', publicCost:'顾虑已经被接下后，改口容易被听成突然抽身', keyword:'顾虑进入讨论' },
+    狮子座:{ heroProof:'让重点公开后有人知道怎样跟进', proof:'重点公开以后，别人知道下一步怎样跟进', pending:'公开说法可以明确，也要保留“事实变化后会修正”', correction:'明确收回哪一句公开判断，并给出新的重点', publicCost:'重点公开以后，改口容易被当成失信或摇摆', keyword:'别人知道跟进' },
+    处女座:{ heroProof:'让列出的每一步都能核对', proof:'步骤列清以后，每一项都能实际核对', pending:'步骤列得再细，也要删掉不影响结果的检查', correction:'删掉不再必要的步骤，并改写检查标准', publicCost:'步骤已经分派后，修改会牵动后续检查', keyword:'步骤可以核对' },
+    天秤座:{ heroProof:'让各方位置说明后分歧还能继续谈', proof:'各方位置说明以后，分歧仍能继续讨论', pending:'照顾各方位置不等于每个意见都进入最终决定', correction:'说明哪一方的位置发生变化，以及新的取舍', publicCost:'各方已经找到位置后，重新取舍会影响参与预期', keyword:'分歧还能继续' },
+    天蝎座:{ heroProof:'让点明的原因和后续行动对得上', proof:'核心原因点明以后，后续行动与说法对得上', pending:'原因还没得到事实支持时，不把怀疑写成结论', correction:'点明新事实怎样改变了原来的原因判断', publicCost:'原因已经说破后，修正需要承认第一次判断不完整', keyword:'原因行动对上' },
+    射手座:{ heroProof:'让眼前一步放到更长时间里仍有意义', proof:'眼前选择放到更长时间里，意义仍然成立', pending:'远处意义说得再好，也要能落回眼前一步', correction:'说清远处方向为何改变，眼前一步怎样随之调整', publicCost:'方向讲得越远，回到眼前修改就越像退缩', keyword:'长路仍有意义' },
+    摩羯座:{ heroProof:'让写下的责任、期限和结果真正落地', proof:'负责人、期限和结果写清以后，承诺确实落地', pending:'写下责任以前，先确认决定权和所需配合', correction:'改写负责人、期限或完成条件，不让旧承诺继续悬着', publicCost:'责任和期限一旦写下，修改会影响别人安排', keyword:'承诺真正落地' },
+    水瓶座:{ heroProof:'让换来的新办法通过真实验证', proof:'换一种看法以后，新办法通过了真实验证', pending:'新解法先过一次真实验证，再替换旧办法', correction:'说明旧办法在哪次验证中失效，再提出替代方案', publicCost:'新办法已经提出后，再改容易被看成只想换题', keyword:'新办法过验证' },
+    双鱼座:{ heroProof:'让换过的说法带来真实回应', proof:'换一种说法以后，现场出现了真实回应', pending:'气氛缓和只说明谈话能继续，不代表分歧已经解决', correction:'把现场反应说具体，再换一种能被理解的表达', publicCost:'说法已经缓和以后，重新讲清分歧可能打破表面平静', keyword:'说法带来回应' }
   };
 
   const SHARE_TITLE_FIRST = {
@@ -177,6 +224,11 @@
     if (!SUN[sun]) throw new TypeError('未知太阳星座：' + (sun || '空'));
   }
 
+  function optimizedPair(stem, sun) {
+    const key = stem + '×' + sun;
+    return OPTIMIZED_COPY && OPTIMIZED_COPY.home ? OPTIMIZED_COPY.home[key] : null;
+  }
+
   function combinationKey(stem, sun) {
     const normalizedSun = signName(sun);
     requirePair(text(stem), normalizedSun);
@@ -192,12 +244,12 @@
     return '反向补偿';
   }
 
-  function outcome(day, sun, type) {
-    const solarShort = SUN_SHORT[sun];
-    if (type === '双重确认') return '先' + day.resolve + '，再' + solarShort.move;
-    if (type === '内外反差') return '先' + solarShort.move + '；最后' + day.resolve + '，再定案';
-    if (type === '场景切换') return '在共同讨论时' + solarShort.move + '，独自选择时' + day.resolve;
-    return '先' + solarShort.move + '，再' + day.resolve + '，定下下一步';
+  function openingJudgement(day, sun, type) {
+    const move = SUN_SHORT[sun].move;
+    if (type === '双重确认') return '你会先' + day.resolve + '，再' + move + '；两步指向同一个结果。';
+    if (type === '内外反差') return '你会先' + move + '；真正的决定要等你' + day.resolve + '。';
+    if (type === '场景切换') return '共同讨论时你会' + move + '；独自决定时，你再' + day.resolve + '。';
+    return '你会先' + move + '，再' + day.resolve + '，把下一步定下来。';
   }
 
   function fusionDetail(day, solar, type) {
@@ -215,14 +267,38 @@
     return opening + '太阳先打开入口，日主再判断是否继续；前者解决起步，后者负责收口。';
   }
 
+  function reportHero(day, solar) {
+    return day.heroGate + '，也要' + solar.heroProof + '。';
+  }
+
+  function reportTension(day, solar) {
+    return solar.publicCost + '。拖着不改，' + day.delayCost + '。';
+  }
+
+  function buildReportOverviewFor(stem, sun, source) {
+    const day = REPORT_DAY[stem];
+    const solar = REPORT_SUN[sun];
+    return {
+      hero:reportHero(day, solar),
+      title:day.title,
+      lead:day.evidence + '。' + solar.proof + '。',
+      keywords:[day.keyword, solar.keyword, day.reviseKeyword],
+      scenes:[
+        { title:'门槛没到时', body:day.pending + '。' + solar.pending + '。' },
+        { title:'修正判断时', body:day.correction + '；' + solar.correction + '。' }
+      ],
+      tension:reportTension(day, solar),
+      source:source
+    };
+  }
+
   function buildGenericPair(stem, sun) {
     const day = STEM[stem];
     const solar = SUN[sun];
     const solarShort = SUN_SHORT[sun];
     const type = fusionTypeFor(stem, sun);
-    const fused = outcome(day, sun, type);
-    const judgement = day.judge + '；太阳' + shortSign(sun) + solarShort.judge + '。合在一起，' + fused + '。';
-    const explanation = '日主·' + stem + day.element + day.core + '，太阳·' + sun + '则' + solar.core + '。两者合在一起，你会' + fused + '；' + fusionDetail(day, solar, type) + '。';
+    const judgement = openingJudgement(day, sun, type);
+    const explanation = stem + day.element + DAY_OPENING[stem] + '，太阳' + shortSign(sun) + SUN_OPENING[sun] + '。';
     const stepOneTitle = solar.keyword + '时，也在' + day.keyword;
     const stepTwoTitle = day.resolve + '，再给出下一步';
     const stepThreeTitle = '最后决定要有截止点';
@@ -231,6 +307,7 @@
 
     const home = {
       identity:stem + day.element + ' × 太阳' + shortSign(sun),
+      dayMaster:{ label:stem + day.element, image:day.image },
       fusionType:type,
       judgement:judgement,
       explanation:explanation,
@@ -269,6 +346,7 @@
     };
     if (contrast) home.contrast = contrast;
 
+    const reportOverview = buildReportOverviewFor(stem, sun, source);
     const dualShare = {
       identity:stem + day.element + ' × 太阳' + shortSign(sun),
       title:SHARE_TITLE_FIRST[stem] + ' · ' + solar.title,
@@ -278,7 +356,7 @@
       a11y:'知星双盘印证卡，' + stem + day.element + '与太阳' + shortSign(sun) + '，标题' + SHARE_TITLE_FIRST[stem] + '、' + solar.title + '。'
     };
 
-    return { key:combinationKey(stem, sun), home:home, dualShare:dualShare };
+    return { key:combinationKey(stem, sun), home:home, reportOverview:reportOverview, dualShare:dualShare };
   }
 
   const COMBINATIONS = {};
@@ -288,14 +366,27 @@
       COMBINATIONS[pair.key] = pair;
     });
   });
+  if (OPTIMIZED_COPY && OPTIMIZED_COPY.home) {
+    Object.keys(OPTIMIZED_COPY.home).forEach(function (key) {
+      if (!COMBINATIONS[key]) return;
+      const item = OPTIMIZED_COPY.home[key];
+      COMBINATIONS[key] = {
+        key:key,
+        home:clone(item.home),
+        reportOverview:clone(item.reportOverview),
+        dualShare:clone(item.dualShare)
+      };
+    });
+  }
 
   const EXACT_V2 = {
     key:'壬×双子座',
     home:{
       identity:'壬水 × 太阳双子',
+      dayMaster:{ label:'壬水', image:'江海之水' },
       fusionType:'内外反差',
-      judgement:'别人还没开始讨论，你已经看见了场面里缺的那一块。',
-      explanation:'壬水先观察局势，太阳双子快速接住信息。两张盘放在一起——你不只是反应快；在别人开口之前，你已经把缺口补上了。',
+      judgement:'你会先连起信息；真正的决定要等你看明白全局。',
+      explanation:'壬水补缺口，太阳双子连信息。',
       keywords:['补缺口快','能接住不同声音','决定比话慢'],
       steps:[
         {
@@ -329,6 +420,18 @@
       ],
       source:'日主·壬水｜太阳·双子座｜上升·巨蟹座',
       contrast:'外面看见的是反应快、能接话，真正的取舍却要等壬水把全局看完。'
+    },
+    reportOverview:{
+      hero:'别人常把你接得住话，误认成你已经答应。',
+      title:'快回应不等于已决定',
+      lead:'信息一多，你会先区分事实、猜测和还没回答的问题，再决定哪些值得继续追。这个过程常发生在心里，外面只看见你已经接住了场面。',
+      keywords:['先分信息','再做取舍','说清进度'],
+      scenes:[
+        { title:'信息刚进来时', body:'你会把几种说法分成已知、推测和待确认三栏，不急着用一个漂亮答案盖住缺口。' },
+        { title:'准备定案时', body:'你会检查这个选择过一段时间是否仍愿意承担，而不是只看眼前谁回应得最快。' }
+      ],
+      tension:'你的主要矛盾不是信息太多，而是「我听见了」和「我决定了」没有同时说清；前者发生得快，后者需要完整取舍。',
+      source:'日主·壬水｜太阳·双子座'
     },
     dualShare:{
       identity:'壬水 × 太阳双子',
@@ -378,15 +481,32 @@
     const ctx = contextOf(value);
     requirePair(ctx.stem, ctx.sun);
     if (isExactV2Sample(value)) return clone(EXACT_V2.home);
+    const optimized = optimizedPair(ctx.stem, ctx.sun);
+    if (optimized) {
+      const home = clone(optimized.home);
+      firstImpressionWithAsc(home, ctx);
+      return home;
+    }
     const home = getPair(ctx.stem, ctx.sun).home;
     firstImpressionWithAsc(home, ctx);
     return home;
+  }
+
+  function buildReportOverview(value) {
+    const ctx = contextOf(value);
+    requirePair(ctx.stem, ctx.sun);
+    if (isExactV2Sample(value)) return clone(EXACT_V2.reportOverview);
+    const optimized = optimizedPair(ctx.stem, ctx.sun);
+    if (optimized) return clone(optimized.reportOverview);
+    return getPair(ctx.stem, ctx.sun).reportOverview;
   }
 
   function buildShare(value) {
     const ctx = contextOf(value);
     requirePair(ctx.stem, ctx.sun);
     if (isExactV2Sample(value)) return clone(EXACT_V2.dualShare);
+    const optimized = optimizedPair(ctx.stem, ctx.sun);
+    if (optimized) return clone(optimized.dualShare);
     return getPair(ctx.stem, ctx.sun).dualShare;
   }
 
@@ -396,6 +516,7 @@
     return {
       key:combinationKey(ctx.stem, ctx.sun),
       home:buildHome(value),
+      reportOverview:buildReportOverview(value),
       dualShare:buildShare(value)
     };
   }
@@ -408,6 +529,7 @@
     combinationKey:combinationKey,
     getPair:getPair,
     buildHome:buildHome,
+    buildReportOverview:buildReportOverview,
     buildShare:buildShare,
     buildContent:buildContent,
     isExactV2Sample:isExactV2Sample

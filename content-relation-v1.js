@@ -4,11 +4,15 @@
  */
 (function (root, factory) {
   'use strict';
-  const api = factory();
+  const api = factory(root);
   if (typeof module === 'object' && module.exports) module.exports = api;
   if (root) root.ZhixingRelationContentV1 = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
+
+  const OPTIMIZED_COPY = (typeof module === 'object' && module.exports)
+    ? require('./content-copy-optimized-v3.js')
+    : (root && root.ZhixingCopyOptimizedV3);
 
   const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   const MOON_SIGNS = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
@@ -287,6 +291,16 @@
     if (!data.moonNearEdge && !MOON_META[data.moonSign]) throw new RangeError('未知月亮星座：' + (data.moonSign || '空'));
     if (data.relationGod && !RELATION_GOD_META[data.relationGod]) throw new RangeError('未知关系十神：' + data.relationGod);
 
+    if (!data.moonNearEdge && OPTIMIZED_COPY && OPTIMIZED_COPY.relation) {
+      const relationKey = data.stem + '×' + data.moonSign + '×' + (data.relationGod || '未提供');
+      const optimized = OPTIMIZED_COPY.relation[relationKey];
+      if (optimized) {
+        const result = clone(optimized);
+        if (data.moonApprox) result.source += '（按正午近似）';
+        return result;
+      }
+    }
+
     const stem = STEM_META[data.stem];
     const god = RELATION_GOD_META[data.relationGod];
     const sourceParts = ['日主·' + data.stem + stem.element];
@@ -298,23 +312,23 @@
     const stemIndex = STEMS.indexOf(data.stem);
 
     const leadVariants = [
-      stem.approach + '月亮' + moon.short + '更在意' + moon.need + '，所以你常会' + moon.closeAction + '。这让' + stem.approachNoun + '变成对方能收到的回应。',
-      stem.approach + '月亮' + moon.short + '还需要的是：' + moon.need + '；你会' + moon.closeAction + '，把这份需要放进互动。',
-      stem.approach + '等月亮' + moon.short + '开始参与，你还会在意' + moon.need + '。于是，' + moon.closeAction + '也让' + stem.approachNoun + '变得更具体。',
-      stem.approach + stem.approachNoun + '负责让你先靠近；月亮' + moon.short + '则提醒你，' + moon.need + '同样重要。你通常会' + moon.closeAction + '。'
+      stem.approach + '你还会在意' + moon.need + '，所以常常' + moon.closeAction + '。这是月亮' + moon.short + '在关系里的直接反应，也让关心不只停在心里。',
+      stem.approach + '月亮' + moon.short + '在意的是：' + moon.need + '。落到相处里，你会' + moon.closeAction + '；这是你确认彼此还愿意靠近的方式。',
+      stem.approach + '相处时，你也希望' + moon.need + '，常会' + moon.closeAction + '。这部分更接近月亮' + moon.short + '的反应，也和你原本的靠近方式接得上。',
+      stem.approach + '当你想让对方感到安心，还会在意' + moon.need + '，通常会' + moon.closeAction + '。这些做法延续了原本的' + stem.approachNoun + '，也在表达在意。'
     ];
 
     const synthesis = [
-      '谈话继续打转时，你会' + stem.withdraw + '；月亮' + moon.short + moon.repair + '。你会先离开拉扯，等自己能' + stem.returnCondition + '；没有说出返回时间，对方只看见“' + stem.withdrawMisread + '”。'
+      '谈话继续打转时，你会' + stem.withdraw + '；月亮' + moon.short + moon.repair + '。两种反应都需要一点停顿，但若没有交代什么时候再谈，对方只会看见“' + stem.withdrawMisread + '”，很难判断这次停顿意味着什么。'
     ];
     if (god) {
-      synthesis.push(god.trigger + '时，' + god.conflict + '。能' + stem.returnCondition + '，' + god.returnAction + '；月亮' + moon.short + '让你用' + moon.returnStyle + '再开口。');
+      synthesis.push(god.trigger + '时，' + god.conflict + '。这时别急着解释全部；' + god.returnAction + '。先处理眼前这一件事，对方更容易知道该回应哪一处，话题也不易散开。');
     }
     const returnVariants = [
-      '重新开口时，你会' + stem.returnAction + '；月亮' + moon.short + '会让你用' + moon.returnStyle + '继续谈。你的长处是：' + stem.value + '；代价是：' + stem.cost + '。',
-      '等你能' + stem.returnCondition + '，你会' + stem.returnAction + '；月亮' + moon.short + '再补上' + moon.returnStyle + '。你的长处是：' + stem.value + '；代价是：' + stem.cost + '。',
-      '你通常在能' + stem.returnCondition + '后重新开口。你会' + stem.returnAction + '；月亮' + moon.short + '会把表达带向' + moon.returnStyle + '。你的长处是：' + stem.value + '，代价是：' + stem.cost + '。',
-      '回到谈话时，你会' + stem.returnAction + '；月亮' + moon.short + '会补上' + moon.returnStyle + '，让对方知道你愿意继续。你的长处是：' + stem.value + '；代价是：' + stem.cost + '。'
+      '能' + stem.returnCondition + '以后，你会' + stem.returnAction + '。重谈时，月亮' + moon.short + '更容易带出' + moon.returnStyle + '。' + stem.value + '是你的长处；不过，' + stem.cost + '。',
+      '等你' + stem.returnCondition + '，你会' + stem.returnAction + '。重谈时，你偏向' + moon.returnStyle + '，这是月亮' + moon.short + '较自然的表达。' + stem.value + '是你的长处；不过，' + stem.cost + '。',
+      '等到可以' + stem.returnCondition + '，你会' + stem.returnAction + '。这次重谈带着' + moon.returnStyle + '，也符合月亮' + moon.short + '的需要。' + stem.value + '是你的长处；不过，' + stem.cost + '。',
+      '回到谈话时，你会' + stem.returnAction + '。你也会带着' + moon.returnStyle + '继续，这是月亮' + moon.short + '较自然的方式。你的长处是' + stem.value + '；需要留意的是' + stem.cost + '。'
     ];
     synthesis.push(returnVariants[stemIndex % returnVariants.length]);
 

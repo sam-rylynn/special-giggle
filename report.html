@@ -9,9 +9,23 @@
   :root{--ink:#0E1220;--panel:#1A2233;--gold:#C9A85C;--gold-dim:#b8a36c;--moon:#E8E4D8;--cinnabar:#B5472F;--mist:#98A2B3;
     --serif:"Noto Serif SC","Songti SC","STSong",serif;--sans:"Noto Sans SC","PingFang SC",sans-serif}
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html{background:var(--ink)}
-  body{background:var(--ink);color:var(--moon);font-family:var(--sans);font-size:15px;line-height:1.9;overflow-x:hidden}
-  .wrap{max-width:1000px;margin:0 auto;padding:0 18px 70px}
+  html{background:#080c18}
+  body{position:relative;isolation:isolate;min-height:100vh;
+    background:linear-gradient(180deg,#0b1020 0%,var(--ink) 38%,#090e1a 100%);
+    color:var(--moon);font-family:var(--sans);font-size:15px;line-height:1.9;overflow-x:hidden}
+  /* 与日主页同源的玄夜星野：纯 CSS 静态层，不注册动画或滚动监听。 */
+  body::before,body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none}
+  body::before{opacity:.3;background-image:
+    radial-gradient(circle,rgba(232,228,216,.72) 0 .7px,transparent 1.15px),
+    radial-gradient(circle,rgba(201,168,92,.58) 0 .65px,transparent 1.1px),
+    radial-gradient(circle,rgba(166,185,220,.45) 0 .55px,transparent 1px);
+    background-size:137px 151px,223px 197px,89px 113px;
+    background-position:19px 23px,71px 91px,37px 61px}
+  body::after{background:
+    radial-gradient(ellipse at 50% 5%,rgba(54,69,111,.28) 0%,rgba(37,49,80,.12) 32%,transparent 68%),
+    radial-gradient(ellipse at 7% 56%,rgba(73,61,102,.09) 0%,transparent 44%),
+    radial-gradient(ellipse at 96% 82%,rgba(35,73,92,.08) 0%,transparent 42%)}
+  .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:0 18px 70px}
   .wrap > .card,.wrap > .meta{max-width:640px;margin-left:auto;margin-right:auto}
   #out > .card{max-width:640px;margin-left:auto;margin-right:auto}
   .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
@@ -35,7 +49,7 @@
   .report-hero-link.active{border-color:var(--gold);background:rgba(201,168,92,.14);color:#f6e8bc}
   .report-hero-link:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
 
-  .card{background:var(--panel);border:1px solid rgba(201,168,92,.22);border-radius:12px;margin-top:20px;overflow:hidden}
+  .card{background:rgba(26,34,51,.95);border:1px solid rgba(201,168,92,.22);border-radius:12px;margin-top:20px;overflow:hidden}
   .card .pad{padding:20px 18px}
   .card h2{font-family:var(--serif);font-size:17px;color:var(--gold);letter-spacing:.16em;margin-bottom:12px;
     display:flex;align-items:center;justify-content:center;gap:12px;white-space:nowrap;text-indent:.16em}
@@ -323,7 +337,7 @@
   @keyframes rp{from{width:10px;height:10px;opacity:.9}to{width:42vmin;height:42vmin;opacity:0}}
 
   .meta{color:#98a2b3;font-size:11.5px;line-height:1.9;margin-top:24px;text-align:center}
-  .filing-footer{max-width:640px;margin:0 auto;padding:0 18px max(36px,env(safe-area-inset-bottom));color:#98a2b3;font-size:11.5px;line-height:1.9;text-align:center}
+  .filing-footer{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:0 18px max(36px,env(safe-area-inset-bottom));color:#98a2b3;font-size:11.5px;line-height:1.9;text-align:center}
   .filing-link{display:inline-flex;align-items:center;min-height:32px;color:inherit;text-decoration:underline;text-underline-offset:3px}
   .filing-link:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
   .endviz{position:relative;height:230px;overflow:hidden;border-radius:12px;margin-top:22px}
@@ -338,6 +352,7 @@
     .report-hero-link{font-size:11.5px}
   }
   @media(max-width:760px){
+    body::before{opacity:.25}
     .wrap{max-width:640px}
     .report-hero{padding:74px 16px 17px}
     .report-topbar{top:max(10px,env(safe-area-inset-top));width:calc(100% - 22px)}
@@ -370,7 +385,7 @@
     .dy-table td{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:3px 0;border:0}
     .dy-table td::before{content:attr(data-label);color:var(--gold-dim);font-size:11px;letter-spacing:.04em}
   }
-  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.chapviz img,.txt,.qian-cast .tube,.qian-draw,.deep-ans,.reader-page.is-active,.rip{animation:none;transition:none}.bar .fill,.reader-tool-link,.nav-section-link,.report-hero-link{transition:none;transform:none}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}body::before,body::after{animation:none;transform:none}.chapviz img,.txt,.qian-cast .tube,.qian-draw,.deep-ans,.reader-page.is-active,.rip{animation:none;transition:none}.bar .fill,.reader-tool-link,.nav-section-link,.report-hero-link{transition:none;transform:none}}
   #ageGateBlock,#reportAccessGateBlock,#reportPrivacyGateBlock,#aiProcessingGateBlock{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:rgba(14,18,32,.96)}
   #ageGateBlock[hidden],#reportAccessGateBlock[hidden],#reportPrivacyGateBlock[hidden],#aiProcessingGateBlock[hidden]{display:none}
   .age-gate-card{width:min(100%,420px);padding:28px 24px;border:1px solid rgba(201,168,92,.3);background:var(--panel);border-radius:12px;text-align:center}
@@ -493,6 +508,7 @@
 <script src="./analytics.js"></script>
 <script src="./member.js"></script>
 <script src="./bazi-engine.js"></script>
+<script src="./content-copy-optimized-v3.js"></script>
 <script src="./content-home-v1.js"></script>
 <script src="./content-relation-v1.js"></script>
 <script src="./content-action-time-v1.js"></script>
@@ -1491,7 +1507,7 @@ function updateReportHero(chart, overview){
   const fallback = String(overview?.body || '先从总览开始，结合真实经历核对这张盘呈现的倾向。')
     .split(/\n\n+/)[0].replace(/\s*来源[:：].*$/s,'').trim();
   $('reportIdentity').textContent = identity;
-  $('reportJudgement').textContent = home?.judgement || fallback;
+  $('reportJudgement').textContent = String(overview?.hero || fallback).trim();
 }
 
 const REPORT_NAV_GROUPS = [

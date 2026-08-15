@@ -15,15 +15,15 @@
   const SIGNS = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];
 
   const STEM_META = {
-    甲:{ element:'木', rhythm:'先认准方向，再靠连续投入把事情推高', start:'先问目标能不能长期成立，再决定从哪里动手', drop:'方向频繁被改写时，你会一边推进一边重新判断值不值得继续', resultNoun:'认准的长期方向', longTerm:'方向能否连续推进' },
-    乙:{ element:'木', rhythm:'先找到可以进入的缝隙，再边走边调整', start:'先看现有条件允许哪一步，再用小动作把局面接起来', drop:'需要反复迁就不同条件时，主线会被一次次的小调整带偏', resultNoun:'找到的可行入口', longTerm:'调整以后主线是否仍在' },
-    丙:{ element:'火', rhythm:'先点亮目标，让人看见方向，再集中推进', start:'先把这件事为什么要做说清楚，再带着明确反馈开工', drop:'长期重复、没有回应时，你会很难维持最初的投入强度', resultNoun:'说清的目标', longTerm:'目标能否持续得到回应' },
-    丁:{ element:'火', rhythm:'先抓住最关键的一点，再持续把细节做亮', start:'先确认哪一处最值得认真处理，再把注意力收进去', drop:'标准一直不清楚时，你会在细节里反复打磨，交付时间被往后推', resultNoun:'抓住的关键细节', longTerm:'关键细节能否按标准完成' },
-    戊:{ element:'土', rhythm:'先确认基础是否可靠，再按顺序往上搭', start:'先核对条件、责任和完成标准，再开始承担', drop:'条件不断变化时，你会花更多时间补基础，第一次可见结果来得较慢', resultNoun:'搭稳的基础', longTerm:'条件和责任能否长期稳定' },
+    甲:{ element:'木', rhythm:'先认准方向，再靠连续投入把事情推高', start:'问目标能不能长期成立，决定从哪里动手', drop:'方向频繁被改写时，你会一边推进一边重新判断值不值得继续', resultNoun:'认准的长期方向', longTerm:'方向能否连续推进' },
+    乙:{ element:'木', rhythm:'先找到可以进入的缝隙，再边走边调整', start:'看现有条件允许哪一步，用小动作把局面接起来', drop:'需要反复迁就不同条件时，主线会被一次次的小调整带偏', resultNoun:'找到的可行入口', longTerm:'调整以后主线是否仍在' },
+    丙:{ element:'火', rhythm:'先点亮目标，让人看见方向，再集中推进', start:'把这件事为什么要做说清楚，带着明确反馈开工', drop:'长期重复、没有回应时，你会很难维持最初的投入强度', resultNoun:'说清的目标', longTerm:'目标能否持续得到回应' },
+    丁:{ element:'火', rhythm:'先抓住最关键的一点，再持续把细节做亮', start:'确认哪一处最值得认真处理，把注意力收进去', drop:'标准一直不清楚时，你会在细节里反复打磨，交付时间被往后推', resultNoun:'抓住的关键细节', longTerm:'关键细节能否按标准完成' },
+    戊:{ element:'土', rhythm:'先确认基础是否可靠，再按顺序往上搭', start:'核对条件、责任和完成标准，开始承担', drop:'条件不断变化时，你会花更多时间补基础，第一次可见结果来得较慢', resultNoun:'搭稳的基础', longTerm:'条件和责任能否长期稳定' },
     己:{ element:'土', rhythm:'先把大事拆成可照料的小步，再一点点做实', start:'先整理顺序和日常动作，让事情可以稳定重复', drop:'零碎事项不断加入时，你会忙着逐一照料，却看不清哪一步最重要', resultNoun:'排好的日常步骤', longTerm:'日常步骤能否持续重复' },
     庚:{ element:'金', rhythm:'先切清目标和障碍，再直接处理关键问题', start:'先判断什么必须保留、什么应该停止，再快速推进', drop:'前提已经改变，如果仍沿用最初判断，速度会变成不愿回头', resultNoun:'做出的关键取舍', longTerm:'关键取舍能否根据新事实修正' },
-    辛:{ element:'金', rhythm:'先定清标准，再把结果一层层磨到准确', start:'先确认什么样才算完成，再处理最影响质量的部分', drop:'反馈迟迟不来时，你会继续提高自己的标准，结果反而更晚交出去', resultNoun:'定下的完成标准', longTerm:'完成标准能否稳定执行' },
-    壬:{ element:'水', rhythm:'先看完全局和多条路线，再找到真正能走的入口', start:'先收集信息、连接线索，再判断哪条路线最值得推进', drop:'走到中段又出现新路线时，你会重新打开全局，注意力随之分散', resultNoun:'选定的推进路线', longTerm:'选定路线能否持续走下去' },
+    辛:{ element:'金', rhythm:'先定清标准，再把结果一层层磨到准确', start:'确认什么样才算完成，再处理最影响质量的部分', drop:'反馈迟迟不来时，你会继续提高自己的标准，结果反而更晚交出去', resultNoun:'定下的完成标准', longTerm:'完成标准能否稳定执行' },
+    壬:{ element:'水', rhythm:'先看完全局和多条路线，再找到真正能走的入口', start:'收集信息、连接线索，判断哪条路线最值得推进', drop:'走到中段又出现新路线时，你会重新打开全局，注意力随之分散', resultNoun:'选定的推进路线', longTerm:'选定路线能否持续走下去' },
     癸:{ element:'水', rhythm:'先捕捉细微信号，再用小步确认方向', start:'先观察变化和反馈，从风险较小的一步开始', drop:'信号互相矛盾时，你会继续等待更多证据，决定因此被往后放', resultNoun:'验证过的细微信号', longTerm:'小步验证能否逐渐积成明确方向' }
   };
 
@@ -43,9 +43,21 @@
   };
 
   const STRENGTH_META = {
-    偏弱:{ support:'长期独自推进、又没有明确回音时，更容易在中段掉速', pitfall:'为了把事情接住而持续加码，却没有及时说明需要什么配合；最后承担了进度，也耗掉了自己的可用时间。' },
-    中和:{ support:'你能独立推进一段时间，但固定复盘能防止局部调整悄悄改掉主线', pitfall:'看见几个都能成立的做法，就边推进边调整；事情没有停，完成标准却一直在移动。' },
-    偏强:{ support:'你可以长时间自己推进，但越能扛，越要主动给外部反馈留下入口', pitfall:'已经承担了大部分推进，还继续沿用自己的判断；等到别人提出不同意见时，修改成本已经很高。' }
+    偏弱:{
+      actionSupport:'长期独自推进、又没有明确回音时，更容易在中段掉速',
+      phaseLoad:'阶段拉长以后，反馈间隔比推进速度更影响可持续投入',
+      phaseWarning:'反馈长时间没有出现时，最先缩短的是可以连续使用的时间。'
+    },
+    中和:{
+      actionSupport:'你能独立推进一段时间，但固定复盘能防止局部调整悄悄改掉主线',
+      phaseLoad:'阶段要求持续变化时，你仍能往前做，也要看见完成标准何时被改动',
+      phaseWarning:'调整没有留下记录时，阶段标准会在不知不觉中移动。'
+    },
+    偏强:{
+      actionSupport:'你可以长时间自己推进，但越能扛，越要主动给外部反馈留下入口',
+      phaseLoad:'阶段越长，独立判断越需要在关键节点接受一次外部核对',
+      phaseWarning:'不同意见出现得越晚，已经完成的部分越难低成本修改。'
+    }
   };
 
   const ACTION_GOD = {
@@ -84,14 +96,14 @@
       row:'把能力落实在长期责任、可信记录和可以留下的作品上。'
     },
     七杀:{
-      conclusion:'先分清硬要求，再决定由你承担哪一段。',
+      conclusion:'分清硬要求，决定由你承担哪一段。',
       explain:'这一阶段的任务更常带着期限、竞争或明确压力。压力可以让行动集中，但承担范围不清时，也容易把所有困难都当成自己的责任。',
       amplify:['把硬要求拆成可以核对的步骤。','在期限前先确认决定权和所需配合。','完成以后记录哪种处理方式可以复用。'],
       pitfall:'为了不耽误进度先把难处全部接下，等到资源不足才发现没有人知道你需要什么，也没有人能及时补位。',
       row:'硬任务和竞争更容易推动成长，也会放大独自扛事的习惯。'
     },
     正印:{
-      conclusion:'先补齐方法和底子，再增加承担范围。',
+      conclusion:'补齐方法和底子，增加承担范围。',
       explain:'这一阶段更适合整理知识、经验与工作方法。学习的价值要落到能否减少重复摸索，而不是不断增加还没用过的资料。',
       amplify:['把零散经验整理成可重复的方法。','为一项现有责任补齐必要知识。','用一次真实完成检验新学的方法。'],
       pitfall:'资料越积越多，真正使用的仍是原来的做法；准备时间持续增加，实际责任没有因此变得更清楚。',
@@ -126,7 +138,7 @@
       row:'把手艺和作品慢慢养出风格，不被外部速度牵着跑。'
     },
     伤官:{
-      conclusion:'先把要修改的规则说具体，再动手推翻。',
+      conclusion:'把要修改的规则说具体，动手推翻。',
       explain:'这一阶段更容易看见旧方法里的不合理之处。改法越具体，越能变成实际改善；只停在否定，身边的人会不知道下一步怎样配合。',
       amplify:['把不合理之处写成可以验证的问题。','提出修改时同时给出新的完成标准。','用一轮实际结果比较新旧做法。'],
       pitfall:'很快指出问题，却同时修改太多条件；旧做法停了，新做法还没有形成可以共同执行的步骤。',
@@ -268,14 +280,14 @@
     stage:'2019—2028 己酉·正官',
     explanation:[
       '正官阶段把需要长期承担的责任和可核对结果推到前面。壬水先观察，太阳双子快速切换；这两种能力能帮你看见更多出口，现在也更需要一个停止比较的时间。',
-      '不是每个局面都要先看完所有出口。如果三个月前已经选过一条路，当前任务是核对它是否仍然成立，而不是重新打开全部选择。',
+      '不是每个局面都要先看完所有出口。如果三个月前已经选过一条路，当前只核对现实条件有没有改变；条件仍成立，就把这一段责任完成。',
       '正官不要求你放弃好奇心。它要求你把好奇心放进一个稳定的位置：责任范围、决定空间、所需配合和完成标准，这四件事先讲清楚，比临时救三次场更有用。'
     ],
     amplify:['承担一项负责范围清楚、能持续一段时间的责任。','在关键步骤上形成自己的判断，不只等别人给答案。','让每次完成都留下可以复用的经验或方法。'],
     pitfall:'什么都愿意搭把手，却没有先讲清自己负责到哪里。最后承担了结果，对关键决定却没有足够空间；事情做完了，也很难留下可重复的方法。',
-    action:'从一项需要持续推进的责任入手，写清四件事：你负责什么、能决定什么、需要谁配合、怎样算完成。已有长期责任就直接核对；尚未确定时，只选眼前最需要持续完成的一件事，不另开主线。',
+    action:'从一项需要持续推进的责任入手，写清四件事：你负责什么、能决定什么、需要谁配合、怎样算完成。已有长期责任就直接核对；尚未确定时，只核对眼前最需要持续完成的一件事，不增加第二项安排。',
     yearTitle:'2026 年落点',
-    year:'2026 丙午把行动机会、实际结果和责任同时推到台前。新任务或邀约出现时，先确认三件事：由谁决定、由谁完成、怎样算结束。条件不清楚，先补齐规则，不要替别人补上本应说明的责任。',
+    year:'2026 丙午把行动机会、实际结果和责任同时推到台前。新任务或邀约出现时，先看它是否挤占已有责任、何时回看结果、出现什么情况就暂停。条件不清楚，先暂缓答应，不用替对方补上本应说明的安排。',
     startLead:'起运：',
     start:'7 岁 4 个月，顺排',
     timelineTitle:'完整时间轴',
@@ -315,18 +327,18 @@
     let close;
     if (outward) {
       const openingVariants = [
-        stem + day.element + '通常' + day.rhythm + '。进入陌生局面时，上升' + ascLabel + '让你' + outward.visible + '；第一步出现以后，你仍会回到' + stem + day.element + '的做法：' + day.start + '。',
-        '上升' + ascLabel + '决定你怎样开始：你会' + outward.visible + '。' + stem + day.element + '则决定后续怎么走——' + day.rhythm + '；开场以后，你会' + day.start + '。',
-        '面对陌生局面，你会' + outward.visible + '，这是上升' + ascLabel + '的可见动作。真正决定后续节奏的是' + stem + day.element + '：' + day.rhythm + '，所以你会' + day.start + '。',
-        stem + day.element + '让你' + day.rhythm + '；上升' + ascLabel + '则让别人先看见这样的开场动作：你会' + outward.visible + '。两者合在一起，外在动作先出现，随后你会' + day.start + '。'
+        '刚进陌生局面，上升' + ascLabel + '会' + outward.visible + '。真正要不要继续，你会按' + stem + day.element + '的习惯判断：' + day.start + '。',
+        '别人先看到的是上升' + ascLabel + '的动作：' + outward.visible + '。事情开始推进后，你会回到' + stem + day.element + '的判断：' + day.start + '。',
+        '上升' + ascLabel + '管开场，你会' + outward.visible + '。往后怎么走，要看' + stem + day.element + '认不认这条路：' + day.start + '。',
+        '你通常会' + outward.visible + '，这是上升' + ascLabel + '的第一反应。开场只是入口；' + stem + day.element + '随后会' + withoutLeadingFirst(day.start) + '。'
       ];
       const dropCopy = withoutOpeningCondition(day.drop);
       const riskCopy = withoutOpeningCondition(outward.risk);
       const slowdownVariants = [
-        '推进到第三周，' + dropCopy + '。同时，' + riskCopy + '。',
-        '事情进入中段时，' + dropCopy + '。上升' + ascLabel + '的开场方式也有代价：' + riskCopy + '。',
-        '第一轮新鲜感过去后，' + dropCopy + '。如果继续沿用上升' + ascLabel + '的第一反应，' + riskCopy + '。',
-        '真正的掉速点通常在第三周：' + dropCopy + '。陌生局面里的开场方式还可能带来另一个问题：' + riskCopy + '。'
+        '到了第三周，' + dropCopy + '。这时也要留意上升' + ascLabel + '的惯性：' + riskCopy + '。',
+        '新鲜感过去后，' + dropCopy + '。你若仍照着开场方式做，' + riskCopy + '。',
+        '事情走到中段，' + dropCopy + '。再照着上升' + ascLabel + '的第一反应走，' + riskCopy + '。',
+        '真正容易掉速的是中段：' + dropCopy + '。同时，' + riskCopy + '。'
       ];
       const closeVariants = [
         '主线与试验位让' + day.resultNoun + '继续留下结果，也给上升' + ascLabel + '的开场方式划出固定位置。',
@@ -346,7 +358,7 @@
     return {
       title:'一条主线，一个试验位',
       total:[opening, slowdown],
-      basis:godText + '强弱为' + strength + '。' + strengthCopy.support + '，所以只留一条主线和一个试验位，并为两边设反馈和收口时间。',
+      basis:godText + '强弱为' + strength + '。' + strengthCopy.actionSupport + '，所以只留一条主线和一个试验位，并为两边设反馈和收口时间。',
       strategy:clone(COMMON_STRATEGY),
       experiment:clone(COMMON_EXPERIMENT),
       tradeoff:clone(COMMON_TRADEOFF),
@@ -446,8 +458,8 @@
     const nextCopy = next && TIME_GOD[next.god] ? TIME_GOD[next.god] : null;
     const stage = current ? stepTitle(current) : referenceYear + '｜大运资料待核对';
     const action = '如果眼前已有需要持续推进的责任，写清四件事：你负责什么、能决定什么、需要谁配合、怎样算完成；如果没有，就先不凭盘面另造任务。'
-      + (current ? '只核对这项责任在' + current.god + '阶段是否清楚，不另开一条主线。' : '大运资料补齐前，不据此增加新的长期任务。');
-    const yearBody = referenceYear + ' ' + annual.pillar.text + '对应' + annualGodText + '。处理新任务或邀约时，先确认三件事：由谁决定、由谁完成、怎样算结束。条件不清楚，先补齐规则，不要替别人补上本应说明的责任。';
+      + (current ? '只核对这项责任在' + current.god + '阶段是否清楚，不增加第二项长期安排。' : '大运资料补齐前，不据此增加新的长期任务。');
+    const yearBody = referenceYear + ' ' + annual.pillar.text + '对应' + annualGodText + '。处理新任务或邀约时，先看它是否挤占已有责任、何时回看结果、出现什么情况就暂停。条件不清楚，先暂缓答应，不用替对方补上本应说明的安排。';
 
     return {
       title:stageCopy.conclusion,
@@ -455,10 +467,10 @@
       stage:stage,
       explanation:[
         stageCopy.explain,
-        stem + day.element + '面对长期责任时，更在意' + day.longTerm + '；强弱为' + strength + '时，' + strengthCopy.support + '。当前阶段要管理的，是把这种惯性放进清楚的责任和反馈里。'
+        stem + day.element + '面对长期责任时，更在意' + day.longTerm + '；强弱为' + strength + '时，' + strengthCopy.phaseLoad + '。当前阶段只看责任范围、反馈间隔和完成记录。'
       ],
       amplify:clone(stageCopy.amplify),
-      pitfall:stageCopy.pitfall + ' ' + strengthCopy.pitfall,
+      pitfall:stageCopy.pitfall + ' ' + strengthCopy.phaseWarning,
       action:action,
       yearTitle:referenceYear + ' 年落点',
       year:yearBody,
@@ -483,6 +495,7 @@
 
   return Object.freeze({
     SCHEMA_VERSION:'action-time-v1',
+    COPY_SYSTEM_VERSION:'copy-optimized-v3-2026-08-15',
     STEMS:STEMS.slice(),
     SIGNS:SIGNS.slice(),
     buildAction:buildAction,

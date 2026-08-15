@@ -48,11 +48,13 @@
   .mobile-start{display:none}
   @media(max-width:899px){
     body[data-view-state="new"][data-new-mode="landing"] .hero-poster{aspect-ratio:auto;height:min(56svh,470px)}
+    body[data-view-state="result"] .hero-poster{aspect-ratio:auto;height:clamp(220px,32svh,300px)}
     body[data-view-state="new"][data-new-mode="landing"].image-hero .lockup{bottom:23%}
     body[data-view-state="new"][data-new-mode="landing"] .mobile-start{display:block;position:absolute;z-index:4;left:50%;bottom:4%;width:min(86vw,420px);margin:0;transform:translateX(-50%);padding:13px 18px;font-size:16px}
   }
   @media(min-width:900px){
     .hero-poster{aspect-ratio:auto;height:clamp(440px,70vh,760px)}
+    body[data-view-state="result"] .hero-poster{height:clamp(300px,38vh,420px)}
     .hero-poster-main{object-position:50% 50%;transform:none}
     body.image-hero .lockup{display:block;position:absolute;z-index:3;top:48%;left:calc(50% + min(27vw,390px));
       width:min(32vw,390px);margin:0;transform:translate(-50%,-50%);text-shadow:0 2px 28px rgba(2,5,12,.95)}
@@ -164,7 +166,6 @@
   #result{display:none}
   .result-heading{padding-top:max(24px,env(safe-area-inset-top));scroll-margin-top:18px;outline:none}
   .result-heading:focus-visible{outline:2px solid #f0d695;outline-offset:6px}
-  .result-heading.is-confirmed{font-family:var(--serif);font-size:18px;font-weight:600;letter-spacing:.12em;text-indent:.12em;color:var(--gold);text-align:center}
   .rizhu-hero{text-align:center;padding:34px 0 26px}
   .rizhu-label{font-size:12px;font-weight:400;letter-spacing:.5em;text-indent:.5em;color:var(--gold-dim);margin:0 0 14px}
   /* 日主大字:白热核心+鎏金渐变,流光横扫 + 双层辉光呼吸(更亮更活) */
@@ -178,6 +179,7 @@
   @keyframes rzSheen{0%{background-position:120% 0}100%{background-position:-30% 0}}
   .rizhu-image{font-family:var(--serif);color:var(--moon);font-size:16px;letter-spacing:.3em;text-indent:.3em;margin-top:12px}
   .rizhu-sub{color:var(--mist);font-size:12px;letter-spacing:.2em;margin-top:8px}
+  .home-identity{margin:0 0 20px;text-align:center;color:var(--gold);font-family:var(--serif);font-size:17px;letter-spacing:.1em}
 
   .kw-list{margin:8px 0 4px}
   .kw{font-family:var(--serif);font-weight:700;text-align:center;font-size:29px;letter-spacing:.08em;color:var(--moon);padding:14px 0;border-bottom:1px dashed rgba(201,168,92,.28)}
@@ -196,12 +198,12 @@
   .aux-block .src-tag{color:var(--mist);border-color:rgba(107,114,128,.5)}
 
   .confirmed-home{display:block}
-  .confirmed-hero{border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:24px 20px;text-align:center;background:linear-gradient(180deg,rgba(201,168,92,.11),rgba(26,34,51,.96))}
-  .confirmed-judgement{margin:2px 0 12px;color:#f5e8c3;font-family:var(--serif);font-size:clamp(25px,7vw,34px);font-weight:700;line-height:1.35}
-  .confirmed-copy{color:#d8dce4;font-size:15px;line-height:1.95;text-align:justify}
-  .confirmed-keywords{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px;list-style:none}
+  .confirmed-hero{border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:20px 18px;text-align:center;background:linear-gradient(180deg,rgba(201,168,92,.11),rgba(26,34,51,.96))}
+  .confirmed-judgement{max-width:20em;margin:0 auto 10px;color:#f5e8c3;font-family:var(--serif);font-size:clamp(22px,5.8vw,30px);font-weight:700;line-height:1.42}
+  .confirmed-copy{max-width:34em;margin:0 auto;color:#d8dce4;font-size:14px;line-height:1.75;text-align:center}
+  .confirmed-keywords{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;list-style:none}
   .confirmed-keywords li{border:1px solid rgba(201,168,92,.36);border-radius:999px;padding:4px 12px;color:#f1dfae;font-family:var(--serif);font-size:13px}
-  .confirmed-read-hint{margin-top:18px;padding-top:14px;border-top:1px solid rgba(201,168,92,.18);color:var(--mist);font-size:12px;line-height:1.75}
+  .confirmed-read-hint{margin-top:14px;padding-top:12px;border-top:1px solid rgba(201,168,92,.18);color:var(--mist);font-size:12px;line-height:1.7}
   .confirmed-read-hint b{color:var(--gold-dim);font-weight:600}
   .confirmed-section{padding:32px 2px;border-top:1px solid rgba(201,168,92,.2)}
   .confirmed-hero+.confirmed-section{margin-top:18px}
@@ -276,10 +278,10 @@
   body[data-view-state="new"] #result{display:none!important}
   body[data-view-state="new"][data-new-mode="form"] header,
   body[data-view-state="new"][data-new-mode="form"] #introSection{display:none!important}
-  body[data-view-state="result"] header,
   body[data-view-state="result"] #introSection,
   body[data-view-state="result"] #resumePanel,
   body[data-view-state="result"] #formCard{display:none!important}
+  body[data-view-state="result"] .mobile-start{display:none!important}
 </style>
 </head>
 <body data-view-state="new" data-new-mode="landing">
@@ -288,7 +290,7 @@
 <div class="share-notice" id="shareNotice" role="status" hidden><span id="shareNoticeText"></span><button id="shareNoticeClose" type="button" aria-label="关闭提示">×</button></div>
 
 <div class="wrap">
-  <header id="heroSection">
+  <header id="heroSection" tabindex="-1">
     <!-- 静态星空(局部,向下渐隐) -->
     <svg class="stars" viewBox="0 0 375 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <g fill="#E8E4D8">
@@ -458,6 +460,13 @@
     <p class="sr-only" id="resultStatus" role="status" aria-live="polite"></p>
     <h2 class="rizhu-label result-heading" id="resultTitle" tabindex="-1">你 的 日 主</h2>
 
+    <div class="rizhu-hero" id="dayMasterHero" aria-label="日主主体">
+      <div class="rizhu-chars" id="rzChars"></div>
+      <div class="rizhu-image" id="rzImage"></div>
+      <div class="rizhu-sub" id="rzSub">日柱天干，定于你出生的那一日，六十日一轮回</div>
+    </div>
+    <p class="home-identity" id="homeIdentity"></p>
+
     <div class="confirmed-home" id="confirmedHome" hidden>
       <div class="confirmed-hero">
         <p class="confirmed-judgement" id="confirmedJudgement"></p>
@@ -537,6 +546,7 @@
 <script src="./member.js"></script>
 <script src="./minimum-age.js"></script>
 <script src="./bazi-engine.js"></script>
+<script src="./content-copy-optimized-v3.js"></script>
 <script src="./content-home-v1.js"></script>
 <script>
 /* ============ 星空背景 ============ */
@@ -1031,6 +1041,9 @@ function replaceTextList(id,items){
 
 function renderContentHome(){
   const home=CUR.home;
+  $('rzChars').textContent=home.dayMaster.label;
+  $('rzImage').textContent=home.dayMaster.image;
+  $('homeIdentity').textContent=home.identity;
   $('confirmedJudgement').textContent=home.judgement;
   $('confirmedExplanation').textContent=home.explanation;
   replaceTextList('confirmedKeywords',home.keywords);
@@ -1068,8 +1081,7 @@ function renderContentHome(){
 function showResult(){
   $('ritual').style.display='none';
   $('ritual').hidden=true;
-  $('resultTitle').textContent=CUR.home.identity;
-  $('resultTitle').classList.add('is-confirmed');
+  $('resultTitle').textContent='你 的 日 主';
   $('confirmedHome').hidden=false;
   renderContentHome();
   $('resultStatus').textContent='双盘日主页已生成。';
@@ -1079,8 +1091,8 @@ function showResult(){
   renderShareGate();
   trackEvent('chart_generated',{outcome:'completed'});
   requestAnimationFrame(()=>{
-    $('resultTitle').scrollIntoView({behavior:preferredScrollBehavior(),block:'start'});
-    $('resultTitle').focus({preventScroll:true});
+    window.scrollTo({top:0,behavior:preferredScrollBehavior()});
+    $('heroSection').focus({preventScroll:true});
   });
 }
 

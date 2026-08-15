@@ -294,23 +294,19 @@ function contentSections(chart){
   if (!homeContent || !relationContent || !actionTimeContent) {
     throw new Error('full content contracts unavailable');
   }
-  const H = typeof homeContent.buildHome === 'function'
-    ? homeContent.buildHome(chart)
-    : homeContent.build(chart);
+  const O = typeof homeContent.buildReportOverview === 'function'
+    ? homeContent.buildReportOverview(chart)
+    : null;
+  if (!O) throw new Error('report overview contract unavailable');
   const R = typeof relationContent.fromChart === 'function'
     ? relationContent.fromChart(chart)
     : relationContent.build(chart);
   const A = actionTimeContent.buildAction(chart);
   const T = actionTimeContent.buildTime(chart);
-  const steps = Array.isArray(H.steps) ? H.steps : (Array.isArray(H.scenes) ? H.scenes : []);
-  const overuse = Array.isArray(H.overuse)
-    ? H.overuse
-    : [H.overuse && H.overuse.body, H.overuse && H.overuse.action].filter(Boolean);
-
   const overviewBody = [
-    sourced(`${String(H.judgement || '').replace(/[。！？]+$/, '')}。${H.explanation}`, H.source),
-    sourced(steps.map(step => `${String(step.title || '').replace(/[。！？：:]+$/, '')}：${step.body}`).join('\n'), H.source),
-    sourced(overuse.join('\n'), H.source)
+    sourced(O.lead, O.source),
+    sourced(O.scenes.map(scene => `${String(scene.title || '').replace(/[。！？：:]+$/, '')}：${scene.body}`).join('\n'), O.source),
+    sourced(O.tension, O.source)
   ].join('\n\n');
   const relationBody = [
     sourced(R.lead, R.source),
@@ -346,17 +342,16 @@ function contentSections(chart){
 
   return {
     overview: {
-      id:'overview', title:'总览', source:H.source, profile:CONTENT_PROFILE,
+      id:'overview', title:'总览', source:O.source, hero:O.hero, profile:CONTENT_PROFILE,
       blocks:[
-        { type:'heading', level:2, text:H.identity },
-        { type:'quote', text:H.judgement },
-        { type:'paragraph', text:H.explanation },
-        { type:'list', style:'keywords', items:H.keywords },
-        { type:'heading', level:3, text:'三步看懂自己' },
-        { type:'list', style:'scenes', items:steps },
-        { type:'heading', level:3, text:'这项能力用过头时' },
-        ...overuse.map(text => ({ type:'paragraph', text })),
-        { type:'source', text:H.source }
+        { type:'heading', level:2, text:O.title },
+        { type:'quote', text:O.lead },
+        { type:'list', style:'keywords', items:O.keywords },
+        { type:'heading', level:3, text:'两个核对现场' },
+        { type:'list', style:'scenes', items:O.scenes },
+        { type:'heading', level:3, text:'主要矛盾' },
+        { type:'paragraph', text:O.tension },
+        { type:'source', text:O.source }
       ],
       body:overviewBody
     },
