@@ -148,6 +148,11 @@
   .structured-list-scenes li:first-child{border-top:0}
   .structured-list-scenes strong,.structured-list-scenes span{display:block}
   .structured-list-scenes strong{margin-bottom:4px;color:#f0dfb3;font-family:var(--serif)}
+  .report-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 18px!important;padding:0!important;list-style:none}
+  .report-guide li{margin:0;padding:13px 14px;border:1px solid rgba(201,168,92,.2);border-radius:9px;background:rgba(201,168,92,.05)}
+  .report-guide strong,.report-guide span{display:block}
+  .report-guide strong{margin-bottom:4px;color:#f0dfb3;font-family:var(--serif);font-size:15px}
+  .report-guide span{color:#d7dde5;font-size:14px;line-height:1.7}
   .identity-summary{padding:16px;border:1px solid rgba(201,168,92,.2);border-radius:10px;background:rgba(201,168,92,.05)}
   .identity-summary strong{display:block;color:#f4e7c4;font-family:var(--serif);font-size:20px;line-height:1.5}
   .identity-summary p{margin:7px 0 0}
@@ -376,6 +381,7 @@
     .reader-controls{margin-top:12px;padding:7px}
     .reader-control{min-height:46px;padding:7px 8px;font-size:12px}
     .reader-edit-dock{margin-top:10px;padding:0}
+    .report-guide{grid-template-columns:1fr}
     .action-pair{grid-template-columns:1fr}
     .action-pair>section+section{border-left:0;border-top:1px solid rgba(201,168,92,.16);padding:14px 0 0}
     .astro-facts{grid-template-columns:1fr}
@@ -406,7 +412,7 @@
 <a class="skip-link" href="#reportMain">跳到报告正文</a>
 <nav class="report-topbar" aria-label="报告快捷导航">
   <button id="reportBack" type="button">‹ 返回日主页</button>
-  <a class="report-my-link" id="myPageLink" href="../web/account.html">我的</a>
+  <span class="report-my-link" aria-label="当前首期测试模式">首测免费</span>
 </nav>
 <main class="wrap" id="reportMain">
   <header class="report-hero" aria-labelledby="reportTitle">
@@ -468,8 +474,8 @@
 <section id="reportAccessGateBlock" role="alertdialog" aria-modal="true" aria-labelledby="reportAccessGateTitle" tabindex="-1" hidden>
   <div class="age-gate-card">
     <span class="badge">个 人 文 化 图 谱</span>
-    <h2 id="reportAccessGateTitle">请先生成个人文化图谱</h2>
-    <p id="reportAccessGateBody">当前浏览器没有可用于生成报告的出生资料。</p>
+    <h2 id="reportAccessGateTitle">请先完成分享</h2>
+    <p id="reportAccessGateBody">返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。</p>
     <a id="reportAccessBack" href="../web/index.html">返回首页</a>
   </div>
 </section>
@@ -502,11 +508,11 @@
 
 <script src="./vendor/qrcode-generator.js"></script>
 <script src="./share-qr.js"></script>
+<script src="./report-share-unlock.js"></script>
 <script src="./minimum-age.js"></script>
 <script src="./public-config.js"></script>
 <script src="./privacy-consent.js"></script>
 <script src="./analytics.js"></script>
-<script src="./member.js"></script>
 <script src="./bazi-engine.js"></script>
 <script src="./content-copy-optimized-v3.js"></script>
 <script src="./content-home-v1.js"></script>
@@ -527,6 +533,7 @@ const LOCAL_DEBUG_PAGE = location.protocol === 'file:' || ['localhost','127.0.0.
 const PUBLIC_CONFIG = window.ZX_PUBLIC_CONFIG && typeof window.ZX_PUBLIC_CONFIG === 'object'
   ? window.ZX_PUBLIC_CONFIG
   : {};
+const SHARE_FREE_LAUNCH = PUBLIC_CONFIG.launchMode === 'share-free';
 const CONFIGURED_DEEP_ENDPOINT = configuredDeepEndpoint(PUBLIC_CONFIG.deepApiUrl);
 const AI_SERVICE_PUBLIC_READY = PUBLIC_CONFIG.deepServiceAvailable === true && !!CONFIGURED_DEEP_ENDPOINT;
 const LAB = LOCAL_DEBUG_PAGE && new URLSearchParams(location.search).get('lab') === '1';   // 仅本地调试页显示浏览器直连 key 栏
@@ -920,6 +927,11 @@ function structuredList(block){
   }).join('')}</ul>`;
 }
 
+function reportGuide(items){
+  const guide = Array.isArray(items) ? items : [];
+  return `<ul class="report-guide" aria-label="深度报告章节导读">${guide.map(item=>`<li><strong>${esc(item.title || '')}</strong><span>${esc(item.body || '')}</span></li>`).join('')}</ul>`;
+}
+
 function relationStrengths(data){
   const strengths = data && Array.isArray(data.strengths) ? data.strengths : [];
   if (!strengths.length) return '';
@@ -978,6 +990,7 @@ function renderStructuredBlocks(blocks){
     if (block.type === 'quote') return `<blockquote>${esc(block.text || '')}</blockquote>`;
     if (block.type === 'paragraph') return `<p>${esc(block.text || '')}</p>`;
     if (block.type === 'list') return structuredList(block);
+    if (block.type === 'report-guide') return reportGuide(block.items);
     if (block.type === 'relation-strengths') return relationStrengths(block.data);
     if (block.type === 'action-layout') return actionLayout(block.data);
     if (block.type === 'timeline') return timelineBlock(block.data);
@@ -1107,11 +1120,11 @@ function deepMemberBox(){
 }
 
 const REPORT_SOURCE_TREE = /\/v1\/report\.html$/.test(location.pathname);
-const ACCOUNT_PAGE_AVAILABLE = true;
-const ACCOUNT_PAGE_HREF = withLocalDeepEndpoint(REPORT_SOURCE_TREE ? '../web/account.html' : './account.html');
+const ACCOUNT_PAGE_AVAILABLE = false;
+const ACCOUNT_PAGE_HREF = '';
 const HOME_PAGE_HREF = withLocalDeepEndpoint(REPORT_SOURCE_TREE ? '../web/index.html' : './app.html');
-const PRIVACY_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/privacy.html' : './privacy.html';
-const AI_DISCLOSURE_PAGE_HREF = REPORT_SOURCE_TREE ? '../web/ai-disclosure.html' : './ai-disclosure.html';
+const PRIVACY_PAGE_HREF = REPORT_SOURCE_TREE ? './privacy.html' : './privacy.html';
+const AI_DISCLOSURE_PAGE_HREF = REPORT_SOURCE_TREE ? './ai-disclosure.html' : './ai-disclosure.html';
 const MEMBER_ACTIVE_BODY = '会员可保存 6 份报告，每个服务月含 60 次问星，并默认保存最近 50 个问答轮次。';
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
 const MODEL_PROCESSING_NOTICE = LOCAL_DEEP_MODE === 'real'
@@ -1195,7 +1208,6 @@ document.addEventListener('keydown',event=>{
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
 
-$('myPageLink').href = ACCOUNT_PAGE_HREF;
 $('ageGateBack').href = HOME_PAGE_HREF;
 $('reportPrivacyPolicyLink').href = PRIVACY_PAGE_HREF;
 $('aiPrivacyPolicyLink').href = PRIVACY_PAGE_HREF;
@@ -1229,6 +1241,11 @@ function formatMemberUntil(v){
 
 function renderMemberStatus(){
   const box = $('deepMemberBox'); if (!box) return;
+  if(SHARE_FREE_LAUNCH){
+    box.innerHTML = `<div class="member-row"><div class="member-title">首期测试免费开放</div><div class="member-pill">分享解锁</div></div>
+      <div class="member-copy">完成日主页分享后，当前图谱的深度报告可在本机免费查看；本轮不提供会员购买。</div>`;
+    return;
+  }
   const s = memberSnapshot();
   const untilText = formatMemberUntil(s.memberUntil);
   const isMember = !!(s.memberUntil && new Date(typeof s.memberUntil === 'number' ? s.memberUntil : String(s.memberUntil)).getTime() > Date.now());
@@ -1385,35 +1402,52 @@ function drawQianPosterAsset(q,img,posterDate){
   x.fillStyle = '#d7b766'; x.font = '20px '+SERIF;
   x.fillText('◇  今 日 知 星 卡  ·  '+posterDate+'  ◇',W/2,88);
 
-  // 覆盖源图中写死的旧双栏、旧品牌、旧日期机制与扫码传播语，再按当前合规称谓重绘。
-  const footerCover=x.createLinearGradient(0,710,0,978);
-  footerCover.addColorStop(0,'rgba(3,9,15,.55)');
-  footerCover.addColorStop(.12,'rgba(3,9,15,1)');
-  footerCover.addColorStop(1,'rgba(3,9,15,1)');
-  x.fillStyle=footerCover;x.fillRect(38,710,674,268);
-  x.strokeStyle='rgba(201,168,92,.72)';x.lineWidth=1;
-  x.beginPath();x.moveTo(44,805);x.lineTo(706,805);x.stroke();
-
-  x.textAlign='left';
-  x.font='16px '+SERIF;x.fillStyle='#d7b766';
-  x.fillText('适',58,778);x.fillText('缓',392,778);
-  x.font='18px '+SERIF;x.fillStyle='rgba(232,228,216,.94)';
-  x.fillText((q.yi||[]).join(' · '),92,778);
-  x.fillText((q.ji||[]).join(' · '),426,778);
-
-  x.font='700 22px '+SERIF;x.fillStyle='#d7b766';x.fillText('知 星',70,866);
-  x.font='13px '+SERIF;x.fillStyle='rgba(232,228,216,.82)';x.fillText('以易理观己，以星盘为证',70,894);
-  x.font='14px '+SERIF;x.fillStyle='rgba(215,183,102,.9)';
-  x.fillText((q.bindElement||'')+' · '+(q.strength||''),390,861);
-  x.fillStyle='rgba(232,228,216,.72)';x.fillText('今日卡片 · 当日更新',390,889);
+  // 底部直接沿用 60 张定稿卡片的原生画面与信息排布，不再叠加整块蒙版或第二套文字。
+  // 仅在源图原有二维码的小范围内替换为可扫描的固定官网码。
   drawQianOfficialQr(x);
+}
+
+function findQianOfficialQrSlot(x){
+  const scanX=560,scanY=800,scanW=160,scanH=170,stride=scanW+1;
+  let pixels;
+  try{pixels=x.getImageData(scanX,scanY,scanW,scanH).data}catch(_){return{x:610,y:850,size:74,score:0}}
+  const integral=new Uint32Array((scanW+1)*(scanH+1));
+  for(let py=0;py<scanH;py+=1){
+    let row=0;
+    for(let px=0;px<scanW;px+=1){
+      const offset=(py*scanW+px)*4;
+      const r=pixels[offset],g=pixels[offset+1],b=pixels[offset+2];
+      row+=(r>135&&g>125&&b>105&&Math.max(r,g,b)-Math.min(r,g,b)<95)?1:0;
+      integral[(py+1)*stride+px+1]=integral[py*stride+px+1]+row;
+    }
+  }
+  let best={x:610,y:850,size:74,score:0};
+  for(const size of [66,70,74,78]){
+    for(let py=0;py<=scanH-size;py+=1){
+      for(let px=0;px<=scanW-size;px+=1){
+        const left=px,top=py,right=px+size,bottom=py+size;
+        const light=integral[bottom*stride+right]-integral[top*stride+right]-integral[bottom*stride+left]+integral[top*stride+left];
+        const score=light/(size*size);
+        if(score>best.score)best={x:scanX+px,y:scanY+py,size,score};
+      }
+    }
+  }
+  return best.score>=.35?best:{x:610,y:850,size:74,score:best.score};
 }
 
 function drawQianOfficialQr(x){
   if(!window.ZxShareQr)throw new Error('share qr unavailable');
-  const qr=window.ZxShareQr.drawOfficial(x,{x:610,y:828,size:66,quietZone:4});
+  const slot=findQianOfficialQrSlot(x);
+  const fieldSize=Math.max(78,Math.min(90,slot.size+8));
+  const fieldX=Math.max(566,Math.min(712-fieldSize,Math.round(slot.x-(fieldSize-slot.size)/2)));
+  const fieldY=Math.max(810,Math.min(970-fieldSize,Math.round(slot.y-(fieldSize-slot.size)/2)));
+  x.fillStyle='#f3ead2';
+  x.fillRect(fieldX,fieldY,fieldSize,fieldSize);
+  const qrX=fieldX+Math.round((fieldSize-66)/2),qrY=fieldY+Math.round((fieldSize-66)/2);
+  const qr=window.ZxShareQr.drawOfficial(x,{x:qrX,y:qrY,size:66,quietZone:4});
   x.strokeStyle='#C9A85C';x.lineWidth=1;
-  x.strokeRect(qr.left-1,qr.top-1,qr.actualSize+2,qr.actualSize+2);
+  x.strokeRect(fieldX-1,fieldY-1,fieldSize+2,fieldSize+2);
+  return{slot,field:{x:fieldX,y:fieldY,size:fieldSize},qr};
 }
 
 function qianPosterBlob(){
@@ -1896,6 +1930,10 @@ function showReportAccessGate(message,title='尚未取得这张图谱的访问�
 
 async function generateAuthorizedRule(){
   if (!ensureEligibleBirthDate($('d').value)) return;
+  if (!LOCAL_DEBUG_PAGE && (!window.ZxReportShareUnlock || !ZxReportShareUnlock.isUnlocked(reportChartPayload()))) {
+    showReportAccessGate('返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。','请先完成分享');
+    return;
+  }
   generateRule();
 }
 $('go').onclick = generateAuthorizedRule;
@@ -2123,6 +2161,9 @@ async function callDeepBackend(chart, question, history = []){
 }
 
 function deepPaywall(reason){
+  if(SHARE_FREE_LAUNCH){
+    return '<div class="deep-echo"><b style="color:var(--gold)">问星首测暂未开放</b><br>本轮仅开放分享后免费查看深度报告，不提供会员购买。</div>';
+  }
   const loginRequired=reason==='login';
   const quotaUnavailable=reason==='quota';
   const title=loginRequired?'请先登录手机号':quotaUnavailable?QUOTA_UNAVAILABLE.title:MEMBERSHIP_REQUIRED.title;
@@ -2349,6 +2390,10 @@ document.addEventListener('pointerdown', e => {
     || (isLocalDebugPage() ? {d:'1995-06-08',t:'14:30',c:'贵阳',g:''} : null);
   if (!data) {
     showReportAccessGate('当前浏览器没有可用于生成报告的出生资料。请返回首页填写，并确认资料处理后再进入。','请先生成个人文化图谱');
+    return;
+  }
+  if (!LOCAL_DEBUG_PAGE && (!window.ZxReportShareUnlock || !ZxReportShareUnlock.isUnlocked(data))) {
+    showReportAccessGate('返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。','请先完成分享');
     return;
   }
   if (!await requestReportPrivacyConsent()) return;

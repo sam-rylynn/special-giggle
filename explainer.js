@@ -303,9 +303,15 @@ function contentSections(chart){
     : relationContent.build(chart);
   const A = actionTimeContent.buildAction(chart);
   const T = actionTimeContent.buildTime(chart);
+  const reportGuide = [
+    { title:'盘面', body:'看你怎样接收信息、形成判断，最容易忽略什么。' },
+    { title:'关系', body:'看你怎样靠近别人，冲突时为什么退开，又怎样回来把话说完。' },
+    { title:'行动', body:'看你怎样开始、什么时候容易掉速，以及怎样把一件事做完。' },
+    { title:'时间', body:'看你当前阶段最需要承担什么，哪些事该继续，哪些该停。' }
+  ];
   const overviewBody = [
     sourced(O.lead, O.source),
-    sourced(O.scenes.map(scene => `${String(scene.title || '').replace(/[。！？：:]+$/, '')}：${scene.body}`).join('\n'), O.source),
+    sourced(reportGuide.map(item => `${item.title}：${item.body}`).join('\n'), '报告结构'),
     sourced(O.tension, O.source)
   ].join('\n\n');
   const relationBody = [
@@ -344,13 +350,12 @@ function contentSections(chart){
     overview: {
       id:'overview', title:'总览', source:O.source, hero:O.hero, profile:CONTENT_PROFILE,
       blocks:[
-        { type:'heading', level:2, text:O.title },
-        { type:'quote', text:O.lead },
-        { type:'list', style:'keywords', items:O.keywords },
-        { type:'heading', level:3, text:'两个核对现场' },
-        { type:'list', style:'scenes', items:O.scenes },
-        { type:'heading', level:3, text:'主要矛盾' },
-        { type:'paragraph', text:O.tension },
+        { type:'heading', level:2, text:'整体判断' },
+        { type:'paragraph', text:O.lead },
+        { type:'heading', level:3, text:'这份报告会讲清四件事' },
+        { type:'report-guide', items:reportGuide },
+        { type:'heading', level:3, text:'整份报告的核心判断' },
+        { type:'quote', text:O.tension },
         { type:'source', text:O.source }
       ],
       body:overviewBody

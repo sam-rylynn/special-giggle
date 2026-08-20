@@ -199,12 +199,8 @@
 
   .confirmed-home{display:block}
   .confirmed-hero{border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:20px 18px;text-align:center;background:linear-gradient(180deg,rgba(201,168,92,.11),rgba(26,34,51,.96))}
-  .confirmed-judgement{max-width:20em;margin:0 auto 10px;color:#f5e8c3;font-family:var(--serif);font-size:clamp(22px,5.8vw,30px);font-weight:700;line-height:1.42}
-  .confirmed-copy{max-width:34em;margin:0 auto;color:#d8dce4;font-size:14px;line-height:1.75;text-align:center}
-  .confirmed-keywords{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;list-style:none}
-  .confirmed-keywords li{border:1px solid rgba(201,168,92,.36);border-radius:999px;padding:4px 12px;color:#f1dfae;font-family:var(--serif);font-size:13px}
-  .confirmed-read-hint{margin-top:14px;padding-top:12px;border-top:1px solid rgba(201,168,92,.18);color:var(--mist);font-size:12px;line-height:1.7}
-  .confirmed-read-hint b{color:var(--gold-dim);font-weight:600}
+  .confirmed-judgement{width:100%;max-width:20em;margin:0 auto 10px;overflow-wrap:anywhere;color:#f5e8c3;font-family:var(--serif);font-size:clamp(22px,5.8vw,30px);font-weight:700;line-height:1.42}
+  .confirmed-copy{width:100%;max-width:34em;margin:0 auto;overflow-wrap:anywhere;color:#d8dce4;font-size:14px;line-height:1.75;text-align:center}
   .confirmed-section{padding:32px 2px;border-top:1px solid rgba(201,168,92,.2)}
   .confirmed-hero+.confirmed-section{margin-top:18px}
   .confirmed-section h3{margin-bottom:16px;color:var(--gold);font-family:var(--serif);font-size:19px;letter-spacing:.06em}
@@ -471,8 +467,6 @@
       <div class="confirmed-hero">
         <p class="confirmed-judgement" id="confirmedJudgement"></p>
         <p class="confirmed-copy" id="confirmedExplanation"></p>
-        <ul class="confirmed-keywords" id="confirmedKeywords" aria-label="本命关键词"></ul>
-        <p class="confirmed-read-hint"><b>继续看深度报告：</b>关系、行动与时间会在完整报告里继续展开。</p>
       </div>
       <section class="confirmed-section confirmed-entry">
         <h3>三步看懂自己</h3>
@@ -490,7 +484,7 @@
     </div>
 
     <div class="share-gate" id="shareGate" aria-live="polite">
-      <div class="share-gate-head"><span id="shareGateTitle">双盘印证分享卡</span> <span class="share-gate-badge" id="shareGateBadge">只展示公开能力</span></div>
+      <div class="share-gate-head"><span id="shareGateTitle">双盘印证分享卡</span> <span class="share-gate-badge" id="shareGateBadge">分享后免费查看</span></div>
       <p id="shareGateBody">分享卡只展示八字与太阳星座共同确认的能力，不出现强弱、关系冲突或私人处境。</p>
       <div class="share-gate-actions" id="shareGateActions">
         <button class="btn ghost" id="shareActionBtn" type="button">生成我的双盘印证卡</button>
@@ -517,11 +511,9 @@
 <div id="consent"><div class="box" role="dialog" aria-modal="true" aria-labelledby="consentTitle" aria-describedby="consentSummary">
   <h3 id="consentTitle">开始前，先确认资料如何使用</h3>
   <p id="consentSummary">你填写的出生日期、出生时间、出生城市和性别，会用于生成个人文化图谱、基础内容和深度发展报告。未主动保存到账号报告库且未开启个人图谱云端同步时，资料只保存在当前浏览器，用于返回继续查看。</p>
-  <p>如果你之后主动使用问星，系统会在首次发送前另行征得同意；届时个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡才会经知星后端发送给第三方大模型服务处理。请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。</p>
-  <p>如果你另外选择设备账号服务，知星会在当前设备生成一个随机设备标识，用于账号初始化、次数记录和安全防护。它不读取硬件序列号，不使用浏览器指纹，不用于广告、跨应用追踪或发放分享权益。</p>
-  <p class="privacy-link">提交前请阅读<a href="./privacy.html" target="_blank" rel="noopener">《隐私政策》</a>，了解运营主体、处理范围、保存期限和你的资料权利。</p>
+  <p>首期测试不开放问星、账号、云同步、会员购买或支付；出生资料不会发送给第三方大模型。以后如启用相关功能，会先更新说明并另行取得必要确认。</p>
+  <p class="privacy-link">提交前请阅读<a href="./privacy.html" target="_blank" rel="noopener">《首期测试隐私政策》</a>，了解运营主体、处理范围、保存期限和你的资料权利。</p>
   <label class="consent-check"><input type="checkbox" id="consentCheck">我已阅读上述说明，同意在当前浏览器处理并保存出生资料，用于生成个人文化图谱和返回查看。</label>
-  <label class="consent-check"><input type="checkbox" id="deviceAccountCheck">可选：如设备账号服务启用，同意生成随机设备标识，用于账号初始化、次数记录与安全防护；不用于发放分享权益。</label>
   <label class="consent-check"><input type="checkbox" id="analyticsCheck">可选：同意发送不含出生资料、图谱和问题正文的最小使用事件，用于改进页面可靠性；测试通道未配置接收端点时不会发送。</label>
   <div class="actions">
     <button class="cta" style="margin-top:0" id="consentOk" disabled>同意并继续</button>
@@ -540,10 +532,10 @@
 
 <script src="./vendor/qrcode-generator.js"></script>
 <script src="./share-qr.js"></script>
+<script src="./report-share-unlock.js"></script>
 <script src="./public-config.js"></script>
 <script src="./privacy-consent.js"></script>
 <script src="./analytics.js"></script>
-<script src="./member.js"></script>
 <script src="./minimum-age.js"></script>
 <script src="./bazi-engine.js"></script>
 <script src="./content-copy-optimized-v3.js"></script>
@@ -769,15 +761,18 @@ function reportUrl(){
 
 function renderShareGate(message){
   const share=CUR.dualShare;
+  const unlocked=!!(window.ZxReportShareUnlock&&ZxReportShareUnlock.isUnlocked(currentChartPayload()));
   $('shareGateTitle').textContent=`${share.identity} · ${share.title}`;
-  $('shareGateBadge').textContent='双盘印证';
+  $('shareGateBadge').textContent=unlocked?'深度报告已解锁':'分享后免费查看';
   $('shareGateBody').textContent=share.body;
-  $('shareActionBtn').textContent=share.button;
+  $('shareActionBtn').textContent=unlocked?'再次生成分享卡':'生成分享卡，免费解锁报告';
   $('shareGateActions').hidden=false;
   $('sharePosterBtn').hidden=false;
-  $('localReportPreview').hidden=false;
-  $('deepBtn').textContent='查看我的深度发展报告';
-  $('shareGateStatus').textContent=message||'';
+  $('localReportPreview').hidden=!unlocked;
+  $('deepBtn').textContent='已解锁 · 查看深度发展报告';
+  $('shareGateStatus').textContent=message||(unlocked
+    ?'这份报告已在当前浏览器免费解锁。'
+    :'生成并分享这张卡，即可免费查看当前图谱的完整深度报告。');
 }
 
 function posterBlob(){
@@ -806,12 +801,13 @@ async function handoffPoster(status){
     const text=CUR.dualShare.body;
     await navigator.share({title:'知星',text,files:[file]});
     trackEvent('share_completed',{method:'native_share',outcome:'completed'});
-    status.textContent='已调起系统分享。';
-    return;
+    status.textContent='分享已完成。';
+    return 'native_share';
   }
   downloadCurrentPoster();
   trackEvent('share_completed',{method:'download',outcome:'completed'});
   status.textContent='海报已保存，请从相册或下载文件中选择并分享。';
+  return 'download';
 }
 
 async function openCurrentPosterPreview(){
@@ -833,7 +829,15 @@ async function sharePreparedPoster(){
   if(!CUR)return;
   const status=$('shareGateStatus');
   try{
-    await handoffPoster(status);
+    const method=await handoffPoster(status);
+    const granted=!!(window.ZxReportShareUnlock&&ZxReportShareUnlock.unlock(currentChartPayload(),method));
+    if(!granted)throw new Error('share unlock storage unavailable');
+    trackEvent('report_unlocked',{method,outcome:'completed'});
+    closePosterLayer();
+    renderShareGate(method==='download'
+      ?'海报已保存，深度报告已免费解锁；你可以从相册或下载文件中继续分享。'
+      :'分享已完成，深度报告已免费解锁。');
+    requestAnimationFrame(()=>$('deepBtn').focus());
   }catch(error){
     if(error&&error.name==='AbortError'){
       trackEvent('share_failed',{outcome:'cancelled',reason:'unknown'});
@@ -847,7 +851,7 @@ async function sharePreparedPoster(){
 
 async function confirmInboundShare(){
   if(!INBOUND_SHARE_TOKEN)return;
-  showShareNotice('当前首发版本不启用分享权益；你仍可生成自己的盘面，原链接不会产生权益。');
+  showShareNotice('首期测试不使用链接权益。请生成自己的图谱并完成分享，即可在当前浏览器免费查看深度报告。');
 }
 
 /* 下滑引导 → 平滑滚到表单 */
@@ -902,7 +906,6 @@ function consentFocusable(){
 }
 function openConsent(){
   $('consentCheck').checked=false;
-  $('deviceAccountCheck').checked=false;
   $('analyticsCheck').checked=false;
   $('consentOk').disabled=true;
   $('consentOk').textContent='同意并继续';
@@ -985,14 +988,12 @@ $('consentOk').onclick=()=>{
     return;
   }
   const scopes=['birth_local'];
-  if($('deviceAccountCheck').checked)scopes.push('device_account');
   if($('analyticsCheck').checked)scopes.push('product_analytics');
   try{ZxPrivacyConsent.grant(scopes)}catch(_){
     $('consentOk').textContent='资料选择暂不可记录';
     return;
   }
   trackEvent('birth_consent_granted',{outcome:'granted'});
-  if(scopes.includes('device_account'))trackEvent('device_account_consent_granted',{outcome:'granted'});
   try{
     localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:'')}));
   }catch(_){
@@ -1000,7 +1001,6 @@ $('consentOk').onclick=()=>{
     return;
   }
   closeConsent(false);
-  if(scopes.includes('device_account')&&window.zxMember&&zxMember.start)zxMember.start().catch(()=>{});
   startGenerationFromForm();
 };
 
@@ -1041,12 +1041,12 @@ function replaceTextList(id,items){
 
 function renderContentHome(){
   const home=CUR.home;
+  const share=CUR.dualShare;
   $('rzChars').textContent=home.dayMaster.label;
   $('rzImage').textContent=home.dayMaster.image;
   $('homeIdentity').textContent=home.identity;
-  $('confirmedJudgement').textContent=home.judgement;
-  $('confirmedExplanation').textContent=home.explanation;
-  replaceTextList('confirmedKeywords',home.keywords);
+  $('confirmedJudgement').textContent=share.title;
+  $('confirmedExplanation').textContent=share.body;
   $('confirmedRelation').textContent=`双盘关系 · ${home.fusionType}`;
   $('confirmedSource').textContent=home.source;
   $('homeSteps').replaceChildren(...home.steps.map(scene=>{
@@ -1101,8 +1101,13 @@ $('againBtn').onclick=()=>{
   showFormDirect();
 };
 
-/* ============ 深度报告入口:付费首发不以分享行为换取访问权限 ============ */
+/* ============ 深度报告入口：首期测试完成分享或保存海报后，本机免费解锁 ============ */
 $('deepBtn').onclick=()=>{
+  if(!window.ZxReportShareUnlock||!ZxReportShareUnlock.isUnlocked(currentChartPayload())){
+    renderShareGate('请先生成分享卡并完成分享或保存，再免费查看这份深度报告。');
+    $('shareActionBtn').focus();
+    return;
+  }
   location.href=reportUrl();   // 出生信息也已存 localStorage(zx_input)兜底
 };
 

@@ -422,15 +422,15 @@
       contrast:'外面看见的是反应快、能接话，真正的取舍却要等壬水把全局看完。'
     },
     reportOverview:{
-      hero:'别人常把你接得住话，误认成你已经答应。',
-      title:'快回应不等于已决定',
-      lead:'信息一多，你会先区分事实、猜测和还没回答的问题，再决定哪些值得继续追。这个过程常发生在心里，外面只看见你已经接住了场面。',
+      hero:'你看得见很多路，真正要做的是选定一条，把它走完。',
+      title:'整体判断',
+      lead:'壬水让你习惯先看全局，太阳双子让你快速接住信息。你能从杂乱里找到联系，也容易因为新的可能不断出现，重新打开已经做过的决定。',
       keywords:['先分信息','再做取舍','说清进度'],
       scenes:[
         { title:'信息刚进来时', body:'你会把几种说法分成已知、推测和待确认三栏，不急着用一个漂亮答案盖住缺口。' },
         { title:'准备定案时', body:'你会检查这个选择过一段时间是否仍愿意承担，而不是只看眼前谁回应得最快。' }
       ],
-      tension:'你的主要矛盾不是信息太多，而是「我听见了」和「我决定了」没有同时说清；前者发生得快，后者需要完整取舍。',
+      tension:'你不缺方向，缺的是让一个方向持续变成结果。',
       source:'日主·壬水｜太阳·双子座'
     },
     dualShare:{
@@ -442,6 +442,22 @@
       a11y:'知星双盘印证卡，壬水与太阳双子，标题海纳百川、触类旁通。'
     }
   };
+
+  const APPROVED_PAIR_OVERRIDES = {
+    '壬×双子座':{
+      reportOverview:{
+        hero:EXACT_V2.reportOverview.hero,
+        title:EXACT_V2.reportOverview.title,
+        lead:EXACT_V2.reportOverview.lead,
+        tension:EXACT_V2.reportOverview.tension
+      },
+      dualShare:clone(EXACT_V2.dualShare)
+    }
+  };
+
+  function approvedPairOverride(ctx) {
+    return APPROVED_PAIR_OVERRIDES[combinationKey(ctx.stem, ctx.sun)] || null;
+  }
 
   function inputNumber(input, longName, shortName) {
     const raw = input[longName] != null ? input[longName] : input[shortName];
@@ -495,15 +511,18 @@
   function buildReportOverview(value) {
     const ctx = contextOf(value);
     requirePair(ctx.stem, ctx.sun);
-    if (isExactV2Sample(value)) return clone(EXACT_V2.reportOverview);
+    const approved = approvedPairOverride(ctx);
+    if (isExactV2Sample(value)) return Object.assign(clone(EXACT_V2.reportOverview), clone(approved && approved.reportOverview));
     const optimized = optimizedPair(ctx.stem, ctx.sun);
-    if (optimized) return clone(optimized.reportOverview);
-    return getPair(ctx.stem, ctx.sun).reportOverview;
+    const overview = optimized ? clone(optimized.reportOverview) : getPair(ctx.stem, ctx.sun).reportOverview;
+    return Object.assign(overview, clone(approved && approved.reportOverview));
   }
 
   function buildShare(value) {
     const ctx = contextOf(value);
     requirePair(ctx.stem, ctx.sun);
+    const approved = approvedPairOverride(ctx);
+    if (approved && approved.dualShare) return clone(approved.dualShare);
     if (isExactV2Sample(value)) return clone(EXACT_V2.dualShare);
     const optimized = optimizedPair(ctx.stem, ctx.sun);
     if (optimized) return clone(optimized.dualShare);

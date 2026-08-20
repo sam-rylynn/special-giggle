@@ -10,6 +10,8 @@
   'use strict';
 
   window.ZX_PUBLIC_CONFIG = Object.freeze({
+    launchMode: 'share-free',
+    paidH5Enabled: false,
     accountApiBase: 'https://api.zhixng.cn',
     analyticsEnabled: false,
     analyticsEndpoint: '',
