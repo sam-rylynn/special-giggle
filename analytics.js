@@ -13,7 +13,7 @@
     'page_view','home_view',
     'birth_consent_shown','birth_consent_granted','birth_consent_declined',
     'chart_generated','report_opened','report_section_viewed',
-    'today_card_generated','share_started','share_completed','share_failed',
+    'today_card_generated','share_started','native_share_completed','poster_saved','share_failed','report_unlocked',
     'ai_consent_shown','ai_consent_granted','ai_consent_declined',
     'ai_request_started','ai_request_completed','ai_request_failed',
     'device_account_consent_shown','device_account_consent_granted','device_account_consent_declined',

@@ -1,7 +1,7 @@
 (function (global) {
   'use strict';
 
-  const STORAGE_KEY = 'zx_report_share_unlock_v1';
+  const STORAGE_KEY = 'zx_report_share_unlock_v2';
   const MAX_RECORDS = 12;
 
   function clean(value) {
@@ -50,7 +50,11 @@
   function readRecords() {
     try {
       const parsed = JSON.parse(global.localStorage.getItem(STORAGE_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed.filter(record => record && typeof record.id === 'string') : [];
+      return Array.isArray(parsed) ? parsed.filter(record =>
+        record && typeof record.id === 'string' &&
+        record.method === 'native_share' &&
+        typeof record.unlockedAt === 'string'
+      ) : [];
     } catch (_) {
       return [];
     }
@@ -61,12 +65,27 @@
     return !!id && readRecords().some(record => record.id === id);
   }
 
-  function unlock(input, method) {
+  function shareError(name, message) {
+    if (typeof global.DOMException === 'function') return new global.DOMException(message, name);
+    const error = new Error(message);
+    error.name = name;
+    return error;
+  }
+
+  function canNativeShare(shareData) {
+    const navigator = global.navigator;
+    if (!navigator || typeof navigator.share !== 'function') return false;
+    const files = shareData && Array.isArray(shareData.files) ? shareData.files : [];
+    if (!files.length) return true;
+    return typeof navigator.canShare === 'function' && navigator.canShare({ files });
+  }
+
+  function writeNativeShare(input) {
     const id = inputId(input);
     if (!id) return false;
     const record = {
       id,
-      method: clean(method) || 'share',
+      method: 'native_share',
       unlockedAt: new Date().toISOString()
     };
     const records = [record, ...readRecords().filter(item => item.id !== id)].slice(0, MAX_RECORDS);
@@ -78,11 +97,18 @@
     }
   }
 
+  async function shareAndUnlock(input, shareData) {
+    if (!inputId(input)) throw shareError('DataError', 'missing chart input');
+    if (!canNativeShare(shareData)) throw shareError('NotSupportedError', 'native sharing is unavailable');
+    await global.navigator.share(shareData || {});
+    if (!writeNativeShare(input)) throw shareError('QuotaExceededError', 'share unlock storage unavailable');
+    return Object.freeze({ method:'native_share', unlocked:true });
+  }
+
   global.ZxReportShareUnlock = Object.freeze({
     storageKey: STORAGE_KEY,
-    canonicalInput,
-    inputId,
+    canNativeShare,
     isUnlocked,
-    unlock
+    shareAndUnlock
   });
 })(typeof window !== 'undefined' ? window : globalThis);

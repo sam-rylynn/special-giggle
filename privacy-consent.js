@@ -4,12 +4,13 @@
 (function () {
   'use strict';
 
-  var NOTICE_VERSION = '2026-08-03.2';
+  var NOTICE_VERSION = 'privacy-2026.08.21-share-free-v2';
   var CHOICES_KEY = 'zx_privacy_choices_v1';
   var EXPORT_KEYS = [
     'zx_input',
     'zx_saved_reports_v1',
     'zx_profile_name_v1',
+    'zx_report_share_unlock_v2',
     CHOICES_KEY
   ];
   var SCOPES = ['birth_local', 'device_account', 'ai_processing', 'product_analytics'];

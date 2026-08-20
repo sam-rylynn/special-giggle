@@ -20,18 +20,18 @@
     deepApiUrl: '',
     paymentOrigin: 'https://zhixng.cn',
     merchantLegalName: '贵州天云稀泉科技有限公司',
-    supportUrl: 'https://zhixng.cn/privacy.html#contact',
-    refundUrl: 'https://zhixng.cn/refund-policy.html',
+    supportUrl: 'https://zhixng.cn/privacy.html',
+    refundUrl: '',
     userAgreementUrl: 'https://zhixng.cn/terms.html',
-    membershipRulesUrl: 'https://zhixng.cn/membership-rules.html',
+    membershipRulesUrl: '',
     privacyUrl: 'https://zhixng.cn/privacy.html',
     aiDisclosureUrl: 'https://zhixng.cn/ai-disclosure.html',
-    purchaseNoticeUrl: 'https://zhixng.cn/purchase-notice.html',
-    agreementVersion: 'user-agreement-2026.08.03-v2',
-    privacyVersion: 'privacy-2026.08.03-v2',
-    membershipTermsVersion: 'membership-2026.08.03-v2',
-    refundPolicyVersion: 'refund-2026.08.03-v2',
-    aiDisclosureVersion: 'ai-disclosure-2026.08.03-v2',
-    purchaseNoticeVersion: 'purchase-notice-2026.08.03-v2'
+    purchaseNoticeUrl: '',
+    agreementVersion: 'user-agreement-2026.08.21-share-free-v2',
+    privacyVersion: 'privacy-2026.08.21-share-free-v2',
+    membershipTermsVersion: '',
+    refundPolicyVersion: '',
+    aiDisclosureVersion: 'ai-disclosure-2026.08.21-share-free-v1',
+    purchaseNoticeVersion: ''
   });
 })();

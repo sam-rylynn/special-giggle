@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-vARQlt/8zsWUfSWiHCdyrADXRnsK7Kf/H3OlUFlKpFg='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<style id="zx-frame-guard">html{visibility:hidden!important}</style>
+<script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="theme-color" content="#0E1220">
 <title>知星｜深度发展报告</title>
 <style>
@@ -475,7 +479,7 @@
   <div class="age-gate-card">
     <span class="badge">个 人 文 化 图 谱</span>
     <h2 id="reportAccessGateTitle">请先完成分享</h2>
-    <p id="reportAccessGateBody">返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。</p>
+    <p id="reportAccessGateBody">返回日主页生成分享卡，完成系统分享后，即可免费查看当前图谱的深度报告；仅保存图片不会解锁。</p>
     <a id="reportAccessBack" href="../web/index.html">返回首页</a>
   </div>
 </section>
@@ -514,8 +518,9 @@
 <script src="./privacy-consent.js"></script>
 <script src="./analytics.js"></script>
 <script src="./bazi-engine.js"></script>
-<script src="./content-copy-optimized-v3.js"></script>
+<script src="./content-copy-home-v3.js"></script>
 <script src="./content-home-v1.js"></script>
+<script src="./content-copy-relation-v3.js"></script>
 <script src="./content-relation-v1.js"></script>
 <script src="./content-action-time-v1.js"></script>
 <script src="./explainer.js"></script>
@@ -536,7 +541,6 @@ const PUBLIC_CONFIG = window.ZX_PUBLIC_CONFIG && typeof window.ZX_PUBLIC_CONFIG 
 const SHARE_FREE_LAUNCH = PUBLIC_CONFIG.launchMode === 'share-free';
 const CONFIGURED_DEEP_ENDPOINT = configuredDeepEndpoint(PUBLIC_CONFIG.deepApiUrl);
 const AI_SERVICE_PUBLIC_READY = PUBLIC_CONFIG.deepServiceAvailable === true && !!CONFIGURED_DEEP_ENDPOINT;
-const LAB = LOCAL_DEBUG_PAGE && new URLSearchParams(location.search).get('lab') === '1';   // 仅本地调试页显示浏览器直连 key 栏
 const LOCAL_REAL_DEEP_ENDPOINT = 'http://127.0.0.1:9001/';
 const LOCAL_DEEP_MODE = localDebugDeepMode();
 let LOCAL_DEEP_BOOTSTRAP = captureLocalRealBootstrap();
@@ -1129,9 +1133,7 @@ const MEMBER_ACTIVE_BODY = '会员可保存 6 份报告，每个服务月含 60 
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
 const MODEL_PROCESSING_NOTICE = LOCAL_DEEP_MODE === 'real'
   ? '本机真实回答测试会把个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，经只绑定回环地址的临时测试转发发送给已部署的 DeepSeek 函数；本机临时凭证不会发送给云端。'
-  : LAB
-    ? '本机内测会把个人文化图谱、本次问题和今日知星卡从当前浏览器直接发送给 Anthropic，用于生成本次答复。API Key 只保存在当前浏览器。'
-    : '提问会发送个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
+  : '提问会发送个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，用于生成本次答复。相关内容会经知星后端发送给第三方大模型服务处理。';
 const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
 const MEMBERSHIP_REQUIRED = {
   title: '需要开通会员',
@@ -1299,7 +1301,6 @@ function deepCard(){
       <h2>问星</h2>
       <p class="deep-intro">写下一个具体情境。系统会结合已经生成的个人文化图谱，整理现实条件、可选路径和下一步验证；输出由人工智能生成，不预测结果，也不替你决定。</p>
       ${deepMemberBox()}
-      ${LAB ? `<div class="deep-key"><label class="sr-only" for="deepKey">本机内测 Anthropic API Key</label><input type="password" id="deepKey" placeholder="内测 · Anthropic Key（仅存本机）" autocomplete="off" style="width:100%"><small>本机调试通道：粘贴 Key 后点“开始梳理”。公开访问不会显示此栏。</small></div>` : ''}
       <div class="ai-interaction">${LOCAL_DEEP_MODE === 'real' ? '真实 DeepSeek 测试 · 本机临时凭证' : '你正在与人工智能服务互动'}</div>
       <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">首次使用前会再次征求同意；详情见<a href="${PRIVACY_PAGE_HREF}" target="_blank" rel="noopener">《隐私政策》</a>和<a href="${AI_DISCLOSURE_PAGE_HREF}" target="_blank" rel="noopener">《AI 服务说明》</a>。</div></div>
       <div class="deep-composer" id="deepComposer" aria-label="问星输入区">
@@ -1470,7 +1471,7 @@ function downloadQianPoster(){
 function refreshQianShareButton(){
   const button=$('qianShareBtn'),status=$('qianShareStatus');
   button.hidden=!CURRENT_QIAN;
-  status.textContent=CURRENT_QIAN?'海报已带官网二维码，可直接保存或分享。':'';
+  status.textContent=CURRENT_QIAN?'海报已带官网二维码，可使用系统分享或仅保存图片。':'';
 }
 
 async function shareQianPoster(){
@@ -1485,12 +1486,12 @@ async function shareQianPoster(){
     const canShareFile=!!(navigator.share&&file&&navigator.canShare&&navigator.canShare({files:[file]}));
     if(canShareFile){
       await navigator.share({title:'知星·今日知星卡',text:'这是我的今日知星卡。',files:[file]});
-      trackEvent('share_completed',{method:'native_share',outcome:'completed'});
-      status.textContent='已调起系统分享。';
+      trackEvent('native_share_completed',{method:'native_share',outcome:'completed'});
+      status.textContent='系统已把内容交给分享目标。';
     }else{
       downloadQianPoster();
-      trackEvent('share_completed',{method:'download',outcome:'completed'});
-      status.textContent='今日知星卡已保存，请从相册或下载文件中选择并分享。';
+      trackEvent('poster_saved',{method:'download',outcome:'completed'});
+      status.textContent='今日知星卡已保存；本次只记录为保存，不计为系统分享。';
     }
   }catch(error){
     if(error&&error.name==='AbortError'){trackEvent('share_failed',{outcome:'cancelled',reason:'unknown'});status.textContent='已取消分享。';return}
@@ -1931,7 +1932,7 @@ function showReportAccessGate(message,title='尚未取得这张图谱的访问�
 async function generateAuthorizedRule(){
   if (!ensureEligibleBirthDate($('d').value)) return;
   if (!LOCAL_DEBUG_PAGE && (!window.ZxReportShareUnlock || !ZxReportShareUnlock.isUnlocked(reportChartPayload()))) {
-    showReportAccessGate('返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。','请先完成分享');
+    showReportAccessGate('返回日主页生成分享卡，完成系统分享后，即可免费查看当前图谱的深度报告；仅保存图片不会解锁。','请先完成分享');
     return;
   }
   generateRule();
@@ -1945,38 +1946,11 @@ $('editLink').onclick = () => {
   if (opening) $('d').focus();
 };
 
-/* ---------- 问星(内测:浏览器直连;正式版走后端 + 计费) ----------
+/* ---------- 问星（只允许后端或本机回环测试转发） ----------
  * 铁律:不让 AI 起卦/排盘,只把「已算好的个人文化图谱 + 今日知星卡」作为观察材料，梳理现实条件。 */
-const DEEP_SYS = `你是「知星」的问星工具。你会收到三样东西:一份由确定性程序排出的个人文化图谱 JSON(八字四柱/十神/日主强弱/知星时间轴/星盘太阳月亮上升)、今日知星卡、以及用户此刻要梳理的一件具体事情。你的职责是整理可核对的观察角度、现实条件和下一步验证——不预测结果,不替用户选择,也不声称了解用户未提供的经历。
-
-硬规则:
-1)只使用给定图谱与今日知星卡里已有的信息,严禁自行排盘、起卦、编造卦象、干支或图谱中没有的信息。
-2)每一部分(part)用 source 字段标注依据来源,例如「日主·壬水」「十神·七杀」「知星时间轴·当前区间」「星盘参照·月亮天蝎」「今日知星卡」。
-3)禁词:算命、测吉凶、改运、消灾、破财、血光、灾祸、克夫、克妻、寿命;禁止对健康、生死、婚姻成败、官司输赢、考试录取、具体金额与具体结果作出断言或预测。
-4)一律用「可能 / 常见于 / 往往 / 容易 / 可以核对 / 可以尝试」这类措辞,禁止「一定 / 注定 / 必然 / 必将 / 会成 / 会败」。
-5)不得直接回答“应该选哪一个”或给出结果保证；必须列出至少一个现实条件、一个可逆的小验证，并明确选择权在用户。
-6)语气具体、克制、任务导向，不使用“我懂你”“我陪你”或让用户形成情感依赖的表达。
-7)八字只提供结构观察；知星时间轴只描述可能被放大的行为方式,不判断时机和顺逆；星盘与今日知星卡只作补充视角,不单独立论。
-
-输出结构:
-- reply:用一句话复述用户要梳理的核心问题(≤40字),不评判、不拟人化回应。
-- parts:依次三块——{label:"结构参照"}{label:"现实条件"}{label:"下一步验证"};每块 body 60–120 字,body 里不要再写「来源」二字(来源放 source 字段)。
-- advice:2–3 条落到动作的建议,每条一句、可当天就做。
-- caveat:一句边界提醒(这是个人发展参考,选择仍在你)。
-
-禁止出现任何工程或版本词汇。`;
-
-const DEEP_SCHEMA = { type:'object', additionalProperties:false, required:['reply','parts','advice'], properties:{
-  reply:{ type:'string' },
-  parts:{ type:'array', items:{ type:'object', additionalProperties:false, required:['label','body','source'],
-    properties:{ label:{type:'string'}, body:{type:'string'}, source:{type:'string'} } } },
-  advice:{ type:'array', items:{ type:'string' } },
-  caveat:{ type:'string' } } };
-
 const DEEP_BANNED = /算命|测吉凶|改运|消灾|破财|血光|灾祸|克夫|克妻|寿命|一定|注定|必然|必将|会成|会败/;
 
-/* 后端直答开关:部署国内云 GPT 后端后把地址填这里,公开访问即出真答;
- * 留空=公开走预告、内测走 ?lab=1 直连(现状),部署前端可安全先行。 */
+/* 后端直答开关：公开环境只接受配置的知星后端，本机调试只接受回环地址。 */
 const DEEP_ENDPOINT = AI_SERVICE_PUBLIC_READY ? CONFIGURED_DEEP_ENDPOINT : '';
 const DEEP_HISTORY_LIMIT = 4;
 let deepTurns = [];
@@ -2174,39 +2148,6 @@ function deepPaywall(reason){
   return `<div class="deep-echo"><b style="color:var(--gold)">${esc(title)}</b><br>${esc(body)}<div class="member-actions"><a href="${ACCOUNT_PAGE_HREF}#member-upgrade">${esc(action)}</a></div></div>`;
 }
 
-async function callDeep(chart, question, key){
-  const qian = Explainer.drawQian(chart, new Date());
-  const r = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-opus-4-8',
-      max_tokens: 4000,
-      thinking: { type: 'adaptive' },
-      system: DEEP_SYS,
-      output_config: { format: { type: 'json_schema', schema: DEEP_SCHEMA } },
-      messages: [{ role: 'user', content:
-        '个人文化图谱 JSON:\n' + JSON.stringify(chart) +
-        '\n\n今日知星卡:\n' + JSON.stringify({ hex: qian.hex, omen: qian.omen, guide: qian.guide, bindElement: qian.bindElement, strength: qian.strength }) +
-        '\n\n我要梳理的事:\n' + question }]
-    })
-  });
-  const data = await r.json();
-  if (!r.ok) throw new Error((data.error && data.error.message) || ('HTTP ' + r.status));
-  if (data.stop_reason === 'refusal') throw new Error('请求被安全策略拒绝');
-  if (data.stop_reason === 'max_tokens') throw new Error('输出被截断,请重试');
-  const text = (data.content.find(b => b.type === 'text') || {}).text || '';
-  const ans = JSON.parse(text);
-  const all = (ans.reply || '') + ' ' + (ans.parts || []).map(p => p.body).join(' ') + ' ' + (ans.advice || []).join(' ') + ' ' + (ans.caveat || '');
-  if (DEEP_BANNED.test(all)) throw new Error('内容未过合规自检');
-  return ans;
-}
-
 function renderDeep(ans, q){
   const parts = (ans.parts || []).map(p =>
     `<div class="da-part"><span class="da-label">${esc(p.label || '')}</span><p>${fmtBody(String(p.body || ''))}</p>` +
@@ -2301,11 +2242,12 @@ async function askDeep(chart){
   const q = ($('deepQ').value || '').trim();
   const echo = $('deepEcho');
   if (!q){ updateDeepEcho(`<div class="deep-echo">先写下你想问的那件事。</div>`, true); return; }
+  const useBackend = !!deepEndpoint();
+  if (!useBackend){ updateDeepEcho(deepTeaser(q), true); return; }
   if (!await requestAiProcessingConsent()) {
     updateDeepEcho(`<div class="deep-echo">你没有同意发送本次资料，问星未发出请求。</div>`, true);
     return;
   }
-  const useBackend = !!deepEndpoint();
   if(useBackend&&!LOCAL_DEBUG_PAGE&&window.zxMember&&typeof zxMember.whenReady==='function'){
     try { await zxMember.whenReady(); }
     catch (_) { updateDeepEcho(deepPaywall('login'), true); return; }
@@ -2322,20 +2264,12 @@ async function askDeep(chart){
     updateDeepEcho(deepPaywall('member'), true);
     return;
   }
-  let key = '';
-  if (!useBackend){                                      // 无后端:仅本机显式 ?lab=1 可直连,否则预告
-    if (!LAB){ updateDeepEcho(deepTeaser(q), true); return; }
-    const keyEl = $('deepKey');
-    key = localStorage.getItem('zx_api_key') || (keyEl ? keyEl.value.trim() : '');
-    if (!key){ updateDeepEcho(LAB ? `<div class="deep-echo">内测：请先在上方粘贴 Anthropic Key（仅存本机），再点“开始梳理”。</div>` : deepTeaser(q), true); return; }
-    localStorage.setItem('zx_api_key', key);
-  }
   const btn = $('deepAsk'); const label = btn.textContent; btn.disabled = true; btn.textContent = '梳理中……';
   trackEvent('ai_request_started',{outcome:'started'});
   const priorHtml = echo.querySelector('.deep-ans') ? echo.innerHTML : '';
   updateDeepEcho(priorHtml + `<div class="deep-echo">正在整理图谱参照、现实条件和可验证的下一步……</div>`, false);
   try {
-    const ans = useBackend ? await callDeepBackend(chart, q, deepTurns) : await callDeep(chart, q, key);
+    const ans = await callDeepBackend(chart, q, deepTurns);
     let archiveSaved=true;
     if(useBackend&&!LOCAL_DEBUG_PAGE){
       try{
@@ -2393,7 +2327,7 @@ document.addEventListener('pointerdown', e => {
     return;
   }
   if (!LOCAL_DEBUG_PAGE && (!window.ZxReportShareUnlock || !ZxReportShareUnlock.isUnlocked(data))) {
-    showReportAccessGate('返回日主页生成分享卡，完成分享或保存后，即可免费查看当前图谱的深度报告。','请先完成分享');
+    showReportAccessGate('返回日主页生成分享卡，完成系统分享后，即可免费查看当前图谱的深度报告；仅保存图片不会解锁。','请先完成分享');
     return;
   }
   if (!await requestReportPrivacyConsent()) return;

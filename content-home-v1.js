@@ -12,7 +12,7 @@
 
   const OPTIMIZED_COPY = (typeof module === 'object' && module.exports)
     ? require('./content-copy-optimized-v3.js')
-    : (root && root.ZhixingCopyOptimizedV3);
+    : (root && root.ZhixingCopyHomeOptimizedV3);
 
   const SCHEMA_VERSION = 'home-content-v1';
   const DAY_STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];

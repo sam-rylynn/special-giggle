@@ -12,7 +12,7 @@
 
   const OPTIMIZED_COPY = (typeof module === 'object' && module.exports)
     ? require('./content-copy-optimized-v3.js')
-    : (root && root.ZhixingCopyOptimizedV3);
+    : (root && root.ZhixingCopyRelationOptimizedV3);
 
   const STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
   const MOON_SIGNS = ['白羊座','金牛座','双子座','巨蟹座','狮子座','处女座','天秤座','天蝎座','射手座','摩羯座','水瓶座','双鱼座'];

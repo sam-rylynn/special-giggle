@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<style id="zx-frame-guard">html{visibility:hidden!important}</style>
+<script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="theme-color" content="#0e1220">
 <title>首期测试隐私政策｜知星</title>
 <style>
@@ -11,13 +15,13 @@
 </head>
 <body><div class="shell">
 <nav class="topbar" aria-label="页面导航"><span class="brand">知星</span><a class="back" href="./app.html">返回知星</a></nav>
-<header class="state"><span class="badge">privacy-2026.08.21-share-free-v1</span><h1>知星首期测试隐私政策</h1><p>生效日期：2026 年 8 月 21 日。运营主体：贵州天云稀泉科技有限公司。联系邮箱：<a href="mailto:wuyh@sg1798.wecome.work">wuyh@sg1798.wecome.work</a>。</p></header>
+<header class="state"><span class="badge">privacy-2026.08.21-share-free-v2</span><h1>知星首期测试隐私政策</h1><p>生效日期：2026 年 8 月 21 日。运营主体：贵州天云稀泉科技有限公司。联系邮箱：<a href="mailto:wuyh@sg1798.wecome.work">wuyh@sg1798.wecome.work</a>。</p></header>
 <main aria-label="个人信息处理说明">
 <section><h2>一、适用范围和本期边界</h2><p>本政策适用于首期测试中的出生资料录入、个人文化图谱、分享卡和深度发展报告。本期不提供手机号登录、账号报告库、云同步、会员购买、支付、订单、退款或“问星”人工智能问答。</p></section>
 <section><h2>二、处理的信息、目的和方式</h2><div class="table-wrap"><table><thead><tr><th>场景</th><th>信息</th><th>目的与方式</th></tr></thead><tbody><tr><td>生成图谱和报告</td><td>出生日期、时间、城市、排盘性别</td><td>在当前浏览器中完成确定性排盘并生成内容</td></tr><tr><td>返回查看</td><td>出生资料、图谱输入和本地隐私选择</td><td>保存在当前浏览器 LocalStorage，用于恢复当前图谱</td></tr><tr><td>分享解锁</td><td>由当前图谱生成的非明文摘要标识、完成方式和时间</td><td>仅用于判断当前浏览器能否打开对应深度报告；不保存出生资料原文</td></tr><tr><td>可选产品改进</td><td>固定事件名、页面、粗粒度视口和结果枚举</td><td>只有你另行同意且接收端点启用时才发送；不包含出生资料、图谱或自由文本</td></tr></tbody></table></div></section>
-<section><h2>三、分享和文件保存</h2><ol><li>系统分享由浏览器和操作系统提供，你决定接收平台或联系人；知星页面不读取或保存分享对象。</li><li>浏览器不支持系统分享时，页面会把分享卡保存到设备下载目录或相册入口。是否继续发送由你决定。</li><li>分享卡会展示你主动生成的日主与太阳星座公开内容及官网二维码。请在发送前确认接收范围。</li></ol></section>
+<section><h2>三、系统分享和文件保存</h2><ol><li>只有浏览器或操作系统的系统分享流程成功返回，页面才把本次操作记为“系统分享完成”并在当前浏览器解锁对应报告。该结果表示内容已交给你选择的分享目标或操作系统，不表示接收者已经打开或阅读。</li><li>你决定接收平台或联系人；知星页面不读取、保存或判断分享对象。若你取消分享、分享失败或当前浏览器不支持系统分享，报告不会解锁。</li><li>“仅保存图片”只会把分享卡保存到设备下载目录或相册入口，不计为分享，也不会解锁报告。是否在页面之外继续发送由你决定。</li><li>分享卡会展示你主动生成的日主与太阳星座公开内容及官网二维码。请在发送前确认接收范围。</li></ol></section>
 <section><h2>四、保存期限和删除</h2><ol><li>出生资料、隐私选择和报告解锁记录保存在当前浏览器，直至你清除站点数据、浏览器自动清理或代码版本不再兼容。</li><li>关闭页面后，未达到发送条件的临时统计事件会消失。</li><li>你可以通过浏览器的站点数据设置清除上述本地记录；清除后需要重新录入资料并完成分享。</li></ol></section>
-<section><h2>五、第三方和出站边界</h2><p>首期报告计算与固定内容生成不需要把出生资料发送到知星后端或第三方大模型。官网二维码会在你主动扫码时打开网站；系统分享会按你选择的平台规则处理图片。本期“问星”保持关闭，未来启用前会另行告知第三方、发送内容、目的和保存边界，并在需要时取得单独同意。</p></section>
+<section><h2>五、第三方和出站边界</h2><p>首期报告计算与固定内容生成不需要把出生资料发送到知星后端或第三方大模型。官网二维码会在你主动扫码时打开网站；系统分享会按你选择的平台规则处理图片。若你另行同意产品改进统计，页面只发送固定事件名和结果枚举，用于区分“开始分享”“系统分享完成”“取消或失败”“仅保存图片”和“报告解锁”，不发送出生资料、图谱、分享对象或自由文本。本期“问星”保持关闭，未来启用前会另行告知第三方、发送内容、目的和保存边界，并在需要时取得单独同意。</p></section>
 <section><h2>六、安全和你的权利</h2><p>我们采取最小化、本地处理、固定事件白名单和公开测试功能关闭等措施降低风险。你可通过浏览器清除本地资料，也可发送邮件提出查阅、更正、复制、删除、撤回同意或投诉请求。互联网服务不存在绝对安全；发生可能影响你权益的事件时，我们会依法处理。</p></section>
 <section><h2>七、年龄、他人资料和更新</h2><ol><li>本服务暂不向不满 14 周岁的用户提供。请勿为不满 14 周岁的人录入资料。</li><li>录入他人资料前，应先取得对方同意；资料主体可通过联系邮箱提出删除请求。</li><li>处理目的、方式、信息种类或保存期限发生变化时，我们会更新说明，并在法律要求时重新取得同意。</li></ol><p>另请阅读<a href="./terms.html">《首期测试用户协议》</a>和<a href="./ai-disclosure.html">《首期测试 AI 内容说明》</a>。</p></section>
 </main>

@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-w7MDWZ5fIGXFqnEQAhwH1NFeUbvwKgvooiyLsjWf7iQ='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<style id="zx-frame-guard">html{visibility:hidden!important}</style>
+<script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
 <title>知星 — 以易理观己，以星盘为证</title>
 <meta name="description" content="基于出生时刻生成个人文化图谱，以东方易理为主轴、星盘为参照的个人发展探索工具。">
@@ -407,7 +410,7 @@
     <div class="gets">
       <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>一句古典物象,一句扎心真话——先照见你是哪块料。</p></div></div>
       <div class="get"><span class="get-n">贰</span><div><h3>深度发展报告</h3><p>四柱结构 · 五行能量 · 性格骨架 · 关系与行动 · 知星时间轴 · 星盘参照／多视角对照 · 今日知星卡。</p></div></div>
-      <div class="get"><span class="get-n">叁</span><div><h3>问星</h3><p>写下一个具体情境，系统整理现实条件、可选路径和下一步验证；输出不替你决定。</p></div></div>
+      <div class="get"><span class="get-n">叁</span><div><h3>问星<em>暂未开放</em></h3><p>首期测试先开放固定深度报告；实时人工智能问答将在完成单独说明与测试后再开放。</p></div></div>
     </div>
     <button class="scroll-cue" id="scrollCue" type="button">↓ 先生成你的日主</button>
   </section>
@@ -525,8 +528,9 @@
   <h2 id="posterLayerTitle" class="sr-only">双盘印证卡分享预览</h2>
   <canvas id="posterCanvas" width="750" height="1000" role="img" aria-label="根据当前图谱生成的知星分享卡" aria-describedby="posterEquivalent">知星分享卡图片预览</canvas>
   <p class="poster-equivalent" id="posterEquivalent"></p>
-  <div class="tip">长按图片保存 / 右键另存为</div>
+  <div class="tip">系统分享成功后解锁报告；仅保存图片不会解锁</div>
   <button class="btn gold" style="width:100%;margin-bottom:10px" id="sharePosterBtn" type="button">分享这张卡</button>
+  <button class="btn ghost" style="width:100%;margin-bottom:10px" id="savePosterBtn" type="button">仅保存图片</button>
   <button class="btn ghost" style="width:100%" id="posterClose">关 闭</button>
 </div></div>
 
@@ -538,7 +542,7 @@
 <script src="./analytics.js"></script>
 <script src="./minimum-age.js"></script>
 <script src="./bazi-engine.js"></script>
-<script src="./content-copy-optimized-v3.js"></script>
+<script src="./content-copy-home-v3.js"></script>
 <script src="./content-home-v1.js"></script>
 <script>
 /* ============ 星空背景 ============ */
@@ -796,29 +800,32 @@ async function handoffPoster(status){
   const blob=await posterBlob();
   const filename='知星-双盘印证卡.jpg';
   const file=blob&&typeof File==='function'?new File([blob],filename,{type:'image/jpeg'}):null;
-  const canShareFile=!!(navigator.share&&file&&navigator.canShare&&navigator.canShare({files:[file]}));
-  if(canShareFile){
-    const text=CUR.dualShare.body;
-    await navigator.share({title:'知星',text,files:[file]});
-    trackEvent('share_completed',{method:'native_share',outcome:'completed'});
-    status.textContent='分享已完成。';
-    return 'native_share';
+  const controller=window.ZxReportShareUnlock;
+  const text=CUR.dualShare.body;
+  const fileShare={title:'知星',text,files:file?[file]:[]};
+  const linkShare={title:'知星',text,url:'https://zhixng.cn/'};
+  const shareData=controller&&controller.canNativeShare(fileShare)
+    ? fileShare
+    : controller&&controller.canNativeShare(linkShare)?linkShare:null;
+  if(!shareData){
+    const error=new Error('native sharing is unavailable');
+    error.name='NotSupportedError';
+    throw error;
   }
-  downloadCurrentPoster();
-  trackEvent('share_completed',{method:'download',outcome:'completed'});
-  status.textContent='海报已保存，请从相册或下载文件中选择并分享。';
-  return 'download';
+  await controller.shareAndUnlock(currentChartPayload(),shareData);
+  trackEvent('native_share_completed',{method:'native_share',outcome:'completed'});
+  status.textContent='系统已把内容交给分享目标。';
+  return 'native_share';
 }
 
 async function openCurrentPosterPreview(){
   if(!CUR)return;
-  trackEvent('share_started',{outcome:'started'});
   const status=$('shareGateStatus');
   status.textContent='正在生成双盘印证卡……';
   try{
     await preparePoster();
     openPosterLayer();
-    status.textContent='双盘印证卡已生成，可在预览中分享或保存。';
+    status.textContent='双盘印证卡已生成；系统分享成功后才会解锁报告。';
   }catch(error){
     trackEvent('share_failed',{outcome:'failed',reason:'unknown'});
     status.textContent='海报暂时没有准备好，请刷新后重试。';
@@ -828,15 +835,12 @@ async function openCurrentPosterPreview(){
 async function sharePreparedPoster(){
   if(!CUR)return;
   const status=$('shareGateStatus');
+  trackEvent('share_started',{outcome:'started'});
   try{
     const method=await handoffPoster(status);
-    const granted=!!(window.ZxReportShareUnlock&&ZxReportShareUnlock.unlock(currentChartPayload(),method));
-    if(!granted)throw new Error('share unlock storage unavailable');
     trackEvent('report_unlocked',{method,outcome:'completed'});
     closePosterLayer();
-    renderShareGate(method==='download'
-      ?'海报已保存，深度报告已免费解锁；你可以从相册或下载文件中继续分享。'
-      :'分享已完成，深度报告已免费解锁。');
+    renderShareGate('系统分享已完成，深度报告已免费解锁。');
     requestAnimationFrame(()=>$('deepBtn').focus());
   }catch(error){
     if(error&&error.name==='AbortError'){
@@ -844,9 +848,21 @@ async function sharePreparedPoster(){
       status.textContent='已取消分享，未发送图片。';
       return;
     }
+    if(error&&error.name==='NotSupportedError'){
+      trackEvent('share_failed',{outcome:'unavailable',reason:'configuration'});
+      status.textContent='当前浏览器无法确认系统分享。你可以保存图片，但保存不会解锁报告；请改用支持系统分享的手机浏览器。';
+      return;
+    }
     trackEvent('share_failed',{outcome:'failed',reason:'unknown'});
     status.textContent='分享暂时没有完成，请稍后重试。';
   }
+}
+
+function savePreparedPoster(){
+  if(!CUR)return;
+  downloadCurrentPoster();
+  trackEvent('poster_saved',{method:'download',outcome:'completed'});
+  $('shareGateStatus').textContent='分享卡已保存；仅保存图片不会解锁报告。';
 }
 
 async function confirmInboundShare(){
@@ -1101,10 +1117,10 @@ $('againBtn').onclick=()=>{
   showFormDirect();
 };
 
-/* ============ 深度报告入口：首期测试完成分享或保存海报后，本机免费解锁 ============ */
+/* ============ 深度报告入口：首期测试仅在系统分享成功返回后，本机免费解锁 ============ */
 $('deepBtn').onclick=()=>{
   if(!window.ZxReportShareUnlock||!ZxReportShareUnlock.isUnlocked(currentChartPayload())){
-    renderShareGate('请先生成分享卡并完成分享或保存，再免费查看这份深度报告。');
+    renderShareGate('请先使用系统分享完成发送，再免费查看这份深度报告；仅保存图片不会解锁。');
     $('shareActionBtn').focus();
     return;
   }
@@ -1144,6 +1160,7 @@ $('posterLayer').addEventListener('keydown',event=>{
 $('posterClose').onclick=closePosterLayer;
 $('shareActionBtn').onclick=openCurrentPosterPreview;
 $('sharePosterBtn').onclick=sharePreparedPoster;
+$('savePosterBtn').onclick=savePreparedPoster;
 confirmInboundShare();
 
 async function preparePoster(){
