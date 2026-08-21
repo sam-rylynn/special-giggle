@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var NOTICE_VERSION = 'privacy-2026.08.21-share-free-v2';
+  var NOTICE_VERSION = 'privacy-2026.08.22-free-ask-v1';
   var CHOICES_KEY = 'zx_privacy_choices_v1';
   var EXPORT_KEYS = [
     'zx_input',

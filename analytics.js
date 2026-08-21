@@ -15,6 +15,7 @@
     'chart_generated','report_opened','report_section_viewed',
     'today_card_generated','share_started','native_share_completed','poster_saved','share_failed','report_unlocked',
     'ai_consent_shown','ai_consent_granted','ai_consent_declined',
+    'pilot_grant_started','pilot_grant_completed','pilot_grant_failed',
     'ai_request_started','ai_request_completed','ai_request_failed',
     'device_account_consent_shown','device_account_consent_granted','device_account_consent_declined',
     'login_started','login_completed','login_failed',
@@ -26,7 +27,8 @@
     outcome:new Set(['shown','granted','declined','started','completed','failed','cancelled','unavailable']),
     plan:new Set(['monthly','yearly']),
     method:new Set(['native_share','download','wechat_h5','sms']),
-    reason:new Set(['validation','network','timeout','storage','quota','login','membership','configuration','unknown'])
+    reason:new Set(['validation','network','timeout','storage','quota','login','membership','configuration','unknown']),
+    stage:new Set(['initial','followup'])
   });
   var QUEUE_LIMIT = 40;
   var queue = [];

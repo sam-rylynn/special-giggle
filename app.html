@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-w7MDWZ5fIGXFqnEQAhwH1NFeUbvwKgvooiyLsjWf7iQ='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-w7MDWZ5fIGXFqnEQAhwH1NFeUbvwKgvooiyLsjWf7iQ='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -410,7 +410,7 @@
     <div class="gets">
       <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>一句古典物象,一句扎心真话——先照见你是哪块料。</p></div></div>
       <div class="get"><span class="get-n">贰</span><div><h3>深度发展报告</h3><p>四柱结构 · 五行能量 · 性格骨架 · 关系与行动 · 知星时间轴 · 星盘参照／多视角对照 · 今日知星卡。</p></div></div>
-      <div class="get"><span class="get-n">叁</span><div><h3>问星<em>暂未开放</em></h3><p>首期测试先开放固定深度报告；实时人工智能问答将在完成单独说明与测试后再开放。</p></div></div>
+      <div class="get"><span class="get-n">叁</span><div><h3>问星<em>免费首测</em></h3><p>分享解锁深度报告后，每天可使用 1 个首问和紧接着的 1 次追问。</p></div></div>
     </div>
     <button class="scroll-cue" id="scrollCue" type="button">↓ 先生成你的日主</button>
   </section>
@@ -514,7 +514,7 @@
 <div id="consent"><div class="box" role="dialog" aria-modal="true" aria-labelledby="consentTitle" aria-describedby="consentSummary">
   <h3 id="consentTitle">开始前，先确认资料如何使用</h3>
   <p id="consentSummary">你填写的出生日期、出生时间、出生城市和性别，会用于生成个人文化图谱、基础内容和深度发展报告。未主动保存到账号报告库且未开启个人图谱云端同步时，资料只保存在当前浏览器，用于返回继续查看。</p>
-  <p>首期测试不开放问星、账号、云同步、会员购买或支付；出生资料不会发送给第三方大模型。以后如启用相关功能，会先更新说明并另行取得必要确认。</p>
+  <p>本次确认只用于生成图谱和报告，不会自动发送给第三方大模型。免费问星首测会在你分享解锁后开放；首次提问前会另行说明发送范围并取得 AI 处理同意。本期不开放账号、云同步、会员购买或支付。</p>
   <p class="privacy-link">提交前请阅读<a href="./privacy.html" target="_blank" rel="noopener">《首期测试隐私政策》</a>，了解运营主体、处理范围、保存期限和你的资料权利。</p>
   <label class="consent-check"><input type="checkbox" id="consentCheck">我已阅读上述说明，同意在当前浏览器处理并保存出生资料，用于生成个人文化图谱和返回查看。</label>
   <label class="consent-check"><input type="checkbox" id="analyticsCheck">可选：同意发送不含出生资料、图谱和问题正文的最小使用事件，用于改进页面可靠性；本期接收端点已启用，只有勾选后才会发送。</label>

@@ -60,9 +60,29 @@
     }
   }
 
+  function securePilotRef() {
+    if (!global.crypto || typeof global.crypto.getRandomValues !== 'function') {
+      throw shareError('NotSupportedError', 'secure randomness is unavailable');
+    }
+    const bytes = new Uint8Array(32);
+    global.crypto.getRandomValues(bytes);
+    return Array.from(bytes, value => value.toString(16).padStart(2, '0')).join('');
+  }
+
   function isUnlocked(input) {
     const id = inputId(input);
     return !!id && readRecords().some(record => record.id === id);
+  }
+
+  function pilotReceipt(input) {
+    const id = inputId(input);
+    const record = id && readRecords().find(item => item.id === id);
+    if (!record || !/^[a-f0-9]{64}$/.test(String(record.pilotRef || ''))) return null;
+    return Object.freeze({
+      chartRef: record.pilotRef,
+      method: 'native_share',
+      unlockedAt: record.unlockedAt
+    });
   }
 
   function shareError(name, message) {
@@ -83,12 +103,17 @@
   function writeNativeShare(input) {
     const id = inputId(input);
     if (!id) return false;
+    const existingRecords = readRecords();
+    const existing = existingRecords.find(item => item.id === id);
     const record = {
       id,
       method: 'native_share',
-      unlockedAt: new Date().toISOString()
+      unlockedAt: new Date().toISOString(),
+      pilotRef: existing && /^[a-f0-9]{64}$/.test(String(existing.pilotRef || ''))
+        ? existing.pilotRef
+        : securePilotRef()
     };
-    const records = [record, ...readRecords().filter(item => item.id !== id)].slice(0, MAX_RECORDS);
+    const records = [record, ...existingRecords.filter(item => item.id !== id)].slice(0, MAX_RECORDS);
     try {
       global.localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
       return true;
@@ -102,13 +127,14 @@
     if (!canNativeShare(shareData)) throw shareError('NotSupportedError', 'native sharing is unavailable');
     await global.navigator.share(shareData || {});
     if (!writeNativeShare(input)) throw shareError('QuotaExceededError', 'share unlock storage unavailable');
-    return Object.freeze({ method:'native_share', unlocked:true });
+    return Object.freeze({ method:'native_share', unlocked:true, pilotEligible:true });
   }
 
   global.ZxReportShareUnlock = Object.freeze({
     storageKey: STORAGE_KEY,
     canNativeShare,
     isUnlocked,
+    pilotReceipt,
     shareAndUnlock
   });
 })(typeof window !== 'undefined' ? window : globalThis);

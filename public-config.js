@@ -16,6 +16,8 @@
     analyticsEnabled: true,
     analyticsEndpoint: 'https://api.zhixng.cn/',
     captchaAppId: '',
+    freeAskStarPilotEnabled: false,
+    pilotGrantApiUrl: '',
     deepServiceAvailable: false,
     deepApiUrl: '',
     paymentOrigin: 'https://zhixng.cn',
@@ -27,11 +29,11 @@
     privacyUrl: 'https://zhixng.cn/privacy.html',
     aiDisclosureUrl: 'https://zhixng.cn/ai-disclosure.html',
     purchaseNoticeUrl: '',
-    agreementVersion: 'user-agreement-2026.08.21-share-free-v2',
-    privacyVersion: 'privacy-2026.08.21-share-free-v2',
+    agreementVersion: 'user-agreement-2026.08.22-free-ask-v1',
+    privacyVersion: 'privacy-2026.08.22-free-ask-v1',
     membershipTermsVersion: '',
     refundPolicyVersion: '',
-    aiDisclosureVersion: 'ai-disclosure-2026.08.21-share-free-v1',
+    aiDisclosureVersion: 'ai-disclosure-2026.08.22-free-ask-v1',
     purchaseNoticeVersion: ''
   });
 })();
