@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-KCy+Ndqsd63jXE1r40Kz9PaoefFqUV79dhayn0ahJ9Y='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-qLux/otoerbPuTHXT4kQITJXhZkrij97cSbQsQK0d1w='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -146,6 +146,7 @@
   .chapter-block li{margin:7px 0;color:#d7dde5;font-size:15px;line-height:1.75}
   .chapter-block blockquote{margin:10px 0 13px;padding:12px 14px;border-left:3px solid var(--gold);background:rgba(201,168,92,.07);color:#f4ead1;font-family:var(--serif);font-size:16px;line-height:1.8}
   .chapter-source{margin:22px 0 0;padding-top:12px;border-top:1px dashed rgba(201,168,92,.2);color:#aeb6c3;font-size:12px;line-height:1.7}
+  p.method-reference{margin:10px 0 0;color:#8f98a6;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
   .heading-eyebrow{display:block;margin-bottom:4px;color:var(--gold-dim);font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.06em}
   .structured-list-scenes{list-style:none;padding-left:0!important}
   .structured-list-scenes li{padding:12px 0;border-top:1px dashed rgba(201,168,92,.16)}
@@ -860,6 +861,11 @@ function keyEmph(escaped){
 /* 段落格式化:转义 → 重点加粗 → 把末尾「来源:…」包成弱化 span(缩小变浅) */
 function fmtBody(text){ return keyEmph(esc(text)).replace(/(来源[:：][^\n]*)$/m, '<span class="src-inline">$1</span>'); }
 
+function methodReference(text){
+  if (!text) return '';
+  return `<p class="method-reference">方法参考：${esc(text)}</p>`;
+}
+
 function chartCard(c){
   const cols=['year','month','day','hour'], names={year:'年柱',month:'月柱',day:'日柱',hour:'时柱'};
   const p=c.pillars;
@@ -873,7 +879,7 @@ function chartCard(c){
       ${c.solar.trueSolarTime?` 真太阳时 ${c.solar.trueSolarTime.slice(11,16)}${c.solar.city?` · 已按${esc(c.solar.city)}经度与均时差校正`:' · 按标准经度推算'}`:esc(c.solar.note||'')}
     </div>
     ${c.meta.warnings.map(w=>`<div class="warn">⚠ ${esc(w)}</div>`).join('')}
-  </div></details>`;
+  </div></details>${methodReference('《子平真诠·论用神》，沈孝瞻。')}`;
 }
 
 function tenGodSummary(c){
@@ -911,7 +917,8 @@ function sectionCard(s, c, options = {}){
     : `${extraBefore}<div class="body">${paras}</div>${extraAfter}`;
   return `<section class="chapter-block legacy-block"><h3>${esc(title)}</h3>
     ${bodyAndData}${issue}
-    <p class="chapter-source">来源 · ${esc(s.source)}</p></section>`;
+    <p class="chapter-source">来源 · ${esc(s.source)}</p>
+    ${methodReference(s.methodReference)}</section>`;
 }
 
 function chapterCard(id, title, content){
@@ -1002,6 +1009,7 @@ function renderStructuredBlocks(blocks){
     if (block.type === 'action-layout') return actionLayout(block.data);
     if (block.type === 'timeline') return timelineBlock(block.data);
     if (block.type === 'source') return `<p class="chapter-source">来源 · ${esc(block.text || '')}</p>`;
+    if (block.type === 'method-reference') return methodReference(block.text);
     return '';
   }).join('');
 }
@@ -1106,7 +1114,8 @@ function astroCard(c){
     <h3>太阳、月亮与上升参照</h3>
     ${wheelSVG(c)}
     <ul class="astro-facts" aria-label="星盘三要素">${factList}</ul>${notes}
-    <p class="chapter-source">来源 · 同一出生时刻的星盘计算</p></section>`;
+    <p class="chapter-source">来源 · 同一出生时刻的星盘计算</p>
+    ${methodReference('《当代占星研究·诠释星盘》，苏·汤普金斯。')}</section>`;
 }
 
 function astroInterpretation(c,label){
@@ -1308,16 +1317,19 @@ function watchMemberStatus(){
 
 function deepCard(){
   let content = '';
+  const deepMethodReference = methodReference('《内在的天空》，斯蒂芬·福里斯特。');
   if (!PUBLIC_AI_AVAILABLE && !LOCAL_DEBUG_PAGE) {
     content = `
       <h2>问星</h2>
       <p class="deep-intro">系统会结合已经生成的个人文化图谱，整理现实条件、可选路径和下一步验证；输出不预测结果，也不替你决定。</p>
+      ${deepMethodReference}
       <div class="deep-echo"><b style="color:var(--gold)">问星当前不可用</b><br>你仍可继续查看深度发展报告与今日知星卡。</div>
     `;
   } else {
     content = `
       <h2>问星</h2>
       <p class="deep-intro">写下一个具体情境。系统会结合已经生成的个人文化图谱，整理现实条件、可选路径和下一步验证；输出由人工智能生成，不预测结果，也不替你决定。免费首测每天含 1 个首问和紧接着的 1 次追问。</p>
+      ${deepMethodReference}
       ${deepMemberBox()}
       <div class="ai-interaction">${LOCAL_DEEP_MODE === 'real' ? '真实 DeepSeek 测试 · 本机临时凭证' : '你正在与人工智能服务互动'}</div>
       <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">首次使用前会再次征求同意；详情见<a href="${PRIVACY_PAGE_HREF}" target="_blank" rel="noopener">《隐私政策》</a>和<a href="${AI_DISCLOSURE_PAGE_HREF}" target="_blank" rel="noopener">《AI 服务说明》</a>。</div></div>
@@ -1337,6 +1349,7 @@ function qianCard(){
   return `<div class="card" id="sec-qian"><div class="chapviz"><img src="./img/gua.jpg" alt="" loading="lazy"></div><div class="pad">
     <h2>今日知星卡</h2><span class="src">来源 · 日主五行与强弱的文化观察</span>
     <p class="qian-intro">${esc(U.intro)}</p>
+    ${methodReference(U.methodReference)}
     <div style="text-align:center;margin:16px 0 4px"><button id="drawBtn">查看今日意象</button></div>
     <div id="qianOut"></div>
   </div></div>`;

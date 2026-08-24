@@ -218,7 +218,7 @@ const QIAN_DRAWS = [
   { hex:'潮信', omen:'潮有涨落,来去都有它的时辰。', yi:['候时','蓄势','认律'], ji:['逆潮','强进','妄动'], line:'你不是没动力是没到你该起的那次潮' },
   { hex:'回流', omen:'水到弯处,回一回反而走得远。', yi:['缓行','认弯','蓄力'], ji:['直冲','求捷','硬赶'], line:'绕这一下不是退是水在找更深的路' },
 ];
-const QIAN_UI = { cta:'生成今日卡片', intro:'不必带着问题来。今日知星卡会根据日主五行与强弱生成一组当日观察词，帮助你把注意力落到一个具体动作上。', ai:'如果你有一个具体情境，可以打开“问星”，整理现实条件、可选路径与下一步验证；输出只作信息整理，不替你决定。' };
+const QIAN_UI = { cta:'生成今日卡片', intro:'不必带着问题来。今日知星卡会根据日主五行与强弱生成一组当日观察词，帮助你把注意力落到一个具体动作上。', methodReference:'《滴天髓阐微·衰旺》，任铁樵增注。', ai:'如果你有一个具体情境，可以打开“问星”，整理现实条件、可选路径与下一步验证；输出只作信息整理，不替你决定。' };
 /* ===== 结构常量 ===== */
 const STEM_IMG = { 甲:'一株参天的大树', 乙:'一丛柔韧的藤蔓花草', 丙:'普照万物的太阳', 丁:'一盏温着夜的灯烛', 戊:'一堵厚重的城墙土', 己:'一畦松软的田园土', 庚:'一块待琢的顽铁', 辛:'一枚温润的珠玉', 壬:'一条奔流不居的江河', 癸:'一场润物无声的雨露' };
 const ELEM_FLAVOR = { 木:'生长与展开', 火:'表达与照亮', 土:'承载与稳定', 金:'裁断与结构', 水:'流动与感知' };
@@ -354,6 +354,7 @@ function contentSections(chart){
         { type:'paragraph', text:O.lead },
         { type:'heading', level:3, text:'这份报告会讲清四件事' },
         { type:'report-guide', items:reportGuide },
+        { type:'method-reference', text:'《当代占星研究·诠释星盘》，苏·汤普金斯。' },
         { type:'heading', level:3, text:'整份报告的核心判断' },
         { type:'quote', text:O.tension },
         { type:'source', text:O.source }
@@ -387,7 +388,8 @@ function contentSections(chart){
       blocks:[
         { type:'heading', level:2, text:T.title, eyebrow:T.stage },
         { type:'timeline', data:T },
-        { type:'source', text:T.source }
+        { type:'source', text:T.source },
+        { type:'method-reference', text:'《内在的天空》，斯蒂芬·福里斯特。' }
       ],
       body:phaseBody
     }
@@ -418,7 +420,7 @@ function buildSections(chart){
   const [maxE, minE] = [ranked[0], ranked[ranked.length-1]];
   const eBody = `五行数值里，${maxE[0]}为 ${maxE[1]}，${minE[0]}为 ${minE[1]}。这组数值用来比较盘面里哪些因素更集中、哪些较少，不把最高或最低的一项直接等同于性格。来源:五行分布`
     + `\n\n日主强弱为${st.label}。${STRENGTH_PLAIN[st.label] || STRENGTH_PLAIN.中和}来源:日主强弱`;
-  S.push({ id:'energy', title:'盘面读图', source:'五行分布+日主强弱', body: eBody });
+  S.push({ id:'energy', title:'盘面读图', source:'五行分布+日主强弱', methodReference:'《三命通会·论五行生克》，万民英；《滴天髓阐微·衰旺》，任铁樵增注。', body: eBody });
 
   /* 性格骨架：用可核对动作解释十神，不假定现实身份。 */
   let skBody;
@@ -430,7 +432,7 @@ function buildSections(chart){
   } else {
     skBody = `当前月干没有可单独展开的十神信息。这里保留日主与完整盘面作为观察依据，不补写现实身份或固定处境。来源:日主+十神分布`;
   }
-  S.push({ id:'skeleton', title:'性格骨架', source:'日主+月令+十神', body: skBody });
+  S.push({ id:'skeleton', title:'性格骨架', source:'日主+月令+十神', methodReference:'《子平真诠·论用神变化》，沈孝瞻。', body: skBody });
 
   /* 关系、行动与时间直接使用全量内容合同。 */
   return [S[0], S[1], S[2], fullContent.relation, fullContent.action, fullContent.phase];
