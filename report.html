@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-Kp0ZuPNTjq0flH5FiVh0HOjHKrf/B5B8kRE52efBWaY='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-KCy+Ndqsd63jXE1r40Kz9PaoefFqUV79dhayn0ahJ9Y='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -2124,7 +2124,7 @@ async function callDeepBackend(chart, question, history = []){
   }else if(FREE_ASK_STAR_PILOT){
     const stage=history.length?'followup':'initial';
     pilotContext=window.ZxFreeAskStarPilot&&ZxFreeAskStarPilot.requestContext
-      ?ZxFreeAskStarPilot.requestContext(reportChartPayload(),stage)
+      ?await ZxFreeAskStarPilot.requestContext(reportChartPayload(),stage,question)
       :null;
   }else{
     accountToken=await deepAccountToken();
@@ -2155,6 +2155,12 @@ async function callDeepBackend(chart, question, history = []){
     body: JSON.stringify(payload)
   }, DEEP_RESPONSE_TIMEOUT_MS);
   const data = await r.json();
+  const finishPilotRequest=()=>{
+    if(!pilotContext||!window.ZxFreeAskStarPilot||typeof ZxFreeAskStarPilot.finishRequest!=='function')return false;
+    return ZxFreeAskStarPilot.finishRequest(
+      reportChartPayload(),pilotContext.stage,pilotContext.idempotencyKey
+    );
+  };
   if (data && data.paywall) {
     const e = new Error('paywall');
     e.paywall = 1;
@@ -2165,13 +2171,21 @@ async function callDeepBackend(chart, question, history = []){
   if (!r.ok) {
     const code=data&&data.error&&typeof data.error==='object'?data.error.code:data&&data.error;
     if(FREE_ASK_STAR_PILOT&&data&&data.pilot_quota&&window.ZxFreeAskStarPilot){
-      ZxFreeAskStarPilot.updateQuota(reportChartPayload(),data.pilot_quota,data.pilot_expires_at);
+      ZxFreeAskStarPilot.updateQuota(reportChartPayload(),data.pilot_quota,data.pilot_expires_at,pilotContext);
       renderMemberStatus();
     }
     if(FREE_ASK_STAR_PILOT&&r.status===401&&code==='PILOT_INVALID_GRANT'&&window.ZxFreeAskStarPilot){
-      ZxFreeAskStarPilot.invalidateGrant(reportChartPayload());
+      ZxFreeAskStarPilot.invalidateGrant(reportChartPayload(),pilotContext);
       renderMemberStatus();
     }
+    const terminalPilotCodes=new Set([
+      'SENSITIVE_INPUT_REJECTED','MINIMUM_AGE_REQUIRED',
+      'PILOT_TOKEN_INVALID','PILOT_INVALID_GRANT','PILOT_EXPIRED','PILOT_CHART_MISMATCH',
+      'PILOT_STAGE_INVALID','PILOT_STAGE_SEQUENCE_INVALID','IDEMPOTENCY_KEY_INVALID',
+      'PILOT_INITIAL_USED','PILOT_INITIAL_REQUIRED','PILOT_FOLLOWUP_USED','PILOT_DUPLICATE',
+      'PILOT_GLOBAL_BUDGET','PILOT_REFUNDED','PILOT_REPLAYED'
+    ]);
+    if(FREE_ASK_STAR_PILOT&&(data&&data.pilot_refunded===true||terminalPilotCodes.has(String(code||''))))finishPilotRequest();
     if(r.status===401||r.status===409||r.status===429){
       const e=new Error(String(code||'pilot quota'));
       e.paywall=1;e.paywallReason='quota';e.pilotCode=String(code||'');throw e;
@@ -2180,7 +2194,18 @@ async function callDeepBackend(chart, question, history = []){
     e.code=String(code||'');
     throw e;
   }
-  return data;
+  const acceptPilotResponse=()=>{
+    if(!pilotContext||!data||!data.pilot_quota||!window.ZxFreeAskStarPilot)return false;
+    const updated=ZxFreeAskStarPilot.updateQuota(
+      reportChartPayload(),data&&data.pilot_quota,data&&data.pilot_expires_at,pilotContext
+    );
+    return updated&&finishPilotRequest();
+  };
+  const isCurrentPilotResponse=()=>!pilotContext||(
+    window.ZxFreeAskStarPilot&&typeof ZxFreeAskStarPilot.isCurrentRequest==='function'&&
+    ZxFreeAskStarPilot.isCurrentRequest(reportChartPayload(),pilotContext)
+  );
+  return Object.freeze({answer:data,acceptPilotResponse,isCurrentPilotResponse});
 }
 
 function deepPaywall(reason){
@@ -2200,6 +2225,12 @@ function deepPaywall(reason){
 function deepPilotQuotaNotice(code){
   if(code==='PILOT_GLOBAL_BUDGET'){
     return '<div class="deep-echo"><b style="color:var(--gold)">今日全站首测额度已用完</b><br>为了控制首测成本，全站每日设有上限；你的个人次数不会因本次失败额外扣减。</div>';
+  }
+  if(code==='PILOT_REFUNDED'){
+    return '<div class="deep-echo"><b style="color:var(--gold)">上一次请求已回补</b><br>本次没有发送给模型，也没有占用你的次数；请保持原问题不变，再点击一次提交。</div>';
+  }
+  if(code==='PILOT_REPLAYED'){
+    return '<div class="deep-echo"><b style="color:var(--gold)">上一条请求已被服务端接收</b><br>本页没有取回当时的回答。为避免重复调用模型，本次没有再次生成；今日请停止继续提问，明日（北京时间）恢复。</div>';
   }
   if(code==='PILOT_INITIAL_USED'&&deepTurns.length===0){
     return '<div class="deep-echo"><b style="color:var(--gold)">今日首问已完成</b><br>追问必须紧接当前页面中的首问；刷新或关闭页面后不恢复问答正文，请于明日（北京时间）重新发起首问。</div>';
@@ -2365,8 +2396,10 @@ async function askDeepOnce(chart){
   trackEvent('ai_request_started',{outcome:'started',stage:pilotStage});
   const priorHtml = echo.querySelector('.deep-ans') ? echo.innerHTML : '';
   updateDeepEcho(priorHtml + `<div class="deep-echo">正在整理图谱参照、现实条件和可验证的下一步……</div>`, false);
+  let pilotSettlementFailed=false;
   try {
-    const ans = await callDeepBackend(chart, q, deepTurns);
+    const deepResult = await callDeepBackend(chart, q, deepTurns);
+    const ans = deepResult.answer;
     let archiveSaved=true;
     if(useBackend&&!LOCAL_DEBUG_PAGE&&!SHARE_FREE_LAUNCH){
       try{
@@ -2376,17 +2409,36 @@ async function askDeepOnce(chart){
         archiveSaved=false;
       }
     }
-    rememberDeepTurn(q, ans);
-    if(FREE_ASK_STAR_PILOT&&!LOCAL_DEBUG_PAGE&&ans.pilot_quota&&window.ZxFreeAskStarPilot){
-      ZxFreeAskStarPilot.updateQuota(reportChartPayload(),ans.pilot_quota,ans.pilot_expires_at);
+    const acceptedHtml=priorHtml + renderDeep(ans, q) +
+      (useBackend&&!LOCAL_DEBUG_PAGE&&!SHARE_FREE_LAUNCH?deepArchiveNotice(archiveSaved):'');
+    updateDeepEcho(acceptedHtml, true);
+    let pilotResponseCurrent=true;
+    if(FREE_ASK_STAR_PILOT&&!LOCAL_DEBUG_PAGE){
+      try { pilotResponseCurrent=deepResult.isCurrentPilotResponse()===true; }
+      catch(_){ pilotResponseCurrent=false; }
+    }
+    if(pilotResponseCurrent){
+      rememberDeepTurn(q, ans);
+      $('deepQ').value = '';
+      $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
+      moveDeepComposerAfterAnswer();
+    }else{
+      pilotSettlementFailed=true;
+    }
+    if(pilotResponseCurrent&&FREE_ASK_STAR_PILOT&&!LOCAL_DEBUG_PAGE&&typeof deepResult.acceptPilotResponse==='function'){
+      try { pilotSettlementFailed=deepResult.acceptPilotResponse()!==true; }
+      catch(_){ pilotSettlementFailed=true; }
+    }
+    if(pilotSettlementFailed){
+      updateDeepEcho(acceptedHtml + `<div class="deep-echo">回答已显示，但本机暂未确认次数状态。请保留当前页面，今日先不要继续追问；重新打开前不要把本次状态当作已恢复。</div>`,true);
     }
     trackEvent('ai_request_completed',{outcome:'completed',stage:pilotStage});
-    updateDeepEcho(priorHtml + renderDeep(ans, q) + (useBackend&&!LOCAL_DEBUG_PAGE&&!SHARE_FREE_LAUNCH?deepArchiveNotice(archiveSaved):''), true);
-    $('deepQ').value = '';
-    $('deepQ').placeholder = '继续追问:补充一个具体背景或新的纠结点';
-    moveDeepComposerAfterAnswer();
     if(FREE_ASK_STAR_PILOT){
-      if(deepTurns.length>=2){
+      if(pilotSettlementFailed){
+        btn.disabled=true;
+        btn.textContent='次数状态待核对';
+        $('deepQ').disabled=true;
+      }else if(deepTurns.length>=2){
         btn.disabled=true;
         btn.textContent='今日 1＋1 已用完';
         $('deepQ').disabled=true;
@@ -2406,10 +2458,22 @@ async function askDeepOnce(chart){
       updateDeepEcho(priorHtml + `<div class="deep-echo">问题中可能包含手机号、身份证号、银行卡号或邮箱；请删除后再试。本次没有消耗次数。</div>`,true);
       return;
     }
+    if(e&&e.message==='PILOT_REQUEST_PENDING'){
+      trackEvent('ai_request_failed',{outcome:'failed',reason:'pending',stage:pilotStage});
+      const pendingCopy=e.pendingStage==='followup'&&deepTurns.length===0
+        ?'页面刷新后没有保留首问正文，因此无法安全恢复上一条追问。当前问题没有发送；为避免错用次数，今日请停止继续提问，明日（北京时间）恢复。'
+        :'上一条问题的结果仍待确认。为避免重复消耗，请恢复上一条问题原文后重试；当前修改后的问题没有发送。';
+      updateDeepEcho(priorHtml + `<div class="deep-echo">${pendingCopy}</div>`,true);
+      return;
+    }
     trackEvent('ai_request_failed',{outcome:'failed',reason:e&&e.name==='AbortError'?'timeout':'network',stage:pilotStage});
     updateDeepEcho(priorHtml + `<div class="deep-echo">问星暂时没有接上，请稍后再试。你仍可查看深度发展报告与今日知星卡。</div>`, true);
   } finally {
-    if(FREE_ASK_STAR_PILOT&&deepTurns.length>=2){
+    if(FREE_ASK_STAR_PILOT&&pilotSettlementFailed){
+      btn.disabled=true;
+      btn.textContent='次数状态待核对';
+      $('deepQ').disabled=true;
+    }else if(FREE_ASK_STAR_PILOT&&deepTurns.length>=2){
       btn.disabled=true;
       btn.textContent='今日 1＋1 已用完';
     }else{

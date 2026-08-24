@@ -3,9 +3,12 @@
 
   const STORAGE_KEY = 'zx_free_ask_star_pilot_v1';
   const BROWSER_KEY = 'zx_free_ask_star_browser_v1';
+  const PENDING_KEY = 'zx_free_ask_star_pending_v1';
   const TOKEN_RE = /^zx_p_[A-Za-z0-9_-]{43}$/;
   const BROWSER_RE = /^zx_b_[A-Za-z0-9_-]{43}$/;
   const REF_RE = /^[a-f0-9]{64}$/;
+  const IDEMPOTENCY_RE = /^[a-f0-9]{32}$/;
+  const STAGES = new Set(['initial', 'followup']);
   let captchaScriptPromise = null;
 
   function config() {
@@ -63,6 +66,10 @@
     try { global.localStorage.setItem(key, value); return true; } catch (_) { return false; }
   }
 
+  function removeItem(key) {
+    try { global.localStorage.removeItem(key); return true; } catch (_) { return false; }
+  }
+
   function browserId() {
     let value = getItem(BROWSER_KEY) || '';
     if (BROWSER_RE.test(value)) return value;
@@ -90,6 +97,8 @@
   }
 
   function saveGrant(proof, data) {
+    let previous = null;
+    try { previous = JSON.parse(getItem(STORAGE_KEY) || 'null'); } catch (_) {}
     const value = {
       chartRef: proof.chartRef,
       token: String(data.grant_token || ''),
@@ -103,7 +112,41 @@
     if (!TOKEN_RE.test(value.token) || !value.expiresAt || !setItem(STORAGE_KEY, JSON.stringify(value))) {
       throw new Error('PILOT_STORAGE_UNAVAILABLE');
     }
+    if (!previous || previous.token !== value.token || previous.chartRef !== value.chartRef ||
+        previous.grantDay !== value.grantDay) removeItem(PENDING_KEY);
     return Object.freeze(value);
+  }
+
+  async function submissionRef(chartRef, stage, question) {
+    if (!REF_RE.test(String(chartRef || '')) || !STAGES.has(stage)) {
+      throw new Error('PILOT_REQUEST_INVALID');
+    }
+    const normalized = String(question || '').trim().slice(0, 200).normalize('NFC');
+    if (!normalized) throw new Error('PILOT_REQUEST_INVALID');
+    if (!global.crypto || !global.crypto.subtle || typeof global.crypto.subtle.digest !== 'function' ||
+        typeof global.TextEncoder !== 'function') {
+      throw new Error('SECURE_DIGEST_UNAVAILABLE');
+    }
+    const encoded = new global.TextEncoder().encode(JSON.stringify([chartRef, stage, normalized]));
+    const digest = await global.crypto.subtle.digest('SHA-256', encoded);
+    return Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, '0')).join('');
+  }
+
+  function readPending(proof, grant) {
+    try {
+      const value = JSON.parse(getItem(PENDING_KEY) || 'null');
+      if (!value || value.chartRef !== proof.chartRef || value.grantDay !== grant.grantDay ||
+          !STAGES.has(value.stage) || !REF_RE.test(String(value.submissionRef || '')) ||
+          !IDEMPOTENCY_RE.test(String(value.idempotencyKey || '')) ||
+          Number(value.expiresAt) !== Number(grant.expiresAt) || Number(value.expiresAt) <= Date.now()) {
+        removeItem(PENDING_KEY);
+        return null;
+      }
+      return value;
+    } catch (_) {
+      removeItem(PENDING_KEY);
+      return null;
+    }
   }
 
   function loadCaptcha() {
@@ -215,36 +258,94 @@
     return saveGrant(proof, data);
   }
 
-  function requestContext(input, stage) {
+  async function requestContext(input, stage, question) {
     const grant = readGrant(input);
     if (!grant) return null;
+    const proof = receipt(input);
+    if (!proof) return null;
+    const requestRef = await submissionRef(proof.chartRef, stage, question);
+    let pending = readPending(proof, grant);
+    if (pending && (pending.stage !== stage || pending.submissionRef !== requestRef)) {
+      const error = new Error('PILOT_REQUEST_PENDING');
+      error.pendingStage = pending.stage;
+      throw error;
+    }
+    if (!pending) {
+      pending = {
+        chartRef:grant.chartRef,
+        grantDay:grant.grantDay,
+        expiresAt:grant.expiresAt,
+        stage,
+        submissionRef:requestRef,
+        idempotencyKey:randomHex(16)
+      };
+      if (!setItem(PENDING_KEY, JSON.stringify(pending))) throw new Error('PILOT_STORAGE_UNAVAILABLE');
+    }
     return Object.freeze({
       token:grant.token,
       chartRef:grant.chartRef,
+      grantDay:grant.grantDay,
+      expiresAt:grant.expiresAt,
       stage,
-      idempotencyKey:randomHex(16)
+      idempotencyKey:pending.idempotencyKey
     });
   }
 
-  function updateQuota(input, quota, expiresAt) {
+  function finishRequest(input, stage, idempotencyKey) {
+    const proof = receipt(input);
+    if (!proof || !STAGES.has(stage) || !IDEMPOTENCY_RE.test(String(idempotencyKey || ''))) return false;
+    try {
+      const value = JSON.parse(getItem(PENDING_KEY) || 'null');
+      if (!value || value.chartRef !== proof.chartRef || value.stage !== stage ||
+          value.idempotencyKey !== idempotencyKey) return false;
+      return removeItem(PENDING_KEY);
+    } catch (_) { return false; }
+  }
+
+  function isCurrentRequest(input, expectedRequest) {
+    const proof = receipt(input);
+    const grant = readGrant(input);
+    return !!(proof && grant && expectedRequest &&
+      expectedRequest.token === grant.token &&
+      expectedRequest.chartRef === grant.chartRef &&
+      expectedRequest.grantDay === grant.grantDay &&
+      Number(expectedRequest.expiresAt) === Number(grant.expiresAt));
+  }
+
+  function updateQuota(input, quota, expiresAt, expectedRequest) {
     const proof = receipt(input);
     const grant = readGrant(input);
     if (!proof || !grant) return false;
-    return !!saveGrant(proof, {
-      grant_token:grant.token,
-      grant_day:grant.grantDay,
-      expires_at:Number(expiresAt || grant.expiresAt),
-      quota:quota || {}
-    });
+    if (expectedRequest && (
+      expectedRequest.token !== grant.token ||
+      expectedRequest.chartRef !== grant.chartRef ||
+      expectedRequest.grantDay !== grant.grantDay ||
+      Number(expectedRequest.expiresAt) !== Number(grant.expiresAt)
+    )) return false;
+    try {
+      return !!saveGrant(proof, {
+        grant_token:grant.token,
+        grant_day:grant.grantDay,
+        expires_at:Number(expiresAt || grant.expiresAt),
+        quota:quota || {}
+      });
+    } catch (_) { return false; }
   }
 
-  function invalidateGrant(input) {
+  function invalidateGrant(input, expectedRequest) {
     const proof = receipt(input);
     if (!proof) return false;
     try {
       const value = JSON.parse(getItem(STORAGE_KEY) || 'null');
       if (!value || value.chartRef !== proof.chartRef) return false;
-      global.localStorage.removeItem(STORAGE_KEY);
+      if (expectedRequest && (
+        expectedRequest.token !== value.token ||
+        expectedRequest.chartRef !== value.chartRef ||
+        expectedRequest.grantDay !== value.grantDay ||
+        Number(expectedRequest.expiresAt) !== Number(value.expiresAt)
+      )) return false;
+      removeItem(PENDING_KEY);
+      removeItem(STORAGE_KEY);
       return true;
     } catch (_) { return false; }
   }
@@ -263,8 +364,11 @@
 
   global.ZxFreeAskStarPilot = Object.freeze({
     storageKey:STORAGE_KEY,
+    pendingStorageKey:PENDING_KEY,
     ensureGrant,
     requestContext,
+    finishRequest,
+    isCurrentRequest,
     status,
     updateQuota,
     invalidateGrant
