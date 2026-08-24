@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <title>知星免费问星受控验收</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0e1220;--card:#1a2233;--gold:#c9a85c;--text:#e8e4d8;--muted:#98a0ad;--ok:#77b981;--bad:#d77b6b}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+    main{width:min(760px,calc(100% - 28px));margin:28px auto 60px}.card{background:var(--card);border:1px solid rgba(201,168,92,.28);border-radius:18px;padding:20px;margin:14px 0}
+    h1{font:600 27px/1.3 "Songti SC",serif;color:var(--gold);margin:0 0 8px}h2{font-size:18px;margin:0 0 12px}.note{color:var(--muted);font-size:13px}
+    .controls{display:grid;gap:10px}button{min-height:48px;border:1px solid var(--gold);border-radius:999px;background:transparent;color:var(--text);font:inherit;padding:10px 16px;cursor:pointer}
+    button.primary{background:var(--gold);color:#111827;font-weight:700}button:disabled{opacity:.4;cursor:not-allowed}
+    ol{padding-left:22px;margin:8px 0}.result{display:grid;grid-template-columns:minmax(120px,1fr) 90px minmax(150px,1.3fr);gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+    .result:last-child{border-bottom:0}.pass{color:var(--ok)}.fail{color:var(--bad)}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;overflow-wrap:anywhere}
+    @media(max-width:560px){.result{grid-template-columns:1fr}.card{padding:16px}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <h1>知星免费问星·受控验收</h1>
+    <p>短时 canary，仅供发布人验收。页面不保存、展示或上传测试凭证以外的数据；票据和授权只保存在本页内存。</p>
+    <p class="note">关闭或刷新页面会清空全部状态。不要截图验证码票据，不要打开开发者网络导出。</p>
+  </section>
+
+  <section class="card">
+    <h2>一、TCaptcha 正式应用</h2>
+    <div class="controls">
+      <button id="successBtn" class="primary">1. 成功验证＋同票据重放</button>
+      <button id="cancelBtn">2. 取消验证</button>
+      <button id="aidReplayBtn" disabled>3. 复用已使用的一次一密 aid</button>
+      <button id="forgeBtn">4. 故障票据＋伪造票据</button>
+      <button id="failureGrantBtn">5. 获取失败回补专用授权</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>二、业务与结果账本</h2>
+    <div class="controls">
+      <button id="matrixBtn" disabled>并发首问 → 恢复 → 追问 → 第三次拒绝</button>
+      <button id="refundBtn" disabled>真实模型失败 → 回补 → 同键拒绝</button>
+    </div>
+    <p class="note">业务矩阵最多生成 2 次正常模型答复；其余步骤不应调用模型。</p>
+  </section>
+
+  <section class="card">
+    <h2>脱敏结果</h2>
+    <div id="results"><p class="note">尚未执行。</p></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const CAPTCHA_APP_ID = '198990533';
+  const PILOT_API = 'https://api.zhixng.cn/pilot';
+  const DEEP_API = 'https://api.zhixng.cn/ai/deep';
+  const state = { primary:null, failure:null, usedAid:null, results:[] };
+  const $ = id => document.getElementById(id);
+  const safeCode = data => String(data && data.error && (data.error.code || data.error) || '');
+  const requestId = response => response.headers.get('x-scf-request-id') || response.headers.get('x-request-id') || '';
+
+  function bytes(length){ const value=new Uint8Array(length); crypto.getRandomValues(value); return value; }
+  function hex(length){ return Array.from(bytes(length),v=>v.toString(16).padStart(2,'0')).join(''); }
+  function b64url(length){
+    let text=''; bytes(length).forEach(v=>{text+=String.fromCharCode(v)});
+    return btoa(text).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function cleanResult(name, passed, response, code, detail=''){
+    state.results.push({name,passed,status:response ? response.status : 0,code:String(code||''),requestId:response ? requestId(response) : '',detail:String(detail||'')});
+    render();
+  }
+  function render(){
+    const root=$('results');
+    root.innerHTML=state.results.length ? state.results.map(item=>`<div class="result"><strong>${escapeHtml(item.name)}</strong><span class="${item.passed?'pass':'fail'}">${item.passed?'通过':'未通过'} · ${item.status||'-'}</span><code>${escapeHtml(item.code||item.detail||item.requestId||'-')}</code></div>`).join('') : '<p class="note">尚未执行。</p>';
+    $('matrixBtn').disabled=!state.primary;
+    $('refundBtn').disabled=!state.failure;
+    $('aidReplayBtn').disabled=!state.usedAid;
+  }
+  function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+  async function api(url, body){
+    const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),credentials:'omit',referrerPolicy:'no-referrer'});
+    return {response,data:await response.json().catch(()=>({}))};
+  }
+  async function aid(){
+    const ret=await api(`${PILOT_API}/captcha-aid`,{});
+    if(!ret.response.ok||typeof ret.data.aid_encrypted!=='string')throw new Error(`captcha-aid:${ret.response.status}:${safeCode(ret.data)}`);
+    return ret.data;
+  }
+  async function loadCaptcha(){
+    if(typeof window.TencentCaptcha==='function')return;
+    await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://turing.captcha.qcloud.com/TJCaptcha.js';script.async=true;script.referrerPolicy='origin';script.onload=resolve;script.onerror=()=>reject(new Error('CAPTCHA_SCRIPT_UNAVAILABLE'));document.head.appendChild(script)});
+  }
+  async function captcha(challenge){
+    await loadCaptcha();
+    return new Promise((resolve,reject)=>{
+      try{
+        const widget=new window.TencentCaptcha(CAPTCHA_APP_ID,result=>resolve(result||{}),{userLanguage:'zh-cn',aidEncrypted:challenge.aid_encrypted,aidEncryptedType:challenge.aid_encrypted_type});
+        widget.show();
+      }catch(error){reject(error)}
+    });
+  }
+  function grantBody(risk){
+    return {browser_id:`zx_b_${b64url(32)}`,chart_ref:hex(32),share:{method:'native_share',unlocked_at:new Date().toISOString()},risk:{ticket:String(risk.ticket||''),randstr:String(risk.randstr||'')}};
+  }
+  async function issueGrant(slot, includeReplay){
+    const challenge=await aid();
+    const risk=await captcha(challenge);
+    if(Number(risk.ret)!==0||!risk.ticket||!risk.randstr){cleanResult(slot==='primary'?'成功验证':'失败回补授权',false,null,Number(risk.ret)===2?'CAPTCHA_CANCELLED':'CAPTCHA_REJECTED');return;}
+    const body=grantBody(risk);
+    const first=await api(`${PILOT_API}/grant`,body);
+    const valid=first.response.status===200&&/^zx_p_[A-Za-z0-9_-]{43}$/.test(String(first.data.grant_token||''))&&first.data.quota&&first.data.quota.initial===true&&first.data.quota.followup===false;
+    cleanResult(slot==='primary'?'成功验证':'失败回补授权',valid,first.response,safeCode(first.data)||'GRANT_OK');
+    if(!valid)return;
+    state[slot]={token:first.data.grant_token,chartRef:body.chart_ref,grantDay:first.data.grant_day,expiresAt:first.data.expires_at};
+    state.usedAid=challenge;
+    render();
+    if(includeReplay){
+      const replay=await api(`${PILOT_API}/grant`,body);
+      cleanResult('同票据重放',replay.response.status===403&&safeCode(replay.data)==='CAPTCHA_REJECTED',replay.response,safeCode(replay.data));
+    }
+  }
+  function chart(){return {input:{y:1995,m:6,d:8,city:'广州',gender:'female'},pillars:{day:{stem:'庚',branch:'申'}},tenGods:{},hiddenStems:{},dayMaster:{stem:'庚',element:'金',yinyang:'阳'},fiveElements:{dayMasterStrength:{label:'偏弱',basis:[]},counts:{金:2,水:1}},astro:{moon:{sign:'天秤'}}};}
+  function deepBody(grant, stage, key, question, history, recoverOnly=false){return {chart:chart(),question,history,qian:{hex:'乾为天',omen:'守正',guide:'先稳住节奏',bindElement:'金',strength:'偏弱'},pilot:{token:grant.token,chart_ref:grant.chartRef,stage,idempotency_key:key,recover_only:recoverOnly}};}
+  function answerCore(value){return JSON.stringify({reply:value&&value.reply,parts:value&&value.parts,advice:value&&value.advice,caveat:value&&value.caveat});}
+
+  $('successBtn').addEventListener('click',async()=>{try{$('successBtn').disabled=true;await issueGrant('primary',true)}catch(error){cleanResult('成功验证',false,null,'CLIENT_ERROR',error.message)}finally{$('successBtn').disabled=false}});
+  $('cancelBtn').addEventListener('click',async()=>{try{const risk=await captcha(await aid());cleanResult('取消验证',Number(risk.ret)===2,null,Number(risk.ret)===2?'CAPTCHA_CANCELLED':`RET_${risk.ret}`)}catch(error){cleanResult('取消验证',false,null,'CLIENT_ERROR',error.message)}});
+  $('aidReplayBtn').addEventListener('click',async()=>{try{const risk=await captcha(state.usedAid);cleanResult('一次一密 aid 重放',Number(risk.ret)!==0||!risk.ticket,null,Number(risk.ret)===0?'UNEXPECTED_SUCCESS':`RET_${risk.ret}`)}catch(error){cleanResult('一次一密 aid 重放',true,null,'REJECTED',error.message)}});
+  $('forgeBtn').addEventListener('click',async()=>{
+    try{
+      const broken=grantBody({ticket:`trerror_${hex(12)}`,randstr:'@'});const a=await api(`${PILOT_API}/grant`,broken);cleanResult('故障票据',a.response.status===403&&safeCode(a.data)==='CAPTCHA_REJECTED',a.response,safeCode(a.data));
+      const forged=grantBody({ticket:`${hex(24)}x`,randstr:hex(8)});const b=await api(`${PILOT_API}/grant`,forged);cleanResult('伪造票据',b.response.status===403&&safeCode(b.data)==='CAPTCHA_REJECTED',b.response,safeCode(b.data));
+    }catch(error){cleanResult('故障/伪造票据',false,null,'CLIENT_ERROR',error.message)}
+  });
+  $('failureGrantBtn').addEventListener('click',async()=>{try{$('failureGrantBtn').disabled=true;await issueGrant('failure',false)}catch(error){cleanResult('失败回补授权',false,null,'CLIENT_ERROR',error.message)}finally{$('failureGrantBtn').disabled=false}});
+
+  $('matrixBtn').addEventListener('click',async()=>{
+    const grant=state.primary;if(!grant)return;
+    $('matrixBtn').disabled=true;
+    try{
+      const q1='我目前在稳定岗位和新机会之间纠结，最担心收入波动，先验证哪个现实条件？';
+      const reqA=deepBody(grant,'initial',hex(16),q1,[]);const reqB=deepBody(grant,'initial',hex(16),q1,[]);
+      const pair=await Promise.all([api(DEEP_API,reqA),api(DEEP_API,reqB)]);
+      const winner=pair.find(item=>item.response.status===200);const loser=pair.find(item=>item!==winner);
+      const concurrent=!!winner&&!!loser&&loser.response.status===409&&safeCode(loser.data)==='PILOT_INITIAL_USED';
+      cleanResult('并发首问唯一成功',concurrent,winner&&winner.response,concurrent?'1×200 + 1×409':`${pair[0].response.status}/${pair[1].response.status}`);
+      if(!concurrent)return;
+      const winnerBody=winner===pair[0]?reqA:reqB;
+      const recovered=await api(DEEP_API,{...winnerBody,pilot:{...winnerBody.pilot,recover_only:true}});
+      const recoveryOk=recovered.response.status===200&&recovered.data.pilot_recovered===true&&answerCore(recovered.data)===answerCore(winner.data);
+      cleanResult('结果账本恢复',recoveryOk,recovered.response,recoveryOk?'RECOVERED':safeCode(recovered.data));
+      const firstTurn={question:q1,reply:winner.data.reply,parts:winner.data.parts,advice:winner.data.advice};
+      const follow=await api(DEEP_API,deepBody(grant,'followup',hex(16),'如果只做一个可逆验证，今天先做哪一步？',[firstTurn]));
+      const followOk=follow.response.status===200&&follow.data.pilot_quota&&follow.data.pilot_quota.initial===false&&follow.data.pilot_quota.followup===false;
+      cleanResult('真实追问',followOk,follow.response,followOk?'QUOTA_0_0':safeCode(follow.data));
+      const third=await api(DEEP_API,deepBody(grant,'followup',hex(16),'再给我一次额外追问。',[firstTurn]));
+      const thirdOk=third.response.status===409&&safeCode(third.data)==='PILOT_FOLLOWUP_USED';
+      cleanResult('第三次服务端拒绝',thirdOk,third.response,safeCode(third.data));
+    }catch(error){cleanResult('业务矩阵',false,null,'CLIENT_ERROR',error.message)}finally{render()}
+  });
+
+  $('refundBtn').addEventListener('click',async()=>{
+    const grant=state.failure;if(!grant)return;
+    $('refundBtn').disabled=true;
+    try{
+      const body=deepBody(grant,'initial',hex(16),'我在测试真实模型失败后的额度回补。',[]);
+      const failed=await api(DEEP_API,body);
+      const failedOk=failed.response.status===502&&failed.data.pilot_refunded===true;
+      cleanResult('真实模型失败回补',failedOk,failed.response,failedOk?'REFUNDED':safeCode(failed.data));
+      const replay=await api(DEEP_API,body);
+      const replayOk=replay.response.status===409&&safeCode(replay.data)==='PILOT_REFUNDED'&&replay.data.pilot_refunded===true&&replay.data.pilot_quota&&replay.data.pilot_quota.initial===true&&replay.data.pilot_quota.followup===false;
+      cleanResult('退款同键拒绝',replayOk,replay.response,safeCode(replay.data));
+    }catch(error){cleanResult('失败回补矩阵',false,null,'CLIENT_ERROR',error.message)}finally{render()}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
