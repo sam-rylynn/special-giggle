@@ -85,13 +85,15 @@
     return value && REF_RE.test(String(value.chartRef || '')) ? value : null;
   }
 
-  function readGrant(input) {
+  function readGrant(input, allowExpired = false) {
     const proof = receipt(input);
     if (!proof) return null;
     try {
       const value = JSON.parse(getItem(STORAGE_KEY) || 'null');
       if (!value || value.chartRef !== proof.chartRef || !TOKEN_RE.test(String(value.token || '')) ||
-          !Number.isFinite(Number(value.expiresAt)) || Number(value.expiresAt) <= Date.now()) return null;
+          typeof value.grantDay !== 'string' || !value.grantDay ||
+          !Number.isFinite(Number(value.expiresAt)) ||
+          (!allowExpired && Number(value.expiresAt) <= Date.now())) return null;
       return value;
     } catch (_) { return null; }
   }
@@ -138,7 +140,7 @@
       if (!value || value.chartRef !== proof.chartRef || value.grantDay !== grant.grantDay ||
           !STAGES.has(value.stage) || !REF_RE.test(String(value.submissionRef || '')) ||
           !IDEMPOTENCY_RE.test(String(value.idempotencyKey || '')) ||
-          Number(value.expiresAt) !== Number(grant.expiresAt) || Number(value.expiresAt) <= Date.now()) {
+          Number(value.expiresAt) !== Number(grant.expiresAt)) {
         removeItem(PENDING_KEY);
         return null;
       }
@@ -247,6 +249,8 @@
     if (existing) return existing;
     const proof = receipt(input);
     if (!proof) throw new Error('RESHARE_REQUIRED');
+    const expiredGrant = readGrant(input, true);
+    if (expiredGrant && readPending(proof, expiredGrant)) return expiredGrant;
     const aid = await postGrant('/captcha-aid', {});
     const risk = await runCaptcha(aid);
     const data = await postGrant('/grant', {
@@ -259,13 +263,18 @@
   }
 
   async function requestContext(input, stage, question) {
-    const grant = readGrant(input);
-    if (!grant) return null;
     const proof = receipt(input);
     if (!proof) return null;
-    const requestRef = await submissionRef(proof.chartRef, stage, question);
+    if (!STAGES.has(stage)) throw new Error('PILOT_REQUEST_INVALID');
+    const activeGrant = readGrant(input);
+    const grant = activeGrant || readGrant(input, true);
+    if (!grant) return null;
     let pending = readPending(proof, grant);
-    if (pending && (pending.stage !== stage || pending.submissionRef !== requestRef)) {
+    if (!activeGrant && !pending) return null;
+    const recoveryOnly = !!pending;
+    const requestStage = pending ? pending.stage : stage;
+    const requestRef = await submissionRef(proof.chartRef, requestStage, question);
+    if (pending && pending.submissionRef !== requestRef) {
       const error = new Error('PILOT_REQUEST_PENDING');
       error.pendingStage = pending.stage;
       throw error;
@@ -286,9 +295,32 @@
       chartRef:grant.chartRef,
       grantDay:grant.grantDay,
       expiresAt:grant.expiresAt,
-      stage,
-      idempotencyKey:pending.idempotencyKey
+      stage:pending.stage,
+      idempotencyKey:pending.idempotencyKey,
+      recoveryOnly
     });
+  }
+
+  function retryContext(input, expectedRequest) {
+    const proof = receipt(input);
+    const grant = readGrant(input);
+    if (!proof || !grant || !expectedRequest || expectedRequest.recoveryOnly !== true) return null;
+    const pending = readPending(proof, grant);
+    if (!pending || expectedRequest.token !== grant.token || expectedRequest.chartRef !== grant.chartRef ||
+        expectedRequest.grantDay !== grant.grantDay || Number(expectedRequest.expiresAt) !== Number(grant.expiresAt) ||
+        expectedRequest.stage !== pending.stage || expectedRequest.idempotencyKey !== pending.idempotencyKey) return null;
+    return Object.freeze({ ...expectedRequest,recoveryOnly:false });
+  }
+
+  function boundGrant(input, expectedRequest) {
+    const proof = receipt(input);
+    const grant = readGrant(input, true);
+    if (!proof || !grant || !expectedRequest) return null;
+    const pending = readPending(proof, grant);
+    if (!pending || expectedRequest.token !== grant.token || expectedRequest.chartRef !== grant.chartRef ||
+        expectedRequest.grantDay !== grant.grantDay || Number(expectedRequest.expiresAt) !== Number(grant.expiresAt) ||
+        expectedRequest.stage !== pending.stage || expectedRequest.idempotencyKey !== pending.idempotencyKey) return null;
+    return grant;
   }
 
   function finishRequest(input, stage, idempotencyKey) {
@@ -303,25 +335,13 @@
   }
 
   function isCurrentRequest(input, expectedRequest) {
-    const proof = receipt(input);
-    const grant = readGrant(input);
-    return !!(proof && grant && expectedRequest &&
-      expectedRequest.token === grant.token &&
-      expectedRequest.chartRef === grant.chartRef &&
-      expectedRequest.grantDay === grant.grantDay &&
-      Number(expectedRequest.expiresAt) === Number(grant.expiresAt));
+    return !!boundGrant(input, expectedRequest);
   }
 
   function updateQuota(input, quota, expiresAt, expectedRequest) {
     const proof = receipt(input);
-    const grant = readGrant(input);
+    const grant = expectedRequest ? boundGrant(input, expectedRequest) : readGrant(input);
     if (!proof || !grant) return false;
-    if (expectedRequest && (
-      expectedRequest.token !== grant.token ||
-      expectedRequest.chartRef !== grant.chartRef ||
-      expectedRequest.grantDay !== grant.grantDay ||
-      Number(expectedRequest.expiresAt) !== Number(grant.expiresAt)
-    )) return false;
     try {
       return !!saveGrant(proof, {
         grant_token:grant.token,
@@ -367,6 +387,7 @@
     pendingStorageKey:PENDING_KEY,
     ensureGrant,
     requestContext,
+    retryContext,
     finishRequest,
     isCurrentRequest,
     status,

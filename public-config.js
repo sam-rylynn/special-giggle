@@ -13,8 +13,8 @@
     launchMode: 'share-free',
     paidH5Enabled: false,
     accountApiBase: 'https://api.zhixng.cn',
-    analyticsEnabled: true,
-    analyticsEndpoint: 'https://api.zhixng.cn/',
+    analyticsEnabled: false,
+    analyticsEndpoint: '',
     captchaAppId: '',
     freeAskStarPilotEnabled: false,
     pilotGrantApiUrl: '',
@@ -29,11 +29,11 @@
     privacyUrl: 'https://zhixng.cn/privacy.html',
     aiDisclosureUrl: 'https://zhixng.cn/ai-disclosure.html',
     purchaseNoticeUrl: '',
-    agreementVersion: 'user-agreement-2026.08.22-free-ask-v1',
-    privacyVersion: 'privacy-2026.08.22-free-ask-v1',
+    agreementVersion: 'user-agreement-2026.08.25-free-ask-v2',
+    privacyVersion: 'privacy-2026.08.25-free-ask-v3',
     membershipTermsVersion: '',
     refundPolicyVersion: '',
-    aiDisclosureVersion: 'ai-disclosure-2026.08.22-free-ask-v1',
+    aiDisclosureVersion: 'ai-disclosure-2026.08.25-free-ask-v3',
     purchaseNoticeVersion: ''
   });
 })();

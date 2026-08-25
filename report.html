@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-qLux/otoerbPuTHXT4kQITJXhZkrij97cSbQsQK0d1w='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://turing.captcha.qcloud.com 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-YNA8XVGVPUt2c/66bmSLKKDkjJbzwGKTqDUHaZ6VpYQ='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://turing.captcha.qcloud.com; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn https://turing.captcha.qcloud.com; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src https://turing.captcha.qcloud.com; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -501,9 +501,10 @@
   <div class="age-gate-card">
     <span class="badge">AI 处 理 确 认</span>
     <h2 id="aiProcessingGateTitle">首次使用问星</h2>
-    <p class="gate-detail" id="aiProcessingGateDetail">本次会把个人文化图谱摘要、你的问题、最多一轮先前问答摘要和今日知星卡，经知星后端发送给 DeepSeek 大模型生成答复。知星不建立可回看的账号问答存档，模型服务方会按其服务规则处理输入与输出。请不要填写身份证号、银行卡号、住址、联系方式或医疗诊断。</p>
+    <p class="gate-detail" id="aiProcessingGateDetail">本次会把个人文化图谱摘要、你的问题、最多一轮先前问答摘要和今日知星卡，经知星后端发送给 DeepSeek 大模型生成答复。知星不建立可浏览的账号问答存档；为恢复网络中断时已经生成的答复，会加密保留不含独立问题原文的最小结果副本，生成后第 29 日进入每日删除队列，正常运行下最长不超过 30 日。模型服务方会按其服务规则处理输入与输出。请不要填写身份证号、银行卡号、住址、联系方式或医疗诊断。</p>
+    <p class="gate-detail" id="tCaptchaGateDetail">申请免费问星匿名授权前，会按需加载腾讯云计算（北京）有限责任公司提供的 TCaptcha。安全验证会加密处理设备环境、操作系统、IP、初始化与验证时间及版本、点击/滑动/界面切换/鼠标移动/方向传感器等操作特征和必要验证历史，用于识别异常设备、虚假请求、攻击与重放；保存以腾讯现行规则、合同和实现目的所必需的期限为界，不承诺固定天数。</p>
     <p class="gate-policy"><a id="aiPrivacyPolicyLink" href="../web/privacy.html">查看隐私政策</a></p>
-    <label class="gate-check"><input type="checkbox" id="aiProcessingCheck">我了解发送范围，并同意本次及后续问星请求按上述方式处理；我可以清除本机选择。</label>
+    <label class="gate-check"><input type="checkbox" id="aiProcessingCheck">我了解并同意：申请匿名授权时按需进行上述 TCaptcha 安全验证，验证通过后再把上述最小范围发送给 DeepSeek 生成答复。该选择记录在本机，可通过“隐私选择”撤回。</label>
     <div class="gate-actions">
       <button id="aiProcessingOk" type="button" disabled>同意并继续</button>
       <button id="aiProcessingCancel" type="button" class="ghost">暂不使用</button>
@@ -1145,8 +1146,9 @@ const MEMBER_ACTIVE_BODY = '会员可保存 6 份报告，每个服务月含 60 
 const MEMBER_ARCHIVE_TAIL = '会员到期后，问答存档仍可查看 30 天。';
 const MODEL_PROCESSING_NOTICE = LOCAL_DEEP_MODE === 'real'
   ? '本机真实回答测试会把个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，经只绑定回环地址的临时测试转发发送给已部署的 DeepSeek 函数；本机临时凭证不会发送给云端。'
-  : '提问会发送个人文化图谱摘要、本次问题、最多一轮先前问答摘要和今日知星卡，用于生成本次答复。相关内容会经知星后端发送给 DeepSeek 大模型服务处理。';
+  : '提问会发送个人文化图谱摘要、本次问题、最多一轮先前问答摘要和今日知星卡，用于生成本次答复。相关内容会经知星后端发送给 DeepSeek 大模型服务处理。免费首测会在返回前加密保存不含独立问题原文的最小答复恢复副本，生成后第 29 日进入每日删除队列，正常运行下最长不超过 30 日，不建立可浏览的账号问答存档。';
 const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
+const TCAPTCHA_PROCESSING_NOTICE = '申请免费问星匿名授权前，会按需加载腾讯云计算（北京）有限责任公司提供的 TCaptcha。安全验证会加密处理设备环境、操作系统、IP、初始化与验证时间及版本、点击、滑动、界面切换、鼠标移动、方向传感器等操作特征和必要验证历史，用于识别异常设备、虚假请求、攻击与重放；保存以腾讯现行规则、合同和实现目的所必需的期限为界，不承诺固定天数。';
 const MEMBERSHIP_REQUIRED = {
   title: '需要开通会员',
   body: '问星是会员服务。你仍可查看深度发展报告与今日知星卡；登录手机号并开通会员后即可使用。'
@@ -1176,6 +1178,9 @@ function setReportModalBackgroundInert(inert){
       node.removeAttribute('aria-hidden');
     }
   });
+  if(window.ZxPrivacyConsent&&typeof ZxPrivacyConsent.setDockSuppressed==='function'){
+    ZxPrivacyConsent.setDockSuppressed(inert);
+  }
 }
 function reportModalFocusables(root){
   return [...root.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')]
@@ -1253,6 +1258,14 @@ function formatMemberUntil(v){
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('zh-CN');
 }
 
+function freePilotQuotaExhausted(){
+  if(!FREE_ASK_STAR_PILOT||!window.ZxFreeAskStarPilot)return false;
+  try{
+    const state=ZxFreeAskStarPilot.status(reportChartPayload());
+    return !!(state&&state.granted&&state.quota&&!state.quota.initial&&!state.quota.followup);
+  }catch(_){return false}
+}
+
 function renderMemberStatus(){
   const box = $('deepMemberBox'); if (!box) return;
   if(SHARE_FREE_LAUNCH){
@@ -1267,12 +1280,12 @@ function renderMemberStatus(){
       pill='未激活';
       copy='旧版分享记录可以继续看报告，但免费问星需要一次带安全凭证的新分享。返回日主页再次分享即可。';
     }else if(PUBLIC_AI_AVAILABLE&&pilot.granted){
-      if(pilot.quota.followup){pill='剩 1 次追问';copy='今日首问已完成。下一问必须承接刚才的问题，关闭当前标签页后不会保留问答正文。'}
+      if(pilot.quota.followup){pill='剩 1 次追问';copy='今日首问已完成。下一问必须承接刚才的问题；关闭当前标签页后不会形成可浏览的问答记录。'}
       else if(!pilot.quota.initial){pill='今日已用完';copy='今日 1 个首问和 1 次追问均已使用，明日（北京时间）恢复。'}
-      else{pill='剩 1＋1';copy='今日还可使用 1 个首问和 1 次追问；问答只保留在当前页面。'}
+      else{pill='剩 1＋1';copy='今日还可使用 1 个首问和 1 次追问；页面不提供历史问答列表。'}
     }
     box.innerHTML = `<div class="member-row"><div class="member-title">${esc(title)}</div><div class="member-pill">${esc(pill)}</div></div>
-      <div class="member-copy">${esc(copy)} 本轮不提供会员购买，也不建立可回看的知星账号问答存档。</div>`;
+      <div class="member-copy">${esc(copy)} 本轮不提供会员购买，也不建立可浏览的知星账号问答存档；仅为网络失败恢复加密保留最小答复副本，正常运行下最长不超过 30 日。</div>`;
     return;
   }
   const s = memberSnapshot();
@@ -1332,7 +1345,7 @@ function deepCard(){
       ${deepMethodReference}
       ${deepMemberBox()}
       <div class="ai-interaction">${LOCAL_DEEP_MODE === 'real' ? '真实 DeepSeek 测试 · 本机临时凭证' : '你正在与人工智能服务互动'}</div>
-      <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">首次使用前会再次征求同意；详情见<a href="${PRIVACY_PAGE_HREF}" target="_blank" rel="noopener">《隐私政策》</a>和<a href="${AI_DISCLOSURE_PAGE_HREF}" target="_blank" rel="noopener">《AI 服务说明》</a>。</div></div>
+      <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(TCAPTCHA_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">首次使用前会再次征求同意；详情见<a href="${PRIVACY_PAGE_HREF}" target="_blank" rel="noopener">《隐私政策》</a>和<a href="${AI_DISCLOSURE_PAGE_HREF}" target="_blank" rel="noopener">《AI 服务说明》</a>。</div></div>
       <div class="deep-composer" id="deepComposer" aria-label="问星输入区">
         <label class="sr-only" for="deepQ">需要梳理的具体情境</label>
         <input type="text" id="deepQ" maxlength="200" placeholder="比如：这份工作让我犹豫，我需要先核对哪些现实条件？">
@@ -2155,19 +2168,42 @@ async function callDeepBackend(chart, question, history = []){
     qian: { hex:qian.hex, omen:qian.omen, guide:qian.guide, bindElement:qian.bindElement, strength:qian.strength }
   };
   if(accountToken)payload.token=accountToken;
-  if(pilotContext)payload.pilot={
-    token:pilotContext.token,
-    chart_ref:pilotContext.chartRef,
-    stage:pilotContext.stage,
-    idempotency_key:pilotContext.idempotencyKey
+  const applyPilotContext=()=>{
+    if(!pilotContext)return;
+    payload.pilot={
+      token:pilotContext.token,
+      chart_ref:pilotContext.chartRef,
+      stage:pilotContext.stage,
+      idempotency_key:pilotContext.idempotencyKey,
+      recover_only:pilotContext.recoveryOnly===true
+    };
   };
+  applyPilotContext();
   const headers = { 'content-type':'application/json' };
   if(localRealToken)headers['x-zhixing-local-session']=localRealToken;
-  const r = await fetchWithTimeout(endpoint, {
-    method: 'POST', headers,
-    body: JSON.stringify(payload)
-  }, DEEP_RESPONSE_TIMEOUT_MS);
-  const data = await r.json();
+  const sendRequest=async()=>{
+    const response=await fetchWithTimeout(endpoint, {
+      method: 'POST', headers,
+      body: JSON.stringify(payload)
+    }, DEEP_RESPONSE_TIMEOUT_MS);
+    return {response,data:await response.json()};
+  };
+  let sent=await sendRequest();
+  let r=sent.response;
+  let data=sent.data;
+  const firstCode=data&&data.error&&typeof data.error==='object'?data.error.code:data&&data.error;
+  if(!r.ok&&pilotContext&&pilotContext.recoveryOnly===true&&
+      firstCode==='PILOT_PENDING_RETRY_ALLOWED'&&data&&data.pilot_retry_allowed===true&&
+      window.ZxFreeAskStarPilot&&typeof ZxFreeAskStarPilot.retryContext==='function'){
+    const retry=ZxFreeAskStarPilot.retryContext(reportChartPayload(),pilotContext);
+    if(retry){
+      pilotContext=retry;
+      applyPilotContext();
+      sent=await sendRequest();
+      r=sent.response;
+      data=sent.data;
+    }
+  }
   const finishPilotRequest=()=>{
     if(!pilotContext||!window.ZxFreeAskStarPilot||typeof ZxFreeAskStarPilot.finishRequest!=='function')return false;
     return ZxFreeAskStarPilot.finishRequest(
@@ -2196,7 +2232,7 @@ async function callDeepBackend(chart, question, history = []){
       'PILOT_TOKEN_INVALID','PILOT_INVALID_GRANT','PILOT_EXPIRED','PILOT_CHART_MISMATCH',
       'PILOT_STAGE_INVALID','PILOT_STAGE_SEQUENCE_INVALID','IDEMPOTENCY_KEY_INVALID',
       'PILOT_INITIAL_USED','PILOT_INITIAL_REQUIRED','PILOT_FOLLOWUP_USED','PILOT_DUPLICATE',
-      'PILOT_GLOBAL_BUDGET','PILOT_REFUNDED','PILOT_REPLAYED'
+      'PILOT_GLOBAL_BUDGET','PILOT_REFUNDED','PILOT_RECOVERY_NOT_FOUND','PILOT_REPLAYED'
     ]);
     if(FREE_ASK_STAR_PILOT&&(data&&data.pilot_refunded===true||terminalPilotCodes.has(String(code||''))))finishPilotRequest();
     if(r.status===401||r.status===409||r.status===429){
@@ -2242,8 +2278,11 @@ function deepPilotQuotaNotice(code){
   if(code==='PILOT_REFUNDED'){
     return '<div class="deep-echo"><b style="color:var(--gold)">上一次请求已回补</b><br>本次没有发送给模型，也没有占用你的次数；请保持原问题不变，再点击一次提交。</div>';
   }
-  if(code==='PILOT_REPLAYED'){
-    return '<div class="deep-echo"><b style="color:var(--gold)">上一条请求已被服务端接收</b><br>本页没有取回当时的回答。为避免重复调用模型，本次没有再次生成；今日请停止继续提问，明日（北京时间）恢复。</div>';
+  if(code==='PILOT_RESULT_PENDING'||code==='PILOT_REPLAYED'){
+    return '<div class="deep-echo"><b style="color:var(--gold)">上一条请求仍在确认结果</b><br>为避免重复调用模型，本次没有再次生成。请保留原问题并稍后用同一内容重试；结果写入完成后会直接取回。</div>';
+  }
+  if(code==='PILOT_RECOVERY_NOT_FOUND'){
+    return '<div class="deep-echo"><b style="color:var(--gold)">没有找到待恢复的请求</b><br>本次没有调用模型或占用次数。页面刷新后已缺少安全承接追问所需的上一轮上下文；今日请停止继续提问，明日（北京时间）恢复。</div>';
   }
   if(code==='PILOT_INITIAL_USED'&&deepTurns.length===0){
     return '<div class="deep-echo"><b style="color:var(--gold)">今日首问已完成</b><br>追问必须紧接当前页面中的首问；刷新或关闭页面后不恢复问答正文，请于明日（北京时间）重新发起首问。</div>';
@@ -2367,7 +2406,7 @@ async function askDeepOnce(chart){
     return;
   }
   if(FREE_ASK_STAR_PILOT&&!LOCAL_DEBUG_PAGE){
-    if(deepTurns.length>=2){updateDeepEcho(deepPaywall('quota'),true);return}
+    if(deepTurns.length>=2||freePilotQuotaExhausted()){updateDeepEcho(deepPaywall('quota'),true);return}
     try{
       if(!window.ZxFreeAskStarPilot||typeof ZxFreeAskStarPilot.ensureGrant!=='function')throw new Error('PILOT_NOT_CONFIGURED');
       const needsGrant=!ZxFreeAskStarPilot.status(reportChartPayload()).granted;
@@ -2451,7 +2490,7 @@ async function askDeepOnce(chart){
         btn.disabled=true;
         btn.textContent='次数状态待核对';
         $('deepQ').disabled=true;
-      }else if(deepTurns.length>=2){
+      }else if(deepTurns.length>=2||freePilotQuotaExhausted()){
         btn.disabled=true;
         btn.textContent='今日 1＋1 已用完';
         $('deepQ').disabled=true;
@@ -2474,7 +2513,7 @@ async function askDeepOnce(chart){
     if(e&&e.message==='PILOT_REQUEST_PENDING'){
       trackEvent('ai_request_failed',{outcome:'failed',reason:'pending',stage:pilotStage});
       const pendingCopy=e.pendingStage==='followup'&&deepTurns.length===0
-        ?'页面刷新后没有保留首问正文，因此无法安全恢复上一条追问。当前问题没有发送；为避免错用次数，今日请停止继续提问，明日（北京时间）恢复。'
+        ?'页面刷新后没有保留问答正文。当前输入与待恢复的上一条追问不一致，因此没有发送；请重新输入上一条追问原文后重试。'
         :'上一条问题的结果仍待确认。为避免重复消耗，请恢复上一条问题原文后重试；当前修改后的问题没有发送。';
       updateDeepEcho(priorHtml + `<div class="deep-echo">${pendingCopy}</div>`,true);
       return;
@@ -2486,7 +2525,7 @@ async function askDeepOnce(chart){
       btn.disabled=true;
       btn.textContent='次数状态待核对';
       $('deepQ').disabled=true;
-    }else if(FREE_ASK_STAR_PILOT&&deepTurns.length>=2){
+    }else if(FREE_ASK_STAR_PILOT&&(deepTurns.length>=2||freePilotQuotaExhausted())){
       btn.disabled=true;
       btn.textContent='今日 1＋1 已用完';
     }else{
