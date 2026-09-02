@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  var NOTICE_VERSION = 'privacy-2026.08.25-free-ask-v3';
+  var NOTICE_VERSION = 'privacy-2026.08.25-paid-ask-v1';
   var CHOICES_KEY = 'zx_privacy_choices_v1';
   var SUPPORT_EMAIL = 'wuyh@sg1798.wecome.work';
   var DOCK_SUPPRESSED = false;
@@ -12,7 +12,6 @@
     'zx_input',
     'zx_saved_reports_v1',
     'zx_profile_name_v1',
-    'zx_report_share_unlock_v2',
     CHOICES_KEY
   ];
   var SCOPES = ['birth_local', 'device_account', 'ai_processing', 'product_analytics'];
@@ -101,8 +100,8 @@
 
   function privacyPageHref() {
     var path = String(window.location && window.location.pathname || '');
-    if (/\/v1\/report\.html$/.test(path)) return '../web/first-test-privacy.html';
-    if (/\/web\//.test(path)) return './first-test-privacy.html';
+    if (/\/v1\/report\.html$/.test(path)) return '../web/privacy.html';
+    if (/\/web\//.test(path)) return './privacy.html';
     return './privacy.html';
   }
 
@@ -154,15 +153,15 @@
     center.innerHTML = '<section id="zxPrivacyCenterPanel" role="dialog" aria-modal="true" aria-labelledby="zxPrivacyCenterTitle" tabindex="-1">' +
       '<h2 id="zxPrivacyCenterTitle">隐私选择与本机资料</h2>' +
       '<p class="zx-privacy-state" id="zxPrivacyChoiceState"></p>' +
-      '<p>本期产品改进统计已关闭且接收端点为空，不会发送产品埋点。撤回问星处理同意后，下次问星会在按需加载 TCaptcha 或发送 DeepSeek 前重新征求确认。</p>' +
+      '<p>本期产品改进统计已关闭且接收端点为空，不会发送产品埋点。微信账号服务按“设备与账号功能”的确认启用；把盘面摘要、问题和必要的近期对话发送给 DeepSeek 前，会单独征求问星处理同意。</p>' +
       '<div class="zx-privacy-actions">' +
         '<button class="zx-privacy-primary" id="zxPrivacyRevoke" type="button">撤回问星处理与统计同意</button>' +
         '<button class="zx-privacy-danger" id="zxPrivacyClear" type="button">清除页面可删除的本机知星资料</button>' +
         '<a class="zx-privacy-link" href="' + complaintHref + '">提交投诉或举报</a>' +
-        '<a class="zx-privacy-link" id="zxPrivacyPolicy" href="' + privacyPageHref() + '">查看首期测试隐私政策</a>' +
+        '<a class="zx-privacy-link" id="zxPrivacyPolicy" href="' + privacyPageHref() + '">查看隐私政策</a>' +
         '<button id="zxPrivacyClose" type="button">关闭</button>' +
       '</div>' +
-      '<p>投诉或举报按“受理 → 核验 → 处理 → 反馈”办理；该通道由人工值守，我们会在 15 个工作日内或法律规定期限内反馈。涉及腾讯云 TCaptcha 的个人信息请求，我们会按需协调服务提供方处理。</p>' +
+      '<p>投诉或举报按“受理 → 核验 → 处理 → 反馈”办理；该通道由人工值守，我们会在 15 个工作日内或法律规定期限内反馈。涉及微信账号服务、微信支付或 DeepSeek 的个人信息请求，我们会按需协调服务提供方处理。</p>' +
       '<p id="zxPrivacyCenterStatus" role="status" aria-live="polite"></p>' +
     '</section>';
 
@@ -180,7 +179,7 @@
     var previousOverflow = '';
 
     function renderChoices() {
-      choiceState.textContent = '问星处理（TCaptcha + DeepSeek）：' + currentChoiceText('ai_processing') + '；产品统计：' + currentChoiceText('product_analytics') + '。';
+      choiceState.textContent = '问星处理（微信账号服务 + DeepSeek）：' + currentChoiceText('ai_processing') + '；产品统计：' + currentChoiceText('product_analytics') + '。';
     }
 
     function openCenter() {
@@ -227,14 +226,14 @@
         revoke('product_analytics');
         if (window.ZxAnalytics && typeof window.ZxAnalytics.clear === 'function') window.ZxAnalytics.clear();
         renderChoices();
-        status.textContent = '已撤回问星处理与产品统计同意；后续问星不会继续按原选择加载 TCaptcha 或发送 DeepSeek，重新使用前会再次确认。';
+        status.textContent = '已撤回问星处理与产品统计同意；后续不会继续按原选择向 DeepSeek 发送问星资料，重新使用前会再次确认。微信账号与退出登录由“我的”页单独管理。';
       } catch (_) {
         status.textContent = '当前浏览器未能保存撤回选择，请检查站点存储设置后重试。';
       }
     });
 
     document.getElementById('zxPrivacyClear').addEventListener('click', function () {
-      if (!window.confirm('将清除当前页面有权删除的 LocalStorage 与 SessionStorage 中所有 zx_ 前缀资料，包括出生资料、报告解锁、匿名问星授权和隐私选择。不会自动删除服务端记录或 HttpOnly Cookie。此操作无法恢复，是否继续？')) return;
+      if (!window.confirm('将清除当前页面有权删除的 LocalStorage 与 SessionStorage 中所有 zx_ 前缀资料，包括出生资料、报告阅读位置和隐私选择。不会自动删除服务端账号、订单、次数、问答结果或 HttpOnly Cookie。此操作无法恢复，是否继续？')) return;
       try {
         clearAllLocalData();
         if (window.ZxAnalytics && typeof window.ZxAnalytics.clear === 'function') window.ZxAnalytics.clear();

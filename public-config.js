@@ -1,39 +1,30 @@
-/*
- * 知星前端公开配置。
- *
- * 这里只允许填写可公开的信息；任何 SecretKey、APIv3 Key、证书私钥、
- * 短信验证码或服务端 AppSecretKey 都不得进入本文件。
- *
- * TCaptcha AppId 仍须在腾讯云控制台创建后填写；留空会让手机号登录失败关闭。
- */
+/* CANONICAL fail-closed public config template. Formal releases are generated outside this worktree by tools/generate-paid-ask-public-config.mjs; do not edit by hand. */
 (function () {
   'use strict';
 
   window.ZX_PUBLIC_CONFIG = Object.freeze({
-    launchMode: 'share-free',
-    paidH5Enabled: false,
+    launchMode: 'paid-ask',
+    paidAskEnabled: false,
     accountApiBase: 'https://api.zhixng.cn',
     analyticsEnabled: false,
     analyticsEndpoint: '',
-    captchaAppId: '',
-    freeAskStarPilotEnabled: false,
-    pilotGrantApiUrl: '',
+    wechatOfficialAccountAppId: '',
     deepServiceAvailable: false,
     deepApiUrl: '',
     paymentOrigin: 'https://zhixng.cn',
     merchantLegalName: '贵州天云稀泉科技有限公司',
     supportUrl: 'https://zhixng.cn/privacy.html',
-    refundUrl: '',
+    refundUrl: 'https://zhixng.cn/refund-policy.html',
     userAgreementUrl: 'https://zhixng.cn/terms.html',
-    membershipRulesUrl: '',
+    membershipRulesUrl: 'https://zhixng.cn/membership-rules.html',
     privacyUrl: 'https://zhixng.cn/privacy.html',
     aiDisclosureUrl: 'https://zhixng.cn/ai-disclosure.html',
-    purchaseNoticeUrl: '',
-    agreementVersion: 'user-agreement-2026.08.25-free-ask-v2',
-    privacyVersion: 'privacy-2026.08.25-free-ask-v3',
-    membershipTermsVersion: '',
-    refundPolicyVersion: '',
-    aiDisclosureVersion: 'ai-disclosure-2026.08.25-free-ask-v3',
-    purchaseNoticeVersion: ''
+    purchaseNoticeUrl: 'https://zhixng.cn/purchase-notice.html',
+    agreementVersion: 'user-agreement-2026.08.25-paid-ask-v1',
+    privacyVersion: 'privacy-2026.08.25-paid-ask-v1',
+    membershipTermsVersion: 'ask-credits-2026.08.25-v1',
+    refundPolicyVersion: 'refund-2026.08.25-paid-ask-v1',
+    aiDisclosureVersion: 'ai-disclosure-2026.08.25-paid-ask-v1',
+    purchaseNoticeVersion: 'purchase-notice-2026.08.25-paid-ask-v1'
   });
 })();
