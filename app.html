@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-B8gDgCJzYO3jNo9lHyZ2yuDy3YGDjxG+/zK1m/xSyPI='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-ricESab6zAvUCNcsYPbGlrXb0u/L0SSTPx6jz4Gaw9U='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -97,6 +97,8 @@
   .form-note{margin:-4px 0 18px;color:#9ba5b5;font-size:12px;line-height:1.75}
   .age-hint{margin-top:-8px;color:#8f99aa;font-size:12px;line-height:1.6}
   .field-error{margin-top:8px;padding:9px 11px;border-left:2px solid var(--cinnabar);background:rgba(181,71,47,.1);color:#efb0a3;font-size:12px;line-height:1.65}
+  .result-precision{margin:0 auto 18px;padding:12px 14px;border:1px solid rgba(201,168,92,.34);border-left:3px solid var(--gold);border-radius:8px;background:rgba(201,168,92,.08);color:#d7dde7;font-size:12.5px;line-height:1.75;text-align:left}
+  .result-precision.is-boundary{border-color:rgba(181,71,47,.5);border-left-color:var(--cinnabar);background:rgba(181,71,47,.11);color:#efc0b6}
 
   .card{background:var(--panel);border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:26px 22px;margin-top:26px}
   /* 返回用户"继续这张盘"条 */
@@ -481,7 +483,7 @@
     <p class="form-note">出生日期、时间、城市和性别用于生成盘面结构与报告。正式提交前需阅读隐私政策，了解资料的处理、保存和删除方式。</p>
     <div class="field"><label for="bDate">出生日期</label><input type="date" id="bDate" min="1940-01-01" max="2026-12-31" aria-describedby="ageHint ageError"><div class="age-hint" id="ageHint">本服务仅向已满 14 周岁的用户提供。</div><div class="field-error" id="ageError" role="alert" hidden></div></div>
     <div class="row2">
-      <div class="field"><label for="bTime">出生时间<span class="optional">不确定可留空</span></label><input type="time" id="bTime"></div>
+      <div class="field"><label for="bTime">出生时间<span class="optional">不确定可留空；节气交界日需补充</span></label><input type="time" id="bTime" aria-describedby="timeError"><div class="field-error" id="timeError" role="alert" hidden></div></div>
       <div class="field"><label for="bGender">排盘性别<span class="optional">用于当前传统排盘规则</span></label><select id="bGender"><option value="">不填</option><option>女</option><option>男</option><option>其他</option></select></div>
     </div>
     <div class="field"><label for="bCity">出生城市<span class="optional">用于时间与地理位置换算</span></label><input type="text" id="bCity" placeholder="如：贵阳（无需填写详细住址）" autocomplete="address-level2"></div>
@@ -519,6 +521,7 @@
   <section id="result" role="region" aria-labelledby="resultTitle" tabindex="-1" hidden>
     <p class="sr-only" id="resultStatus" role="status" aria-live="polite"></p>
     <h2 class="rizhu-label result-heading" id="resultTitle" tabindex="-1">你 的 日 主</h2>
+    <div class="result-precision" id="resultPrecision" role="status" hidden></div>
 
     <div class="rizhu-hero" id="dayMasterHero" aria-label="日主主体">
       <div class="rizhu-chars" id="rzChars"></div>
@@ -539,7 +542,7 @@
         <p class="confirmed-meta"><span id="confirmedRelation"></span><span id="confirmedSource"></span></p>
       </section>
       <section class="confirmed-section confirmed-overuse">
-        <h3>这项能力用过头时</h3>
+        <h3>你容易卡住的地方</h3>
         <div id="confirmedOveruse"></div>
       </section>
       <section class="confirmed-section">
@@ -789,6 +792,47 @@ function currentConfirmedInput(){
   };
 }
 
+function clearBirthTimeError(){
+  const field=$('bTime'),error=$('timeError');
+  error.hidden=true;
+  error.textContent='';
+  field.removeAttribute('aria-invalid');
+}
+
+function showBirthTimeError(chart){
+  const boundary=(chart.boundaries||[]).find(item=>item.reason==='missing-time-on-boundary-date');
+  const jie=boundary&&boundary.jie?boundary.jie:'节气';
+  const time=boundary&&boundary.termTime?boundary.termTime.slice(11):'';
+  const labels=[...new Set((boundary&&boundary.affects||[]).map(key=>({year:'年柱',month:'月柱'})[key]).filter(Boolean))];
+  const detail=labels.length?`${labels.join('、')}无法唯一确定`:'盘面无法唯一确定';
+  $('timeError').textContent=`这一天在北京时间 ${time||'当天'} 经过${jie}分界，${detail}。请补充出生时间后再生成完整图谱。`;
+  $('timeError').hidden=false;
+  $('bTime').setAttribute('aria-invalid','true');
+  setViewState('new',{formOnly:true});
+  requestAnimationFrame(()=>{
+    $('formCard').scrollIntoView({behavior:preferredScrollBehavior(),block:'start'});
+    $('bTime').focus({preventScroll:true});
+  });
+}
+
+function chartForCurrentForm(){
+  if(!window.BaziEngine)return null;
+  try{
+    const chart=BaziEngine.computeChart(currentConfirmedInput());
+    if(chart.meta&&chart.meta.requiresBirthTime){showBirthTimeError(chart);return null}
+    clearBirthTimeError();
+    return chart;
+  }catch(error){
+    $('timeError').textContent='出生时间格式无效，请重新选择。';
+    $('timeError').hidden=false;
+    $('bTime').setAttribute('aria-invalid','true');
+    $('bTime').focus();
+    return null;
+  }
+}
+$('bTime').addEventListener('input',clearBirthTimeError);
+$('bDate').addEventListener('input',clearBirthTimeError);
+
 function reportPath(){
   return /\/web\/[^/]*$/.test(location.pathname)?'../v1/report.html':'./report.html';
 }
@@ -825,10 +869,12 @@ function reportUrl(){
 }
 
 function renderShareGate(message){
-  const share=CUR.dualShare;
-  $('shareGateTitle').textContent=`${share.identity} · ${share.title}`;
+  const provisional=CUR&&CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
+  $('shareGateTitle').textContent='保存这张双盘印证';
   $('shareGateBadge').textContent='可选分享';
-  $('shareGateBody').textContent=share.body;
+  $('shareGateBody').textContent=provisional
+    ? '出生时间未填，卡片会明确标注“缺时暂排”；补充准确时间后再生成定稿更稳妥。'
+    : '想留住这次结果，可以生成一张适合保存或转发的图片。';
   $('shareActionBtn').textContent='生成我的双盘印证卡';
   $('shareGateActions').hidden=false;
   $('sharePosterBtn').hidden=false;
@@ -858,7 +904,8 @@ async function handoffPoster(status){
   const blob=await posterBlob();
   const filename='知星-双盘印证卡.jpg';
   const file=blob&&typeof File==='function'?new File([blob],filename,{type:'image/jpeg'}):null;
-  const text=CUR.dualShare.body;
+  const provisional=CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
+  const text=(provisional?'[缺时暂排] ':'')+CUR.dualShare.body;
   const fileShare={title:'知星',text,files:file?[file]:[]};
   const linkShare={title:'知星',text,url:'https://zhixng.cn/'};
   const shareData=navigator.canShare&&navigator.canShare(fileShare)
@@ -1020,15 +1067,16 @@ $('consent').addEventListener('keydown',event=>{
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
 let resultTimer=null;
-function startGenerationFromForm(){
+function startGenerationFromForm(precomputedChart){
   const input=currentConfirmedInput();
   if(!HOME_CONTENT||!window.BaziEngine)throw new Error('content runtime unavailable');
-  const chart=BaziEngine.computeChart(input);
+  const chart=precomputedChart||chartForCurrentForm();
+  if(!chart)return false;
   const day=chart.pillars.day;
   CUR={
     sign:chart.astro.sun.sign,
     dp:{stem:day.stem,branch:day.branch},
-    late:(typeof input.hh==='number'&&input.hh>=23),
+    late:chart.boundaries.some(item=>item.type==='晚子时(日界)'&&item.relation==='after'),
     input,
     chart,
     home:HOME_CONTENT.buildHome(chart),
@@ -1052,6 +1100,7 @@ function startGenerationFromForm(){
   });
   if(resultTimer)clearTimeout(resultTimer);
   resultTimer=setTimeout(showResult,600+3*1500+800);
+  return true;
 }
 $('consentOk').onclick=()=>{
   if(!validateBirthDate()){closeConsent(false);return}
@@ -1065,6 +1114,8 @@ $('consentOk').onclick=()=>{
     $('consentOk').textContent='资料选择暂不可记录';
     return;
   }
+  const chart=chartForCurrentForm();
+  if(!chart){closeConsent(false);return}
   trackEvent('birth_consent_granted',{outcome:'granted'});
   try{
     localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:'')}));
@@ -1073,7 +1124,7 @@ $('consentOk').onclick=()=>{
     return;
   }
   closeConsent(false);
-  startGenerationFromForm();
+  startGenerationFromForm(chart);
 };
 
 /* 返回用户:带出上次填写的盘,一键继续,不用重填(设备级;跨设备/会员待账号系统) */
@@ -1132,10 +1183,10 @@ function renderContentHome(){
     return article;
   }));
   const overuseItems=Array.isArray(home.overuse)
-    ? home.overuse.map((body,index)=>({title:index===0?'最重要的代价':'纠偏方向',body}))
+    ? home.overuse.map((body,index)=>({title:index===0?'你容易卡住的地方':'试试这样做',body}))
     : [
-        {title:home.overuse.title||'最重要的代价',body:home.overuse.body},
-        {title:'纠偏方向',body:home.overuse.action}
+        {title:home.overuse.title||'你容易卡住的地方',body:home.overuse.body},
+        {title:'试试这样做',body:home.overuse.action}
       ].filter(item=>item.body);
   $('confirmedOveruse').replaceChildren(...overuseItems.map(content=>{
     const item=document.createElement('div');
@@ -1150,11 +1201,23 @@ function renderContentHome(){
   replaceTextList('confirmedReportQuestions',home.reportQuestions);
 }
 
+function renderResultPrecision(){
+  const box=$('resultPrecision');
+  const warnings=Array.isArray(CUR&&CUR.chart&&CUR.chart.meta&&CUR.chart.meta.warnings)
+    ? CUR.chart.meta.warnings.filter(Boolean)
+    : [];
+  if(!warnings.length){box.hidden=true;box.textContent='';box.classList.remove('is-boundary');return}
+  box.textContent=(CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing'?'暂排提示：':'边界提示：')+warnings.join(' ');
+  box.classList.toggle('is-boundary',CUR.chart.boundaries.length>0);
+  box.hidden=false;
+}
+
 function showResult(){
   $('ritual').style.display='none';
   $('ritual').hidden=true;
   $('resultTitle').textContent='你 的 日 主';
   $('confirmedHome').hidden=false;
+  renderResultPrecision();
   renderContentHome();
   $('resultStatus').textContent='双盘日主页已生成。';
   setViewState('result');
@@ -1244,6 +1307,7 @@ function canvasWrappedText(context,text,x,y,maxWidth,lineHeight){
 }
 function drawDualChartCard(){
   const share=CUR.dualShare;
+  const provisional=CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
   const c=$('posterCanvas'),x=c.getContext('2d');
   const W=750,H=1000;
   c.width=W;c.height=H;
@@ -1264,7 +1328,9 @@ function drawDualChartCard(){
   x.fillStyle='#c9a85c';x.font='18px "Songti SC","STSong",serif';
   x.fillText('知 星 · 双 盘 印 证',W/2,108);
   x.fillStyle='#f4e7bf';x.font='700 42px "Songti SC","STSong",serif';
-  x.fillText(share.identity,W/2,210);
+  const identity=share.identity+(provisional?' · 缺时暂排':'');
+  x.fillText(share.identity,W/2,provisional?195:210);
+  if(provisional){x.fillStyle='#c9a85c';x.font='20px "Songti SC","STSong",serif';x.fillText('缺 时 暂 排',W/2,242)}
   x.fillStyle='#d7b766';x.font='700 54px "Songti SC","STSong",serif';
   x.fillText(share.title,W/2,312);
   x.strokeStyle='rgba(201,168,92,.48)';x.beginPath();x.moveTo(190,350);x.lineTo(560,350);x.stroke();
@@ -1272,7 +1338,8 @@ function drawDualChartCard(){
   x.textAlign='left';x.fillStyle='rgba(232,228,216,.94)';x.font='28px "Songti SC","STSong",serif';
   canvasWrappedText(x,share.body,105,430,540,52);
   x.fillStyle='rgba(232,228,216,.68)';x.font='20px "PingFang SC","Microsoft YaHei",sans-serif';
-  canvasWrappedText(x,share.source,105,650,540,36);
+  const source=share.source+(provisional?' · 出生时间未填，日主暂排':'');
+  canvasWrappedText(x,source,105,650,540,36);
 
   x.fillStyle='#d7b766';x.font='700 24px "Songti SC","STSong",serif';
   x.fillText('知 星',105,884);
@@ -1283,8 +1350,8 @@ function drawDualChartCard(){
   x.strokeStyle='#C9A85C';x.lineWidth=2;
   x.strokeRect(qr.left-2,qr.top-2,qr.actualSize+4,qr.actualSize+4);
 
-  c.setAttribute('aria-label',`知星双盘印证卡：${share.identity}，${share.title}`);
-  $('posterEquivalent').textContent=`${share.identity}。${share.title}。${share.body} ${share.source}。卡片右下角为知星官网入口二维码。`;
+  c.setAttribute('aria-label',`知星双盘印证卡：${identity}，${share.title}`);
+  $('posterEquivalent').textContent=`${identity}。${share.title}。${share.body} ${source}。卡片右下角为知星官网入口二维码。`;
 }
 </script>
 </body>

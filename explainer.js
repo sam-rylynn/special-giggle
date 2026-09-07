@@ -258,24 +258,37 @@ function pick(tenGods, keys){
   return out;
 }
 
-/* 盘面只说明可核对的行为倾向，不把十神写成职业、关系或命运结论。 */
+/* 性格骨架解释动机；相处、做事和阶段变化分别由后面三章展开。 */
 const TEN_GOD_PLAIN = {
-  比肩:'遇到分歧时，你更愿意先用自己的标准判断。这样不容易被带走，也可能让可借的力晚一点进来。',
-  劫财:'人和现场会带快你的反应，你也更愿意直接参与。涉及分工或分配时，越早说清各自负责什么，后面越少靠猜。',
-  食神:'兴趣和手感会明显影响投入。开头有回音时推进顺，进入重复段落后则需要固定安排接住。',
-  伤官:'你容易先看见旧做法哪里不顺，也愿意提出不同意见。真正要管的是表达时机和收尾，不让看见问题停在指出问题。',
-  偏财:'你对新入口、人和可用资源反应较快。机会同时出现时，需要先确认哪一个值得留下具体结果。',
-  正财:'你更信任能按步骤完成、可以核对的结果。谨慎能减少返工，也要防止准备一直替代第一次行动。',
-  七杀:'明确压力会让你迅速集中注意力。推进很快时，仍要预留一次校准，避免把“必须完成”变成只有硬顶一种办法。',
-  正官:'责任、规则和完成标准会影响你的选择。条件说清时你更能持续负责，条件模糊时则容易多接事、少拿决定空间。',
-  偏印:'你会把问题往深处想，也愿意研究少有人注意的部分。思考超过现实反馈时，最小的一次验证比继续推演更有用。',
-  正印:'稳定支持和清楚示范会帮助你进入状态。获得支持以后，仍要保留一段由自己判断和完成的部分。'
+  比肩:'比肩让你习惯拿自己和从前相比。学会一项本领、独自办妥一件以前不敢做的事，都会给你很实在的成就感。别人说你够好了，你仍记得自己还想进到哪一步。你不愿轻易求助，有时并非不信任人，而是太想证明这一关自己也过得去。',
+  劫财:'劫财看重参与和较量。身边有人认真做一件事，会把你的兴致带起来；看到别人进步，你也会想试试自己能做到哪一步。你很难长期待在旁观的位置，热闹里总想亲自出一份力。没人回应、也没人一起投入时，同一件事就少了几分吸引力。',
+  食神:'食神重视兴趣与体验。你会为了一个喜欢的味道、一段顺耳的旋律，或一件做得精巧的小东西停下来。亲手做成以后，那份高兴会持续很久。你愿意慢慢养出自己的喜好，也在意过程是否舒服；只剩催促和比较，再擅长的事情也会变得乏味。',
+  伤官:'伤官让你不肯把现成答案照单全收。听到一句含糊的解释，你会追问它哪里说得通；发现别人习以为常的毛病，也很难装作没看见。能说出自己的理解，往往比得到一句笼统夸奖更让你痛快。你的锋芒来自判断，也来自不愿敷衍。',
+  偏财:'偏财让你看重来往中的慷慨。你愿意分享自己有的东西，也很欣赏大方、不计较的人。一次交换不必当场算得很清，你在意的是彼此都肯付出，下次遇到难处仍能互相帮忙。如果总是你在张罗，对方却把一切当成理所当然，你也会收起原来的热情。',
+  正财:'正财看重实在的收获。买一件东西，你会关心能用多久；花时间学一样本事，也希望它真能派上用场。你记得自己的付出，因此很珍惜一点点积累起来的东西。许诺得再漂亮，没有实际做到，你心里仍会打个问号。',
+  七杀:'七杀让你对难题和压力反应很快。别人越觉得不好办，你越想看看自己能不能顶住。跨过一次难处带来的信心，比轻松拿到的赞许更有分量。你也容易把放松看成松懈：事情已经过去，心里还在检查有没有遗漏。',
+  正官:'正官让你看重体面与公正。你在意一个说法是否站得住脚，也在意自己有没有做到答应的事。被人郑重地信任，会让你认真起来；得到的认可若名不副实，你反而不自在。很多要求即使没人盯着，你也会记在心里。',
+  偏印:'偏印让你对现成答案总会多问一句为什么。别人学会怎么做就往下走，你还会回头研究这个办法从哪里来，换个条件是否仍然成立。你常能发现被跳过的一层。等你终于开口，前面那段思考别人没听见，你的结论便像突然拐了个弯。',
+  正印:'正印让你愿意从已有的经验里寻找理解。一本讲得透的书、一次耐心的说明，都能让你安定下来。你喜欢把事情学明白，再慢慢形成自己的看法。得到认真指点时，你记住的不只是知识，还有对方愿意花时间解释的那份心意。'
+};
+
+const TEN_GOD_SUPPORT = {
+  比肩:{year:'比肩也带来一种自我比较：你记得从前哪里做不到，后来靠自己学会了什么。这些亲身走过的经验，会成为你衡量新事物的尺子。',hour:'比肩让你愿意留一件全凭自己兴趣做的事。它不必得到很多掌声，却要让你觉得每个选择都出自本意。'},
+  劫财:{year:'劫财让你很在意自己有没有被算在其中。大家都参与的事若没有叫上你，即使嘴上说无所谓，心里也会记上一阵。',hour:'劫财让你享受同伴间的切磋。看到别人有一招新办法，你也想拿出自己的本事；你期待的是有来有往的热烈。'},
+  食神:{year:'食神让你容易记住相处中的好滋味。一顿聊得开心的饭、一件一起做过的小事，会比郑重的场面话更留得住。',hour:'食神让你希望留下带有个人趣味的东西。你会反复琢磨一个词、一处细节，直到它终于像自己心里的样子。'},
+  伤官:{year:'伤官让你留意话语里的漏洞。一个人有多大的名头，不会替他的说法加分；你仍想听见解释本身。',hour:'伤官让你想拥有自己的表达。照着别人做得再像，也抵不过找到一种更贴近自己意思的说法。'},
+  偏财:{year:'偏财让你容易记住人与人之间的联系。很久以前的一次闲聊，在听到新消息时又会浮上来，你能想起谁会对它感兴趣。',hour:'偏财让你愿意给偶然留下余地。一次临时起意的出门、一本随手翻开的书，都能把原本普通的一天变得有意思。'},
+  正财:{year:'正财让你认真对待来之不易的东西。别人记住的是最后的收获，你还记得为了它放弃了什么，因此不会轻易把它丢下。',hour:'正财让你喜欢看得见的小积累。一本读完的书、一件用了很久仍顺手的物品，都能让你感到生活在慢慢充实。'},
+  七杀:{year:'七杀让你对不公平的较量格外敏感。越是被轻视，越想用实际表现争回一口气；你会把那句不看好记得很久。',hour:'七杀让你愿意给自己出难题。熟练以后，你还想知道能不能再进一层；轻易得到的东西反而不容易让你停下来庆祝。'},
+  正官:{year:'正官让你记得别人对你的郑重期待。曾经被一句话托付过的事，隔了很久，你仍会在意自己有没有辜负。',hour:'正官让你希望做出的东西经得起细看。即使没人会发现，你也会把自己知道的小疏漏补好，心里才放得下。'},
+  偏印:{year:'偏印让你保留自己的观察角度。大家都在谈同一个重点，你常会被旁边一个不起眼的细节吸引，并从那里重新理解整件事。',hour:'偏印让你享受独处时的钻研。一个问题可以陪你很久，你会收藏不同解释，反复比较其中最细微的差别。'},
+  正印:{year:'正印让你记得自己从谁那里学到过东西。遇到相似处境，那个人说过的话会重新出现，帮助你整理眼前的感受。',hour:'正印让你愿意把学会的东西讲给别人听。看见对方从一脸困惑到终于明白，你会有一种踏实的高兴。'}
 };
 
 const STRENGTH_PLAIN = {
-  偏强:'盘面里可由自己调用的同类支持较多，独立推进通常不难。需要留意的是，别把“我能做”自动变成“都由我做”。',
-  中和:'盘面里的自持与外部推动相对接近。关键不是一味加速或收缩，而是看清这件事此刻缺决定、配合还是连续时间。',
-  偏弱:'盘面里长期独自供给会更费力。任务持续没有反馈、配合或明确期限时，消耗会加快；这不等于能力不足，而是推进条件要先说清。'
+  偏强:'日主偏强，自身的主张不容易被外面的声音盖住。你有一套熟悉的判断，环境越杂乱，越会回到自己认定的办法。也正因为如此，一句不同意见要真正改变你的看法，往往需要比别人预想的更充分的理由。',
+  中和:'日主中和，你能保留自己的看法，也能接住外面的变化。有人催促时你可以快一点，事情需要细想时也坐得住。不同场合里的你会显出不同一面，熟悉你的人才能看见这些反应之间的联系。',
+  偏弱:'日主偏弱，周围的气氛和支持会明显影响你的状态。环境安定、有人认真回应时，你更能把本事用出来；声音太杂时，注意力会分到许多地方。'
 };
 
 function sourced(text, source){
@@ -304,16 +317,17 @@ function contentSections(chart){
   const A = actionTimeContent.buildAction(chart);
   const T = actionTimeContent.buildTime(chart);
   const reportGuide = [
-    { title:'盘面', body:'看你怎样接收信息、形成判断，最容易忽略什么。' },
-    { title:'关系', body:'看你怎样靠近别人，冲突时为什么退开，又怎样回来把话说完。' },
-    { title:'行动', body:'看你怎样开始、什么时候容易掉速，以及怎样把一件事做完。' },
-    { title:'时间', body:'看你当前阶段最需要承担什么，哪些事该继续，哪些该停。' }
+    { title:'盘面', body:'读懂日主、五行、强弱与星盘位置。' },
+    { title:'关系', body:'你需要怎样的相处，分歧为什么发生？' },
+    { title:'行动', body:'你靠什么开始，又在哪里停下来？' },
+    { title:'时间', body:'当前大运和流年，让你更在意什么？' }
   ];
   const overviewBody = [
     sourced(O.lead, O.source),
+    ...(O.scenes || []).filter(item=>item.body).map(item=>sourced(item.body,O.source)),
     sourced(reportGuide.map(item => `${item.title}：${item.body}`).join('\n'), '报告结构'),
-    sourced(O.tension, O.source)
-  ].join('\n\n');
+    O.tension ? sourced(O.tension, O.source) : ''
+  ].filter(Boolean).join('\n\n');
   const relationBody = [
     sourced(R.lead, R.source),
     sourced(R.friction, R.source),
@@ -352,11 +366,15 @@ function contentSections(chart){
       blocks:[
         { type:'heading', level:2, text:'整体判断' },
         { type:'paragraph', text:O.lead },
+        ...(O.scenes || []).filter(item=>item.body).flatMap(item=>[
+          ...(item.title ? [{type:'heading',level:3,text:item.title}] : []),
+          {type:'paragraph',text:item.body}
+        ]),
         { type:'heading', level:3, text:'这份报告会讲清四件事' },
         { type:'report-guide', items:reportGuide },
         { type:'method-reference', text:'《当代占星研究·诠释星盘》，苏·汤普金斯。' },
-        { type:'heading', level:3, text:'整份报告的核心判断' },
-        { type:'quote', text:O.tension },
+        ...(O.tension ? [{ type:'heading', level:3, text:'整份报告的核心判断' },
+          { type:'quote', text:O.tension }] : []),
         { type:'source', text:O.source }
       ],
       body:overviewBody
@@ -386,7 +404,7 @@ function contentSections(chart){
     phase: {
       id:'phase', title:'时间', source:T.source, profile:CONTENT_PROFILE,
       blocks:[
-        { type:'heading', level:2, text:T.title, eyebrow:T.stage },
+        { type:'heading', level:2, text:T.title },
         { type:'timeline', data:T },
         { type:'source', text:T.source },
         { type:'method-reference', text:'《内在的天空》，斯蒂芬·福里斯特。' }
@@ -398,15 +416,28 @@ function contentSections(chart){
 
 /* ---------- 章节组装(深化) ---------- */
 function buildSections(chart){
+  if (chart?.meta?.requiresBirthTime){
+    const error = new RangeError('出生日期位于节气分界日，缺少出生时间，解释层已停止生成');
+    error.code = 'BIRTH_TIME_REQUIRED';
+    throw error;
+  }
   const fe=chart.fiveElements, tg=chart.tenGods, st=fe.dayMasterStrength;
   const S=[];
-  const mGod = tg.month ? tg.month.stem : null;
   const fullContent = contentSections(chart);
 
   /* 总览直接使用全量内容合同，不再先生成旧模板再覆盖。 */
   let overview = fullContent.overview;
-  if (Array.isArray(chart.boundaries) && chart.boundaries.length){
-    const notice = `出生时间接近${chart.boundaries.map(item => item.type).join('、')}的计算分界。当前结果按你填写的时间生成；如果时间只记得大概，请先核对时间再使用后面的判断。`;
+  const missingBirthTime = chart.meta?.inputPrecision?.birthTime === 'missing';
+  if (missingBirthTime || (Array.isArray(chart.boundaries) && chart.boundaries.length)){
+    let notice;
+    if (chart.meta?.requiresBirthTime){
+      const term = chart.boundaries.find(item => item.reason === 'missing-time-on-boundary-date');
+      notice = `出生日期当天包含${term?.jie || '节气'}分界，但没有出生时间，相关年柱或月柱无法唯一确定；请先补充时间，不使用当前暂排结果作完整判断。`;
+    } else if (missingBirthTime){
+      notice = '未填写出生时间：日柱与日主暂按出生日期正午排定，时柱和上升不生成，月亮按正午近似，五行强弱不含时柱；若实际出生时刻换算后落到相邻真太阳日或进入晚子时日界，日柱与日主会变化。';
+    } else {
+      notice = `出生时间接近${chart.boundaries.map(item => item.type).join('、')}的计算分界。当前结果按所填时间生成；如果时间只记得大概，请先核对时间再使用后面的判断。`;
+    }
     overview = {
       ...overview,
       blocks:[overview.blocks[0], overview.blocks[1], { type:'paragraph', text:notice }, ...overview.blocks.slice(2)],
@@ -415,24 +446,31 @@ function buildSections(chart){
   }
   S.push(overview);
 
-  /* 盘面读图：先交代数值，再解释强弱，不用单个元素给人格下结论。 */
+  /* 数值来自引擎；并列时保留全部同值元素。 */
   const ranked = Object.entries(fe.counts).sort((a,b)=>b[1]-a[1]);
   const [maxE, minE] = [ranked[0], ranked[ranked.length-1]];
-  const eBody = `五行数值里，${maxE[0]}为 ${maxE[1]}，${minE[0]}为 ${minE[1]}。这组数值用来比较盘面里哪些因素更集中、哪些较少，不把最高或最低的一项直接等同于性格。来源:五行分布`
-    + `\n\n日主强弱为${st.label}。${STRENGTH_PLAIN[st.label] || STRENGTH_PLAIN.中和}来源:日主强弱`;
+  const highest=ranked.filter(([,n])=>n===maxE[1]).map(([name])=>name).join('、');
+  const lowest=ranked.filter(([,n])=>n===minE[1]).map(([name])=>name).join('、');
+  const distribution=maxE[1]===minE[1]
+    ? `五行数值相同，均为 ${maxE[1]}。`
+    : `五行分布中，${highest}最多，数值为 ${maxE[1]}；${lowest}最少，数值为 ${minE[1]}。`;
+  const eBody = `${distribution}日主为${chart.dayMaster.stem}${chart.dayMaster.element}，五行属${chart.dayMaster.element}。图中各项汇总了四柱天干与地支藏干的五行，强弱再结合月令等因素判断。来源:五行分布`
+    + `\n\n${STRENGTH_PLAIN[st.label] || STRENGTH_PLAIN.中和}来源:日主强弱·${st.label}`;
   S.push({ id:'energy', title:'盘面读图', source:'五行分布+日主强弱', methodReference:'《三命通会·论五行生克》，万民英；《滴天髓阐微·衰旺》，任铁樵增注。', body: eBody });
 
-  /* 性格骨架：用可核对动作解释十神，不假定现实身份。 */
-  let skBody;
-  if (mGod && TEN_GOD_PLAIN[mGod]){
-    const others = pick(tg, Object.keys(TG)).filter(x=>x.pos!=='month').slice(0,2)
-      .map(x=>`${POS_CN[x.pos]}为${x.god}`);
-    skBody = `月干显示${mGod}。${TEN_GOD_PLAIN[mGod]}来源:十神·${mGod}`
-      + (others.length ? `\n\n另外可见${others.join('、')}。它们会在不同场景里补充动作，但不据此假定你的职业、关系状态或当前目标。来源:十神分布` : '');
-  } else {
-    skBody = `当前月干没有可单独展开的十神信息。这里保留日主与完整盘面作为观察依据，不补写现实身份或固定处境。来源:日主+十神分布`;
+  /* 同一十神在多个位置出现时合并来源，正文只解释一次。 */
+  const seenGods=new Map();
+  for(const [pos,label] of [['month','月干'],['year','年干'],['hour','时干']]) {
+    const god=tg[pos]&&tg[pos].stem;
+    if(!TEN_GOD_PLAIN[god])continue;
+    if(!seenGods.has(god))seenGods.set(god,{pos,labels:[]});
+    seenGods.get(god).labels.push(label);
   }
-  S.push({ id:'skeleton', title:'性格骨架', source:'日主+月令+十神', methodReference:'《子平真诠·论用神变化》，沈孝瞻。', body: skBody });
+  const skBody=[...seenGods].map(([god,{pos,labels}],index)=> {
+    const copy=index===0?TEN_GOD_PLAIN[god]:TEN_GOD_SUPPORT[god][pos==='hour'?'hour':'year'];
+    return sourced(`${labels.join('、')}为${god}。${copy}`,`${labels.join('、')}·${god}`);
+  }).join('\n\n') || sourced('补充出生资料后，这里会展开天干十神与性格的联系。','十神资料未完整');
+  S.push({ id:'skeleton', title:'性格骨架', source:'日主与天干十神', methodReference:'《子平真诠·论用神变化》，沈孝瞻。', body: skBody });
 
   /* 关系、行动与时间直接使用全量内容合同。 */
   return [S[0], S[1], S[2], fullContent.relation, fullContent.action, fullContent.phase];

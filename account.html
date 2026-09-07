@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-Msq4elkhlBMh3H18s4/94XfScVYRgI7JaVv6J2qLei8='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-30zm5JVXTzA3DDHA4iFVLOkDR0AZPi729D8bDIA9IG0='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -580,6 +580,7 @@
       c:String(data.c || '').trim(),
       g:data.g === '男' || data.g === '女' ? data.g : ''
     };
+    if (input.t && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(input.t)) return null;
     if (window.ZxMinimumAge) {
       const age = ZxMinimumAge.evaluateMinimumAge(input.d);
       if (!age.valid || !age.allowed) return null;
@@ -592,7 +593,7 @@
     if (!y || !m || !d) return null;
     const input = { y,m,d,city:String(data.c || '').trim() };
     const time = String(data.t || '');
-    if (/^\d{2}:\d{2}$/.test(time)){
+    if (/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)){
       input.hh = Number(time.slice(0,2));
       input.mm = Number(time.slice(3,5));
     }
@@ -624,24 +625,41 @@
   }
 
   function mapRemoteReport(item){
-    const input = normalizedReportInput(item && item.payload);
-    if (!input || !window.BaziEngine) return null;
-    const chart = BaziEngine.computeChart(engineInput(input));
-    return {
-      id:String(item.report_id || ''),
-      ref:reportReference(input,chart),
-      serverRef:String(item.chart_ref || ''),
-      name:String(item.display_name || ''),
-      relation:String(item.relation_label || ''),
-      primary:item.is_primary === true || Number(item.is_primary) === 1,
-      input,
-      createdAt:Number(item.created_at || Date.now()),
-      updatedAt:Number(item.updated_at || Date.now()),
-      permissionConfirmedAt:item.permission_confirmed_at == null
+    const rawPayload = item && item.payload && typeof item.payload === 'object' ? item.payload : {};
+    const input = normalizedReportInput(rawPayload);
+    const base = {
+      id:String(item && item.report_id || ''),
+      serverRef:String(item && item.chart_ref || ''),
+      name:String(item && item.display_name || '资料异常的旧报告'),
+      relation:String(item && item.relation_label || ''),
+      primary:item && (item.is_primary === true || Number(item.is_primary) === 1),
+      createdAt:Number(item && item.created_at || Date.now()),
+      updatedAt:Number(item && item.updated_at || Date.now()),
+      permissionConfirmedAt:!item || item.permission_confirmed_at == null
         ? null
-        : Number(item.permission_confirmed_at),
-      chart
+        : Number(item && item.permission_confirmed_at)
     };
+    if (!input || !window.BaziEngine) {
+      const visibleInput = {
+        d:typeof rawPayload.d === 'string' ? rawPayload.d.slice(0,10) : '',
+        t:typeof rawPayload.t === 'string' ? rawPayload.t.slice(0,5) : '',
+        c:typeof rawPayload.c === 'string' ? rawPayload.c.trim().slice(0,80) : '',
+        g:typeof rawPayload.g === 'string' ? rawPayload.g.slice(0,8) : ''
+      };
+      return { ...base, ref:`invalid:${base.id}`, input:visibleInput, invalidInput:true, needsBirthTime:false, chart:null };
+    }
+    try {
+      const chart = BaziEngine.computeChart(engineInput(input));
+      return {
+        ...base,
+        ref:reportReference(input,chart),
+        input,
+        needsBirthTime:chart.meta&&chart.meta.requiresBirthTime===true,
+        chart
+      };
+    } catch (_) {
+      return { ...base, ref:`invalid:${base.id}`, input, invalidInput:true, needsBirthTime:false, chart:null };
+    }
   }
 
   async function loadReports(){
@@ -690,7 +708,7 @@
 
   function buildReportRecord(data, chart){
     const input = normalizedReportInput(data);
-    if (!input) return null;
+    if (!input || chart.meta&&chart.meta.requiresBirthTime) return null;
     const ref = reportReference(input,chart);
     const baseName = generatedChartName(chart,ref);
     const usedNames = new Set(reportArchive.map(item => item.name));
@@ -712,11 +730,30 @@
   }
 
   function reportDetails(record){
+    if (record.invalidInput){
+      return {
+        birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · ') || '旧版资料格式无法识别',
+        summary:'资料异常 · 这条旧记录仍占用账号名额，可删除后用正确出生资料重新生成。'
+      };
+    }
     try {
       const chart = record.chart || BaziEngine.computeChart(engineInput(record.input));
+      if (record.needsBirthTime || chart.meta&&chart.meta.requiresBirthTime){
+        const term=(chart.boundaries||[]).find(item=>item.reason==='missing-time-on-boundary-date');
+        return {
+          birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · '),
+          summary:`待补出生时间 · ${term&&term.jie||'节气'}交界日暂不生成完整报告`
+        };
+      }
       const dm = chart.dayMaster;
       const strength = chart.fiveElements.dayMasterStrength.label;
       const astro = chart.astro || {};
+      if (chart.meta&&chart.meta.inputPrecision&&chart.meta.inputPrecision.birthTime==='missing'){
+        return {
+          birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · '),
+          summary:`暂排 · ${dm.stem}${dm.element} · ${strength} · 未含时柱与上升，日柱和日主待出生时间复核`
+        };
+      }
       return {
         birth:[record.input.d,record.input.t,record.input.c,record.input.g].filter(Boolean).join(' · '),
         summary:[`${dm.stem}${dm.element} · ${strength}`,`太阳${astro.sun && astro.sun.sign || '未定'}`,`月亮${astro.moon && astro.moon.sign || '未定'}`].join('　')
@@ -776,7 +813,7 @@
   function renderProfileName(chart, data){
     const activeRef = reportReference(data,chart);
     const primary = reportStorageMode === 'remote'
-      ? reportArchive.find(item => item.primary) || null
+      ? reportArchive.find(item => item.primary && !item.invalidInput && !item.needsBirthTime) || null
       : null;
     let saved = remoteProfileRecord() || (primary
       ? { chartRef:primary.ref,name:primary.name,changedAt:null,remote:false }
@@ -849,7 +886,13 @@
 
     const actions = document.createElement('div');
     actions.className = 'report-item-actions';
-    actions.append(button('查看报告', () => openSavedReport(record), 'primary'));
+    if (record.invalidInput){
+      const invalid = button('资料异常', () => {});
+      invalid.disabled = true;
+      actions.append(invalid);
+    } else {
+      actions.append(button(record.needsBirthTime?'补充出生时间':'查看报告', () => openSavedReport(record), 'primary'));
+    }
     actions.append(button('删除', () => removeSavedReport(record)));
     article.append(content,actions);
     return article;
@@ -975,11 +1018,36 @@
     $('qianReportLink').onclick = null;
   }
 
+  function showBoundaryTimePending(input, chart){
+    currentReportRecord = null;
+    const term=(chart.boundaries||[]).find(item=>item.reason==='missing-time-on-boundary-date');
+    const jie=term&&term.jie||'节气';
+    const time=term&&term.termTime?term.termTime.slice(11):'当天';
+    currentProfileRef='';
+    currentProfileName=null;
+    $('profileName').textContent='待补出生时间';
+    $('profileRenameBtn').disabled=true;
+    $('profileNameHint').textContent=`出生日期当天 ${time} 经过${jie}分界，暂不生成确定身份。`;
+    renderReportLibrary();
+    $('qianBadge').textContent='待补时间';
+    $('qianDate').textContent=new Date().toLocaleDateString('zh-CN');
+    $('qianSignature').textContent='暂排关闭';
+    $('qianHook').textContent=`这一天包含${jie}分界，未填写出生时间时，年柱或月柱无法唯一确定。`;
+    $('qianGuidance').textContent='补充出生时间后，才会生成深度报告与今日知星卡。';
+    $('qianReportLink').textContent='补充出生时间';
+    $('qianReportLink').href=reportHref;
+    $('qianReportLink').onclick=()=>{try{localStorage.setItem('zx_input',JSON.stringify(input))}catch(_){}};
+    $('reportLive').textContent='当前图谱处于节气边界待补时间状态，不会保存为完整报告。';
+  }
+
   function renderPersonalSummary(){
     if (!birthProcessingGranted()) { showProfileEmpty(); return; }
     const primary = reportArchive.find(item => item.primary) || reportArchive[0] || null;
     const localData = readLocalInput();
-    const identityData = primary && primary.input || localData;
+    const completePrimary = primary && !primary.invalidInput && !primary.needsBirthTime
+      ? primary
+      : (reportArchive.find(item => !item.invalidInput && !item.needsBirthTime) || null);
+    const identityData = completePrimary && completePrimary.input || localData || primary && primary.input;
     const activeData = localData || identityData;
     if (!identityData || !activeData || !window.BaziEngine || !window.Explainer){ showProfileEmpty(); return; }
     try {
@@ -990,6 +1058,10 @@
       const activeChart = reportReference(activeInput,identityChart) === reportReference(identityInput,identityChart)
         ? identityChart
         : BaziEngine.computeChart(engineInput(activeInput));
+      if (identityChart.meta&&identityChart.meta.requiresBirthTime){
+        showBoundaryTimePending(identityInput,identityChart);
+        return;
+      }
       if (!localData && primary) {
         try { localStorage.setItem('zx_input', JSON.stringify(activeInput)); } catch (_) {}
       }
@@ -997,15 +1069,20 @@
       currentReportRecord = buildReportRecord(activeInput,activeChart);
       renderReportLibrary();
 
-      const qianChart = primary ? identityChart : activeChart;
+      const qianChart = completePrimary ? identityChart : activeChart;
+      if (qianChart.meta&&qianChart.meta.requiresBirthTime){
+        showBoundaryTimePending(activeInput,qianChart);
+        return;
+      }
       const dm = qianChart.dayMaster;
       const strength = qianChart.fiveElements.dayMasterStrength.label;
+      const missingBirthTime=qianChart.meta&&qianChart.meta.inputPrecision&&qianChart.meta.inputPrecision.birthTime==='missing';
       const qian = Explainer.drawQian(qianChart,new Date());
-      $('qianBadge').textContent = dm.element + ' · ' + strength;
+      $('qianBadge').textContent = dm.element + ' · ' + strength + (missingBirthTime?' · 缺时暂排':'');
       $('qianDate').textContent = new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'});
       $('qianSignature').textContent = qian.hex;
       $('qianHook').textContent = qian.line;
-      $('qianGuidance').textContent = `适：${qian.yi.join(' · ')}　缓：${qian.ji.join(' · ')}`;
+      $('qianGuidance').textContent = (missingBirthTime?'出生时间未填，日主与今日卡仅作暂排。':'') + `适：${qian.yi.join(' · ')}　缓：${qian.ji.join(' · ')}`;
       $('qianReportLink').textContent = '进入今日知星卡';
       $('qianReportLink').href = reportHref + '#sec-qian';
       $('qianReportLink').onclick = () => {

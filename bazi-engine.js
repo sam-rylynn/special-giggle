@@ -4,7 +4,7 @@
  *
  * 精度声明(写进 meta,报告层必须如实展示):
  * - 节气:高精度太阳视黄经(截断 VSOP87D 官方系数 102 项 + ΔT + 章动/光行差主项),
- *   已对权威节气(紫金山/香港天文台)核验至 ±1 分内(多数到秒);低精度 sunGeom 仅供均时差用。
+ *   对香港天文台 2019—2026 共 192 个分钟级锚点实测最大差 1.22 分钟;低精度 sunGeom 仅供均时差用。
  *   出生时刻距立春/月节 < 2 小时 → boundary 告警(此时风险在出生时间本身的精度,非算法)。
  * - 真太阳时:经度差 + 均时差(误差 < 1 分钟);城市未收录 → 按 120°E 并标注。
  * - 输入时间按东八区(北京时间)解释。
@@ -73,7 +73,7 @@ function deltaT(y){
   const u = (y-1820)/100; return -20 + 32*u*u;
 }
 /* 太阳视黄经·高精度:截断 VSOP87D(官方系数)+ ΔT(UT→TT) + 章动/光行差主项 + FK5。
- * 已对权威节气(紫金山/香港天文台)核验:2024立春/清明/冬至、2025立春/夏至 均 ±1 分内(多数到秒)。 */
+ * 对香港天文台 2019—2026 共 192 个分钟级锚点实测最大差 1.22 分钟。 */
 function sunLonHi(utcMs){
   const jdUt = toJD(utcMs);
   const y = 2000 + (jdUt - 2451545.0)/365.25;
@@ -159,6 +159,11 @@ function jieTime(y, jie){
   const guess = Date.UTC(y, jie.m - 1, jie.d, 4, 0, 0);  // 初猜当天 12:00 北京时
   return solarTermTime(jie.lon, guess);
 }
+function formatBeijingMinute(utcMs){
+  const d = new Date(utcMs + 8 * 3600000);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
 
 /* ---------------- 干支基础 ---------------- */
 /* 日柱:2000-01-01 = 戊午(序 54),23 点后进次日 —— 与 V0 一致 */
@@ -185,15 +190,17 @@ function tenGod(dayStem, otherStem){
 /* ---------------- 主入口 ----------------
  * input: { y, m, d, hh, mm, city }  (北京时间;hh/mm 可省略 → 不排时柱)
  * ------------------------------------- */
-/* 地级市经纬度库(357 城,来源 China_City_Geolocation_List,MIT;补宁波)*/
+/* 地级行政区与常用城市经纬度库。
+ * 基础数据来自 China_City_Geolocation_List(MIT)，并按政府驻地/气象站公开坐标
+ * 修正串城项、旧名称和近年新增地级市。坐标只用于真太阳时与上升点换算。 */
 const CITY = {
   南充:[106.08,30.78], 漳州:[117.65,24.52], 清远:[113.03,23.7], 黄南:[102.02,35.52],
   莆田:[119.0,25.43], 佛山:[113.12,23.02], 大理:[100.23,25.6], 塔城:[82.98,46.75],
-  鹰潭:[117.07,28.27], 三亚:[109.5,18.25], 海口:[110.32,20.03], 连江:[119.53,26.2],
+  鹰潭:[117.07,28.27], 三亚:[109.5,18.25], 海口:[110.32,20.03], 马祖:[119.95,26.15],
   鹤岗:[130.27,47.33], 鸡西:[130.97,45.3], 宜宾:[104.55,28.7], 安阳:[114.38,36.1],
   通辽:[122.27,43.62], 呼和浩特:[111.73,40.83], 黑河:[127.48,50.25], 榆林:[109.73,38.28],
   茂名:[110.92,21.67], 嘉义:[120.43,23.48], 厦门:[118.08,24.48], 宿州:[116.98,33.63],
-  阿坝:[101.7,32.9], 南宁:[108.37,22.82], 文山:[104.25,23.37], 海北:[100.9,36.97],
+  阿坝州:[102.221374,31.899792], 南宁:[108.37,22.82], 文山:[104.25,23.37], 海北:[100.9,36.97],
   揭阳:[116.37,23.55], 伊春:[128.9,47.73], 三门峡:[111.2,34.78], 柳州:[109.42,24.33],
   东莞:[113.75,23.05], 三明:[117.62,26.27], 周口:[114.65,33.62], 安庆:[117.05,30.53],
   德宏:[98.58,24.43], 上饶:[117.92,28.43], 安康:[109.02,32.68], 玉溪:[102.55,24.35],
@@ -205,15 +212,15 @@ const CITY = {
   松原:[124.82,45.13], 景德镇:[117.17,29.27], 贵阳:[106.63,26.65], 贵港:[109.6,23.1],
   常州:[119.95,31.78], 吕梁:[111.13,37.52], 澎湖:[119.58,23.58], 荆州:[112.23,30.33],
   扬州:[119.4,32.4], 恩施:[109.47,30.3], 林芝:[94.37,29.68], 四平:[124.35,43.17],
-  攀枝花:[101.72,26.58], 澳门:[113.33,22.13], 赣州:[114.93,25.83], 威海:[122.12,37.52],
+  攀枝花:[101.72,26.58], 澳门:[113.539444,22.211111], 赣州:[114.93,25.83], 威海:[122.12,37.52],
   荆门:[112.2,31.03], 淮安:[119.02,33.62], 玉林:[110.17,22.63], 衡阳:[112.57,26.9],
   桂林:[110.28,25.28], 红河:[103.4,23.37], 杭州:[120.15,30.28], 临汾:[111.52,36.08],
   青岛:[120.38,36.07], 包头:[109.83,40.65], 广元:[105.83,32.43], 平顶山:[113.18,33.77],
-  台州:[121.43,28.68], 甘孜:[101.97,30.05], 甘南:[123.5,47.92], 龙岩:[117.03,25.1],
-  庆阳:[107.63,35.73], 保山:[99.17,25.12], 中山:[121.63,38.92], 海南自治州:[102.38,35.9],
+  台州:[121.43,28.68], 甘孜:[101.97,30.05], 甘南:[102.911008,34.986354], 龙岩:[117.03,25.1],
+  庆阳:[107.63,35.73], 保山:[99.17,25.12], 中山:[113.382391,22.521113], 海南州:[100.619542,36.280353],
   新余:[114.92,27.82], 平凉:[106.67,35.55], 湖州:[120.08,30.9], 湘潭:[112.95,27.78],
   漯河:[114.02,33.58], 乐山:[103.77,29.57], 乌鲁木齐:[87.6,43.8], 乌海:[106.82,39.67],
-  重庆:[106.55,29.57], 香港:[114.08,22.2], 焦作:[113.25,35.22], 十堰:[110.78,32.65],
+  重庆:[106.55,29.57], 香港:[114.174333,22.301944], 焦作:[113.25,35.22], 十堰:[110.78,32.65],
   石嘴山:[106.38,39.02], 宿迁:[118.28,33.97], 合肥:[117.25,31.83], 黄冈:[114.87,30.45],
   孝感:[113.92,30.93], 果洛:[100.23,34.48], 成都:[104.07,30.67], 台东:[121.15,22.75],
   海西:[97.37,37.37], 金门:[118.32,24.43], 保定:[115.47,38.87], 温州:[120.7,28.0],
@@ -226,7 +233,7 @@ const CITY = {
   肇庆:[112.47,23.05], 信阳:[114.07,32.13], 太原:[112.55,37.87], 辽源:[125.13,42.88],
   齐齐哈尔:[123.95,47.33], 双鸭山:[131.15,46.63], 苏州:[120.58,31.3], 新乡:[113.8,35.2],
   永州:[111.62,26.43], 衢州:[118.87,28.93], 汕头:[116.68,23.35], 聊城:[115.98,36.45],
-  和田:[79.92,37.12], 日喀则:[88.88,29.27], 娄底:[112.0,27.73], 黔西南:[105.56,25.41],
+  和田:[79.92,37.12], 日喀则:[88.88,29.27], 娄底:[112.0,27.73], 黔西南:[104.897971,25.08812],
   洛阳:[112.45,34.62], 防城港:[108.35,21.7], 咸宁:[114.32,29.85], 盘锦:[122.07,41.12],
   葫芦岛:[120.83,40.72], 钦州:[108.62,21.95], 镇江:[119.45,32.2], 江门:[113.08,22.58],
   酒泉:[98.52,39.75], 南昌:[115.85,28.68], 辽阳:[123.07,41.22], 南投:[120.67,23.92],
@@ -239,10 +246,10 @@ const CITY = {
   金华:[119.65,29.08], 无锡:[120.3,31.57], 雅安:[103.0,29.98], 台南:[120.32,23.32],
   临夏:[103.0,35.5], 邢台:[114.48,37.07], 廊坊:[116.7,39.52], 昆明:[102.72,25.05],
   深圳:[114.05,22.55], 邯郸:[114.48,36.62], 运城:[110.98,35.02], 黄石:[115.03,30.2],
-  襄樊:[112.15,32.02], 台北:[121.47,25.02], 苗栗:[120.8,24.53], 通化:[125.93,41.73],
+  襄阳:[112.144146,32.042426], 台北:[121.47,25.02], 苗栗:[120.8,24.53], 通化:[125.93,41.73],
   云林:[120.53,23.72], 上海:[121.47,31.23], 潍坊:[119.15,36.7], 贺州:[111.55,24.42],
-  普洱:[100.73,23.43], 白城:[122.83,45.62], 资阳:[112.32,28.6], 曲靖:[103.8,25.5],
-  长治:[113.03,36.05], 兴安:[124.12,50.42], 湛江:[110.35,21.27], 哈尔滨:[126.53,45.8],
+  普洱:[100.972344,22.777321], 白城:[122.83,45.62], 资阳:[104.641917,30.122211], 曲靖:[103.8,25.5],
+  长治:[113.03,36.05], 兴安盟:[122.070317,46.076268], 湛江:[110.35,21.27], 哈尔滨:[126.53,45.8],
   呼伦贝尔:[119.77,49.22], 渭南:[109.5,34.5], 鞍山:[122.98,41.1], 长沙:[112.93,28.23],
   中卫:[105.18,37.52], 泸州:[105.43,28.87], 陇南:[104.92,33.4], 菏泽:[115.58,35.26],
   德阳:[104.38,31.13], 广州:[113.27,23.13], 阜阳:[115.82,32.9], 岳阳:[113.12,29.15],
@@ -252,7 +259,7 @@ const CITY = {
   河源:[114.7,23.73], 营口:[122.23,40.67], 连云港:[119.22,34.6], 那曲:[92.07,31.48],
   宜昌:[111.28,30.7], 七台河:[130.95,45.78], 滁州:[118.32,32.3], 朔州:[112.43,39.33],
   张家口:[114.88,40.82], 铜陵:[117.78,30.95], 怒江:[98.85,25.85], 牡丹江:[129.6,44.58],
-  益阳:[112.32,28.6], 北海:[109.12,21.48], 宜春:[114.38,27.8], 新北:[119.97,31.83],
+  益阳:[112.32,28.6], 北海:[109.12,21.48], 宜春:[114.38,27.8], 新北:[121.46554,25.01228],
   天水:[105.72,34.58], 阳泉:[113.57,37.85], 咸阳:[108.7,34.33], 自贡:[104.78,29.35],
   云浮:[112.03,22.92], 安顺:[105.95,26.25], 崇左:[107.37,22.4], 丽江:[100.23,26.88],
   北京:[116.4,39.9], 拉萨:[91.13,29.65], 阿里:[80.1,32.5], 西安:[108.93,34.27],
@@ -261,7 +268,7 @@ const CITY = {
   来宾:[109.23,23.73], 巴音郭楞:[86.15,41.77], 昭通:[103.72,27.33], 达州:[107.5,31.22],
   濮阳:[115.03,35.77], 芜湖:[118.57,31.15], 汕尾:[115.37,22.78], 阳江:[111.98,21.87],
   九江:[115.88,29.62], 抚州:[116.35,28.0], 铁岭:[123.83,42.3], 枣庄:[117.32,34.82],
-  武威:[102.63,37.93], 德州:[116.3,37.45], 大同:[124.82,46.03], 银川:[106.28,38.47],
+  武威:[102.63,37.93], 德州:[116.3,37.45], 大同:[113.295259,40.09031], 银川:[106.28,38.47],
   毕节:[105.28,27.3], 株洲:[113.13,27.72], 珠海:[113.57,22.27], 延边:[129.5,42.88],
   吉林市:[126.55,43.83], 阜新:[121.75,42.07], 忻州:[112.73,38.42], 乌兰察布:[113.12,40.98],
   巴中:[106.77,31.85], 张掖:[100.45,38.93], 佳木斯:[130.37,46.82], 泰州:[119.92,32.45],
@@ -276,30 +283,101 @@ const CITY = {
   盐城:[120.15,33.35], 白银:[104.18,36.55], 锡林郭勒:[116.07,43.95], 秦皇岛:[119.6,39.93],
   昌都:[97.18,31.13], 赤峰:[118.92,42.27], 宜兰:[121.75,24.77], 沧州:[116.83,38.3],
   南京:[118.78,32.07], 舟山:[122.2,30.0], 郑州:[113.62,34.75], 宁德:[119.52,26.67],
-  宁波:[121.55,29.87]
+  宁波:[121.55,29.87], 南阳:[112.540918,32.999082], 铜仁:[109.191555,27.718346],
+  三沙:[112.34882,16.831039], 儋州:[109.576782,19.517486]
 };
 
 /* 省/自治区 → 省会(县级市/省名输入的兜底,好过默认 120°E) */
 const PROV_FALLBACK = { 河北:'石家庄', 山西:'太原', 辽宁:'沈阳', 吉林:'长春', 黑龙江:'哈尔滨', 江苏:'南京', 浙江:'杭州', 安徽:'合肥', 福建:'福州', 江西:'南昌', 山东:'济南', 河南:'郑州', 湖北:'武汉', 湖南:'长沙', 广东:'广州', 海南:'海口', 四川:'成都', 贵州:'贵阳', 云南:'昆明', 陕西:'西安', 甘肃:'兰州', 青海:'西宁', 台湾:'台北', 内蒙古:'呼和浩特', 内蒙:'呼和浩特', 广西:'南宁', 西藏:'拉萨', 宁夏:'银川', 新疆:'乌鲁木齐' };
-/* 子串匹配:长名优先(避免短名误命中);模块级预排一次 */
+/* 历史名称与容易被省名/县名干扰的全称。键是用户可能输入的名称，值是当前城市键。 */
+const CITY_ALIASES = {
+  襄樊:'襄阳',
+  内蒙古兴安:'兴安盟',
+  内蒙古自治区兴安:'兴安盟',
+  海南自治州:'海南州',
+  海南藏族自治州:'海南州',
+  阿坝藏族羌族自治州:'阿坝州',
+  香港特别行政区:'香港',
+  澳门特别行政区:'澳门',
+  台湾连江:'马祖',
+  台湾连江县:'马祖',
+  台湾省连江:'马祖',
+  台湾省连江县:'马祖'
+};
+/* 城市名与别名模块级预排一次；显式地级后缀优先，避免“北京市朝阳区→辽宁朝阳”等串区。 */
 const CITY_KEYS = Object.keys(CITY).sort((a,b)=>b.length-a.length);
+const CITY_NAMES = [
+  ...CITY_KEYS.map(name => ({ name, key:name })),
+  ...Object.entries(CITY_ALIASES).map(([name,key]) => ({ name, key, alias:name }))
+].sort((a,b)=>b.name.length-a.name.length);
 const PROV_KEYS = Object.keys(PROV_FALLBACK).sort((a,b)=>b.length-a.length);
+const CITY_LEVEL_SUFFIX = /^(?:市|地区|盟|(?:[\u3400-\u9fff]{0,8})?自治州)/;
+const CITY_LEVEL_NAME = /(?:市|地区|盟|自治州)$/;
+const EXPLICIT_PREFECTURE_NAMES = new Set(['海南州','阿坝州']);
+const DIRECT_MUNICIPALITIES = new Set(['北京','上海','天津','重庆','香港','澳门']);
+/* 这些短名同时也是县/区名，不允许仅凭“名称+区/县”把它当上级城市。 */
+const AMBIGUOUS_SUBDIVISION_NAMES = new Set(['甘南','中山','资阳','大同','新北','海南州','阿坝州']);
+const SUBDIVISION_SUFFIX = /^(?:[\u3400-\u9fff]{1,16})(?:区|县|旗|市辖区)$/;
 /* 解析城市 → {key,lng,lat,src}:'city'=精确命中地级市 / 'prov'=退省会 / null=未收录 */
 function resolveCity(city){
   if (!city) return null;
-  const s = String(city);
-  let key = CITY_KEYS.find(k => s.includes(k));
-  if (key) return { key, lng: CITY[key][0], lat: CITY[key][1], src: 'city' };
+  const s = String(city).normalize('NFKC').replace(/[\s,，。]+/g, '');
+  if (!s) return null;
+  const matches = [];
+  for (const entry of CITY_NAMES){
+    const index = s.indexOf(entry.name);
+    if (index < 0) continue;
+    const tail = s.slice(index + entry.name.length);
+    const head = s.slice(0, index);
+    let rank = 0;
+    if (s === entry.name) rank = 4;
+    else if (CITY_LEVEL_NAME.test(entry.name) || EXPLICIT_PREFECTURE_NAMES.has(entry.name) || CITY_LEVEL_SUFFIX.test(tail)) rank = 3;
+    else if (index === 0 && DIRECT_MUNICIPALITIES.has(entry.key)) rank = 3;
+    else if (!tail) rank = 2; // 允许“贵州贵阳”这类省名+城市名输入
+    else if (SUBDIVISION_SUFFIX.test(tail)
+      && !AMBIGUOUS_SUBDIVISION_NAMES.has(entry.name)
+      && (!head || PROV_KEYS.some(prov => head.includes(prov)))) rank = 2;
+    if (rank) matches.push({ ...entry, index, rank });
+  }
+  matches.sort((a,b)=>b.rank-a.rank || a.index-b.index || b.name.length-a.name.length);
+  if (matches.length){
+    const hit = matches[0], key = hit.key;
+    return { key, lng: CITY[key][0], lat: CITY[key][1], src: 'city', ...(hit.alias ? { alias:hit.alias } : {}) };
+  }
   const prov = PROV_KEYS.find(p => s.includes(p));
-  if (prov){ key = PROV_FALLBACK[prov]; return { key, lng: CITY[key][0], lat: CITY[key][1], src: 'prov', prov }; }
+  if (prov){
+    const key = PROV_FALLBACK[prov];
+    return { key, lng: CITY[key][0], lat: CITY[key][1], src: 'prov', prov };
+  }
   return null;
 }
 
 function computeChart(input){
   const { y, m, d, city } = input;
-  const hasTime = typeof input.hh === 'number';
-  const hh = hasTime ? input.hh : 12, mm = hasTime ? (input.mm || 0) : 0;
-  const meta = { engine: 'bazi-engine v1.1.0-alpha', tz: 'UTC+8(北京时间)', notes: [], warnings: [] };
+  const hourSupplied = input.hh !== undefined && input.hh !== null && input.hh !== '';
+  const minuteSupplied = input.mm !== undefined && input.mm !== null && input.mm !== '';
+  if (minuteSupplied && !hourSupplied) throw new RangeError('出生分钟不能脱离出生小时单独提供');
+  if (hourSupplied && (!Number.isInteger(input.hh) || input.hh < 0 || input.hh > 23))
+    throw new RangeError('出生小时必须是 0—23 的整数');
+  if (minuteSupplied && (!Number.isInteger(input.mm) || input.mm < 0 || input.mm > 59))
+    throw new RangeError('出生分钟必须是 0—59 的整数');
+  const hasTime = hourSupplied;
+  const hh = hasTime ? input.hh : 12, mm = hasTime ? (minuteSupplied ? input.mm : 0) : 0;
+  const meta = {
+    engine: 'bazi-engine v1.2.0-alpha',
+    tz: 'UTC+8(北京时间)',
+    notes: [],
+    warnings: [],
+    requiresBirthTime: false,
+    inputPrecision: {
+      birthTime: hasTime ? 'minute' : 'missing',
+      assumedTime: hasTime ? null : '12:00',
+      provisionalPillars: hasTime ? [] : ['day'],
+      omittedPillars: hasTime ? [] : ['hour'],
+      approximateFields: hasTime ? [] : ['astro.moon'],
+      unavailableFields: hasTime ? [] : ['astro.asc']
+    }
+  };
 
   /* 真太阳时 */
   let lon = 120, lonSource = 'default(120°E 标准时)';
@@ -308,26 +386,35 @@ function computeChart(input){
   if (cityHit){
     lon = cityHit.lng;
     lonSource = cityHit.src === 'prov' ? ('prov:' + cityHit.prov + '→' + cityHit.key) : ('city:' + cityHit.key);
-    if (cityHit.src === 'prov') meta.notes.push('城市「' + city + '」按' + cityHit.prov + '省会(' + cityHit.key + ')经纬度近似');
-  } else if (city) meta.warnings.push('城市「' + city + '」暂未收录,已按东八区标准时推算,真太阳时可能有数分钟偏差');
+    if (cityHit.src === 'prov'){
+      const message='城市「' + city + '」未定位到地级城市，按' + cityHit.prov + '省会(' + cityHit.key + ')经纬度近似';
+      meta.notes.push(message);
+      meta.warnings.push(message + '；接近真太阳时时辰边界时，请改填地级城市复核。');
+    }
+  } else if (city) meta.warnings.push('城市「' + city + '」暂未收录，已按东八区标准时推算；真太阳时、时柱和上升点可能不准确。');
+  else meta.warnings.push('未填写出生城市，已按东八区标准时暂排；真太阳时未做经度校正，上升点不生成。');
   const stdUtc = Date.UTC(y, m - 1, d, hh - 8, mm);
   const eot = hasTime ? equationOfTime(stdUtc) : 0;
   const tstOffsetMin = hasTime ? (lon - 120) * 4 + eot : 0;
   const tstUtc = stdUtc + tstOffsetMin * 60000;
   const tst = new Date(tstUtc + 8 * 3600000);            // 真太阳时(北京时区表出)
-  const tstH = tst.getUTCHours() + tst.getUTCMinutes() / 60;
+  const tstH = tst.getUTCHours() + tst.getUTCMinutes() / 60
+    + tst.getUTCSeconds() / 3600 + tst.getUTCMilliseconds() / 3600000;
   const tY = tst.getUTCFullYear(), tM = tst.getUTCMonth() + 1, tD = tst.getUTCDate();
 
   /* 年柱:立春分界(1984 立春后 = 甲子年) */
-  const liChun = jieTime(hasTime ? tY : y, JIE[0]);
-  const birthUtc = hasTime ? tstUtc : Date.UTC(y, m - 1, d, 4);  // 无时辰按当日正午近似
-  const yearForPillar = (hasTime ? tY : y) - (birthUtc < liChun ? 1 : 0);
+  /* 年/月节气是同一个绝对天文瞬间，必须与真实出生瞬间(stdUtc)比较。
+   * 真太阳时只参与日柱和时柱，不能拿表盘时间与绝对 UTC 节气混比。 */
+  const liChun = jieTime(y, JIE[0]);
+  const birthUtc = stdUtc; // 有时辰=真实瞬间；无时辰=当日正午暂算，另做整日歧义检查
+  const yearForPillar = y - (birthUtc < liChun ? 1 : 0);
   const yearIdx = ((yearForPillar - 1984) % 60 + 60) % 60;
   const yearP = P(yearIdx);
 
   /* 月柱:十二节分月(立春→寅月),五虎遁 */
-  const by = hasTime ? tY : y;
-  let monthIdx = -1, lastJieMs = -Infinity, nextJieMs = Infinity, lastJieName = '';
+  const by = y;
+  let monthIdx = -1, lastJieMs = -Infinity, nextJieMs = Infinity;
+  let lastJieName = '', nextJieName = '';
   const terms = [];
   for (let yy = by - 1; yy <= by + 1; yy++)
     for (const j of JIE) terms.push({ ms: jieTime(yy, j), j });
@@ -336,6 +423,7 @@ function computeChart(input){
     if (terms[i].ms <= birthUtc && (i + 1 === terms.length || terms[i + 1].ms > birthUtc)){
       lastJieMs = terms[i].ms; lastJieName = terms[i].j.name;
       nextJieMs = i + 1 < terms.length ? terms[i + 1].ms : Infinity;
+      nextJieName = i + 1 < terms.length ? terms[i + 1].j.name : '';
       monthIdx = JIE.findIndex(x => x.name === terms[i].j.name);   // 0=立春(寅月)
       break;
     }
@@ -355,19 +443,86 @@ function computeChart(input){
     const hb = Math.floor(((tstH + 1) % 24) / 2);                  // 23–1 点 = 子(0)
     const WUSHU = { 甲:0, 己:0, 乙:2, 庚:2, 丙:4, 辛:4, 丁:6, 壬:6, 戊:8, 癸:8 };
     hourP = { stem: STEMS[(WUSHU[dayP.stem] + hb) % 10], branch: BRANCHES[hb] };
-  } else meta.notes.push('未提供出生时间:不排时柱,五行计分不含时柱');
+  } else {
+    meta.notes.push('未提供出生时间:不排时柱,五行计分不含时柱');
+    meta.warnings.push('未填写出生时间：日柱与日主暂按出生日期正午排定，时柱和上升不生成，月亮按北京时间正午近似，五行强弱不含时柱；若实际出生时刻换算后落到相邻真太阳日或进入 23:00 晚子时日界，日柱与日主会变化。');
+  }
 
-  /* 边界告警(节气时刻已高精度,此处告警是防你的出生时间本身有出入而使柱变动) */
+  /* 边界告警：一条太阳节事件同时描述名称、方向和受影响柱位。
+   * 未填时辰时，只要节气落在输入的北京时间公历日，就失败关闭完整报告。 */
   const boundaries = [];
   const H2 = 2 * 3600000;
-  if (Math.abs(birthUtc - liChun) < H2)
-    boundaries.push({ type: '立春(年界)', withinHours: +((birthUtc - liChun) / 3600000).toFixed(1) });
-  if (birthUtc - lastJieMs < H2 || nextJieMs - birthUtc < H2)
-    boundaries.push({ type: '月节(月界)', jie: lastJieName });
-  if (hasTime && Math.abs(tstH % 2 - 1) < 0.06)   /* 时辰界在奇数整点(23,1,3…),±3.6 分钟内告警 */
-    boundaries.push({ type: '时辰交界' });
-  if (boundaries.length)
-    meta.warnings.push('出生时刻很接近排盘交界——节气时刻本身已用高精度天文算法(对权威节气 ±1 分内);若你的出生时间有几分钟出入,相应的月柱/年柱可能变动,建议以准确出生时间复核。');
+  const dayStartUtc = Date.UTC(y, m - 1, d) - 8 * 3600000;
+  const dayEndUtc = dayStartUtc + 86400000;
+  const missingTimeTerm = hasTime ? null : terms.find(term => term.ms >= dayStartUtc && term.ms < dayEndUtc);
+  let termBoundary = null;
+  if (missingTimeTerm){
+    termBoundary = {
+      term: missingTimeTerm,
+      timeKnown: false,
+      relation: 'unknown',
+      deltaMinutes: null,
+      reason: 'missing-time-on-boundary-date'
+    };
+  } else if (hasTime){
+    const fromLast = birthUtc - lastJieMs;
+    const toNext = nextJieMs - birthUtc;
+    if (fromLast < H2 || toNext < H2){
+      const useLast = fromLast <= toNext;
+      const ms = useLast ? lastJieMs : nextJieMs;
+      termBoundary = {
+        term: { ms, j:{ name:useLast ? lastJieName : nextJieName } },
+        timeKnown: true,
+        relation: birthUtc < ms ? 'before' : 'after',
+        deltaMinutes: +((birthUtc - ms) / 60000).toFixed(1)
+      };
+    }
+  }
+  if (termBoundary){
+    const jie = termBoundary.term.j.name;
+    const affects = jie === '立春' ? ['year','month'] : ['month'];
+    boundaries.push({
+      type: jie === '立春' ? '立春(年界)' : '月节(月界)',
+      jie,
+      affects,
+      timeKnown: termBoundary.timeKnown,
+      relation: termBoundary.relation,
+      deltaMinutes: termBoundary.deltaMinutes,
+      termTime: formatBeijingMinute(termBoundary.term.ms),
+      ...(termBoundary.reason ? { reason:termBoundary.reason } : {})
+    });
+    if (!hasTime){
+      meta.requiresBirthTime = true;
+      meta.inputPrecision.provisionalPillars = [...new Set([...meta.inputPrecision.provisionalPillars, ...affects])];
+      meta.warnings.push(`未填写出生时间，而出生日期当天包含${jie}（北京时间 ${formatBeijingMinute(termBoundary.term.ms).slice(11)}）排盘分界；${affects.map(key => key === 'year' ? '年柱' : '月柱').join('、')}无法唯一确定，请补充出生时间后再生成完整图谱。`);
+    }
+  }
+  if (hasTime){
+    const hourCycle = ((tstH - 1) % 2 + 2) % 2;
+    const hourDelta = hourCycle <= 1 ? hourCycle : hourCycle - 2;
+    if (Math.abs(hourDelta) < 0.06){
+      const isLateZi = tstH >= 22.94;
+      boundaries.push({
+        type: isLateZi ? '晚子时(日界)' : '时辰交界',
+        affects: isLateZi ? ['day','dayMaster','hour'] : ['hour'],
+        timeKnown: true,
+        relation: hourDelta < 0 ? 'before' : 'after',
+        deltaMinutes: +(hourDelta * 60).toFixed(1)
+      });
+    }
+  }
+  if (hasTime){
+    const termItems = boundaries.filter(item => item.jie);
+    if (termItems.length){
+      const labels = [...new Set(termItems.flatMap(item => item.affects || []).map(key => ({ year:'年柱', month:'月柱' })[key]).filter(Boolean))];
+      meta.warnings.push(`出生时刻距离${termItems.map(item => item.jie).join('、')}分界不足 2 小时；节气绝对时刻已按高精度天文算法计算，但若出生记录有误差，${labels.join('、')}可能变化。`);
+    }
+    const clockItems = boundaries.filter(item => item.type === '时辰交界' || item.type === '晚子时(日界)');
+    if (clockItems.length){
+      const labels = [...new Set(clockItems.flatMap(item => item.affects || []).map(key => ({ day:'日柱', dayMaster:'日主', hour:'时柱' })[key]).filter(Boolean))];
+      meta.warnings.push(`换算后的真太阳时距离${clockItems.map(item => item.type).join('、')}不足 4 分钟；若出生记录有误差，${labels.join('、')}可能变化。`);
+    }
+  }
 
   /* 西盘三要素:与八字同刻同源计算(北京时间→UTC,回归黄道) */
   const lat = cityHit ? cityHit.lat : null;
@@ -492,6 +647,9 @@ function computeChart(input){
 }
 
 /* 导出(Node + 浏览器) */
-const BaziEngine = { computeChart, sunLon, sunLonHi, moonLon, ascendantLon, jieTime, equationOfTime, tenGod, STEMS, BRANCHES, HIDDEN, JIE, SIGNS };
+const BaziEngine = {
+  computeChart, sunLon, sunLonHi, moonLon, ascendantLon, jieTime, equationOfTime,
+  tenGod, resolveCity, CITY, CITY_ALIASES, STEMS, BRANCHES, HIDDEN, JIE, SIGNS
+};
 if (typeof module !== 'undefined' && module.exports) module.exports = BaziEngine;
 if (typeof window !== 'undefined') window.BaziEngine = BaziEngine;

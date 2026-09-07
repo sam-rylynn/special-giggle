@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-0l7dZBy7/dwgwnS+2284pQH/Vs9vgq++X10K6Nl5cQ8='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-2mWDg8NrPS4NIECaueCPZ2rtPqz6mSDdKgiLJEinBSA='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -48,6 +48,8 @@
     background:linear-gradient(180deg,#fff6dd,#e9d09a 45%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
   .report-identity{margin-top:13px;color:#f4e8c8;font-family:var(--serif);font-size:clamp(19px,5vw,25px);font-weight:700;line-height:1.45}
   .report-judgement{max-width:620px;margin:8px auto 0;color:#d3d9e2;font-size:15px;line-height:1.8}
+  .report-precision{max-width:660px;margin:14px auto 0;padding:11px 13px;border:1px solid rgba(201,168,92,.35);border-left:3px solid var(--gold);border-radius:8px;background:rgba(201,168,92,.075);color:#d7dde7;font-size:12.5px;line-height:1.75;text-align:left}
+  .report-precision.is-blocking{border-color:rgba(181,71,47,.5);border-left-color:var(--cinnabar);background:rgba(181,71,47,.12);color:#efc0b6}
   .report-hero-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:18px}
   .report-hero-link{display:flex;align-items:center;justify-content:center;min-height:44px;padding:7px 4px;border:1px solid rgba(201,168,92,.24);border-radius:8px;background:rgba(201,168,92,.045);color:#d8deE7;font-family:var(--serif);font-size:12.5px;line-height:1.3;cursor:pointer}
   .report-hero-link.active{border-color:var(--gold);background:rgba(201,168,92,.14);color:#f6e8bc}
@@ -205,6 +207,9 @@
   .ten-god-summary{margin-top:14px;padding:13px;border:1px solid rgba(201,168,92,.16);border-radius:9px;background:rgba(16,24,42,.52)}
   .ten-god-summary h4{margin:0 0 7px;color:#d9c486;font-family:var(--serif);font-size:14px}
   .ten-god-summary p{margin:3px 0;color:#d7dde5;font-size:13.5px;line-height:1.7}
+  .chart-repeat-note{margin:12px 0 0;padding:10px 12px;border-left:2px solid rgba(201,168,92,.55);background:rgba(201,168,92,.06);color:#cbd2dc;font-size:12.5px;line-height:1.75}
+  .chart-basis{margin-top:13px;padding-top:11px;border-top:1px dashed rgba(201,168,92,.18)}
+  .chart-basis h4{margin:0 0 6px;color:#d9c486;font-family:var(--serif);font-size:13.5px}
   .transition-lead{margin-bottom:5px!important;color:#ead9ae!important;font-weight:700}
 
   /* 知星时间轴 */
@@ -239,6 +244,14 @@
   .chart-details summary{display:flex;align-items:center;min-height:48px;padding:0 13px;color:var(--gold);font-family:var(--serif);cursor:pointer}
   .chart-details[open] summary{border-bottom:1px solid rgba(201,168,92,.16)}
   .chart-details-body{padding:14px 13px}
+  .chart-table-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .chart-table-scroll:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  .chart-table{min-width:520px;table-layout:fixed}
+  .chart-table th,.chart-table td{padding:7px 6px;line-height:1.55;vertical-align:top}
+  .chart-table thead th:first-child,.chart-table tbody th{position:sticky;left:0;z-index:1;width:88px;background:#141c30}
+  .chart-hidden-item{display:block;white-space:nowrap}
+  .chart-hidden-item+.chart-hidden-item{margin-top:2px}
+  .chart-table-hint{display:none}
 
   /* 今日知星卡 */
   .qian-intro{color:var(--mist);font-size:13.5px;text-align:center;margin-top:4px}
@@ -360,6 +373,8 @@
     .nav-group{grid-template-columns:42px minmax(0,1fr);gap:8px}
     .report-hero-nav{gap:5px}
     .report-hero-link{font-size:11.5px}
+    .chart-details-body{padding-inline:8px}
+    .chart-table-hint{display:block;margin:0 0 7px;color:var(--mist);font-size:12px;line-height:1.6}
   }
   @media(max-width:760px){
     body::before{opacity:.25}
@@ -425,6 +440,7 @@
     <h1 id="reportTitle">深度发展报告</h1>
     <p class="report-identity" id="reportIdentity">正在生成组合身份</p>
     <p class="report-judgement" id="reportJudgement">正在整理这张盘最值得先看的核心判断。</p>
+    <div class="report-precision" id="reportPrecision" role="alert" hidden></div>
     <nav class="report-hero-nav" aria-label="报告五章">
       <button class="report-hero-link" type="button" data-nav-target="sec-overview">总览</button>
       <button class="report-hero-link" type="button" data-nav-target="sec-chart">盘面</button>
@@ -868,11 +884,30 @@ function methodReference(text){
 function chartCard(c){
   const cols=['year','month','day','hour'], names={year:'年柱',month:'月柱',day:'日柱',hour:'时柱'};
   const p=c.pillars;
-  return `<details class="chart-details"><summary>查看完整盘面依据</summary><div class="chart-details-body"><table class="chart-table">
-    <caption>四柱、干支与十神盘面依据</caption>
+  const groups={};
+  cols.forEach(k=>{
+    if(!p[k])return;
+    const gz=p[k].stem+p[k].branch;
+    if(!groups[gz])groups[gz]=[];
+    groups[gz].push(names[k]);
+  });
+  const repeated=Object.entries(groups).filter(([,labels])=>labels.length>1);
+  const joinedLabels=labels=>labels.length<2?labels[0]:`${labels.slice(0,-1).join('、')}与${labels[labels.length-1]}`;
+  const repeatNote=repeated.length
+    ? `<p class="chart-repeat-note" id="chartRepeatNote">盘面说明：${repeated.map(([gz,labels])=>`${joinedLabels(labels)}当前计算均为${gz}`).join('；')}。四柱仍按年、月、日、时分别展示。</p>`
+    : '';
+  const hidden=k=>p[k]?(BaziEngine.HIDDEN[p[k].branch]||[]).map(stem=>`<span class="chart-hidden-item">${esc(stem+'（'+(BaziEngine.tenGod(c.dayMaster.stem,stem)||'—')+'）')}</span>`).join(''):'—';
+  return `<details class="chart-details"><summary>查看完整盘面依据</summary><div class="chart-details-body">
+    <p id="chartTableHint" class="chart-table-hint">小屏可左右滑动或使用方向键查看完整四柱。</p>
+    <div class="chart-table-scroll" role="region" tabindex="0" aria-label="四柱干支、十神与藏干表" aria-describedby="chartTableHint"><table class="chart-table"${repeated.length?' aria-describedby="chartRepeatNote"':''}>
+    <caption>四柱干支、十神与藏干依据</caption>
     <thead><tr><th scope="col">层</th>${cols.map(k=>`<th scope="col">${names[k]}</th>`).join('')}</tr></thead>
     <tbody><tr><th scope="row">干支</th>${cols.map(k=>`<td class="gz">${p[k]?p[k].stem+p[k].branch:'—'}</td>`).join('')}</tr>
-    <tr><th scope="row">十神</th>${cols.map(k=>`<td class="tg">${p[k]?(c.tenGods[k].stem+'<br>'+(BaziEngine.HIDDEN[p[k].branch]||[]).join(' ')):'—'}</td>`).join('')}</tr></tbody></table>
+    <tr><th scope="row">天干十神</th>${cols.map(k=>`<td class="tg">${p[k]?esc(c.tenGods?.[k]?.stem||'—'):'—'}</td>`).join('')}</tr>
+    <tr><th scope="row">地支主气十神</th>${cols.map(k=>`<td class="tg">${p[k]?esc(c.tenGods?.[k]?.branchMain||'—'):'—'}</td>`).join('')}</tr>
+    <tr><th scope="row">藏干</th>${cols.map(k=>`<td class="tg chart-hidden">${hidden(k)}</td>`).join('')}</tr></tbody></table></div>
+    ${repeatNote}
+    <section class="chart-basis"><h4>强弱计算依据</h4><ul class="basis">${c.fiveElements.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul></section>
     <div style="margin-top:10px;font-size:12.5px;color:var(--mist)">
       <span class="src">日主 · ${c.dayMaster.stem}${c.dayMaster.element}(${c.dayMaster.yinyang})</span>
       ${c.solar.trueSolarTime?` 真太阳时 ${c.solar.trueSolarTime.slice(11,16)}${c.solar.city?` · 已按${esc(c.solar.city)}经度与均时差校正`:' · 按标准经度推算'}`:esc(c.solar.note||'')}
@@ -885,17 +920,16 @@ function tenGodSummary(c){
   const unique = values => [...new Set(values.filter(Boolean))];
   const visible = unique(['year','month','hour'].map(key => c.tenGods?.[key]?.stem));
   const branches = unique(['year','month','day','hour'].map(key => c.tenGods?.[key]?.branchMain));
-  return `<section class="ten-god-summary" aria-labelledby="tenGodSummaryTitle"><h4 id="tenGodSummaryTitle">主要十神</h4>
-    <p><strong>天干：</strong>${esc(visible.join('、') || '—')}</p>
-    <p><strong>地支：</strong>${esc(branches.join('、') || '—')}</p></section>`;
+  return `<section class="ten-god-summary" aria-labelledby="tenGodSummaryTitle"><h4 id="tenGodSummaryTitle">十神概览（同类已合并）</h4>
+    <p><strong>天干可见：</strong>${esc(visible.join('、') || '—')}</p>
+    <p><strong>地支主气：</strong>${esc(branches.join('、') || '—')}</p></section>`;
 }
 
 function energyExtra(c){
   const fe=c.fiveElements, maxV=Math.max(...Object.values(fe.counts));
   return Object.entries(fe.counts).map(([k,v])=>
     `<div class="bar"><b>${k}</b><div class="track"><div class="fill" style="width:${(v/maxV*100).toFixed(0)}%;background:${ELEM_COLOR[k]}"></div></div><small style="width:2.6em;text-align:right;color:var(--mist)">${v}</small></div>`).join('')
-    + `<div style="margin:8px 0 4px"><span class="src">日主 · ${fe.dayMasterStrength.label}</span></div>
-       <ul class="basis">${fe.dayMasterStrength.basis.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>${tenGodSummary(c)}`;
+    + tenGodSummary(c);
 }
 
 function selectedCurrentDaYunStep(c){
@@ -964,10 +998,10 @@ function actionLayout(data){
   const list = items => `<ul>${(items || []).map(item=>`<li>${esc(item)}</li>`).join('')}</ul>`;
   return `<div class="action-opening"><h3>行动总则</h3>${total}<h4>行动依据</h4><p>${esc(data.basis || '')}</p></div>
     <div class="action-pair">
-      <section><h3>行动策略</h3><p>${esc(strategy.body || '')}</p><p class="transition-lead">${esc(strategy.itemsLead || '')}</p>${list(strategy.items)}</section>
-      <section><h3>行动试验</h3><p>${esc(experiment.body || '')}</p><p class="transition-lead">${esc(experiment.itemsLead || '')}</p>${list(experiment.items)}<p>${esc(experiment.close || '')}</p></section>
+      <section><h3>${esc(strategy.title || '行动策略')}</h3><p>${esc(strategy.body || '')}</p>${strategy.itemsLead ? `<p class="transition-lead">${esc(strategy.itemsLead)}</p>` : ''}${list(strategy.items)}</section>
+      <section><h3>${esc(experiment.title || '行动试验')}</h3><p>${esc(experiment.body || '')}</p>${experiment.itemsLead ? `<p class="transition-lead">${esc(experiment.itemsLead)}</p>` : ''}${list(experiment.items)}${experiment.close ? `<p>${esc(experiment.close)}</p>` : ''}</section>
     </div>
-    <section class="action-tradeoff"><h3>行动取舍</h3><p class="transition-lead">${esc(tradeoff.ruleLead || '')}</p><p class="action-rule">${esc(tradeoff.rule || '')}</p><p class="transition-lead">${esc(tradeoff.questionsLead || '')}</p>${list(tradeoff.questions)}<p>${esc(tradeoff.close || '')}</p></section>
+    <section class="action-tradeoff"><h3>${esc(tradeoff.title || '行动取舍')}</h3>${tradeoff.ruleLead ? `<p class="transition-lead">${esc(tradeoff.ruleLead)}</p>` : ''}<p class="action-rule">${esc(tradeoff.rule || '')}</p>${tradeoff.questionsLead ? `<p class="transition-lead">${esc(tradeoff.questionsLead)}</p>` : ''}${list(tradeoff.questions)}${tradeoff.close ? `<p>${esc(tradeoff.close)}</p>` : ''}</section>
     <section class="action-rhythm"><h3>行动节奏</h3><ol class="rhythm-steps">${(data.rhythm || []).map(item=>`<li>${esc(item)}</li>`).join('')}</ol><p>${esc(data.close || '')}</p></section>`;
 }
 
@@ -981,6 +1015,11 @@ function timelineBlock(data){
   const currentRange = String(data.stage || '').split(/\s+/)[0];
   const currentIndex = Math.max(0, rows.findIndex(row => row[0] === currentRange));
   const nearby = rows.slice(Math.max(0,currentIndex - 1), Math.min(rows.length,currentIndex + 2));
+  const nearbyRanges = new Set(nearby.map(row=>row[0]));
+  const remaining = rows.filter(row=>!nearbyRanges.has(row[0]));
+  const remainingTimeline = remaining.length
+    ? `<details class="timeline-details"><summary>查看其余阶段</summary>${timelineRows(remaining,currentRange)}</details>`
+    : '';
   return `<section class="chapter-block">
     <div class="time-stage"><small>${esc(data.stageLead || '当前阶段｜')}${esc(data.stage || '')}</small>${(data.explanation || []).map(text=>`<p>${esc(text)}</p>`).join('')}</div>
     <h3>适合放大的事</h3>${structuredList({items:data.amplify || []})}
@@ -988,7 +1027,7 @@ function timelineBlock(data){
     <h3>当前阶段动作</h3><p>${esc(data.action || '')}</p>
     <h3>${esc(data.yearTitle || '2026 年落点')}</h3><p>${esc(data.year || '')}</p>
     <h3>${esc(data.timelineTitle || '完整时间轴')}</h3><p class="dy-meta">${esc(data.startLead || '起运：')}${esc(data.start || '')} · 传统文化时间结构</p>${timelineRows(nearby,currentRange)}
-    <details class="timeline-details"><summary>查看完整时间轴</summary>${timelineRows(rows,currentRange)}</details>
+    ${remainingTimeline}
     <h3>${esc(data.nextLead || '下一阶段预告｜')}${esc(data.nextTitle || '')}</h3><p>${esc(data.next || '')}</p>
   </section>`;
 }
@@ -1575,8 +1614,17 @@ function updateReportHero(chart, overview){
   const identity = home?.identity || `${chart.dayMaster.stem}${chart.dayMaster.element} × 太阳${chart.astro?.sun?.sign || '星座'}`;
   const fallback = String(overview?.body || '先从总览开始，结合真实经历核对这张盘呈现的倾向。')
     .split(/\n\n+/)[0].replace(/\s*来源[:：].*$/s,'').trim();
-  $('reportIdentity').textContent = identity;
+  const missingBirthTime=chart.meta&&chart.meta.inputPrecision&&chart.meta.inputPrecision.birthTime==='missing';
+  $('reportIdentity').textContent = identity + (missingBirthTime?'（缺时暂排）':'');
   $('reportJudgement').textContent = String(overview?.hero || fallback).trim();
+  document.querySelector('.report-hero-nav').hidden=false;
+  const precision=$('reportPrecision');
+  const warnings=Array.isArray(chart.meta&&chart.meta.warnings)?chart.meta.warnings.filter(Boolean):[];
+  precision.classList.remove('is-blocking');
+  precision.textContent=warnings.length
+    ? ((missingBirthTime?'暂排提示：':'边界提示：')+warnings.join(' '))
+    : '';
+  precision.hidden=!warnings.length;
 }
 
 const REPORT_NAV_GROUPS = [
@@ -1938,20 +1986,93 @@ function ensureEligibleBirthDate(value){
   return false;
 }
 
+function reportBoundaryMessage(chart){
+  const boundary=(chart.boundaries||[]).find(item=>item.reason==='missing-time-on-boundary-date');
+  const jie=boundary&&boundary.jie?boundary.jie:'节气';
+  const time=boundary&&boundary.termTime?boundary.termTime.slice(11):'当天';
+  const labels=[...new Set((boundary&&boundary.affects||[]).map(key=>({year:'年柱',month:'月柱'})[key]).filter(Boolean))];
+  return `这一天在北京时间 ${time} 经过${jie}分界，${labels.join('、')||'盘面'}无法唯一确定。请补充出生时间后再生成完整报告。`;
+}
+
+function blockReportForMissingBoundaryTime(chart){
+  const message=reportBoundaryMessage(chart);
+  const out=$('out'),editDock=$('reportEditDock');
+  if(editDock&&out.contains(editDock))out.after(editDock);
+  if(REPORT_NAV_OBSERVER)REPORT_NAV_OBSERVER.disconnect();
+  if(REPORT_NAV_SCROLL_HANDLER)window.removeEventListener('scroll',REPORT_NAV_SCROLL_HANDLER);
+  REPORT_NAV_OBSERVER=null;
+  REPORT_NAV_SCROLL_HANDLER=null;
+  CHART=null;
+  CURRENT_QIAN=null;
+  $('reportIdentity').textContent='需要补充出生时间';
+  $('reportJudgement').textContent='当前不展示确定身份与完整报告，避免把节气分界前后的两张盘混成一张。';
+  $('reportPrecision').textContent=message;
+  $('reportPrecision').classList.add('is-blocking');
+  $('reportPrecision').hidden=false;
+  document.querySelector('.report-hero-nav').hidden=true;
+  out.replaceChildren();
+  editDock.hidden=false;
+  $('editRow').style.display='flex';
+  $('editLink').setAttribute('aria-expanded','true');
+  $('reportStatus').textContent=message;
+  $('t').setAttribute('aria-invalid','true');
+  requestAnimationFrame(()=>{
+    $('reportEditDock').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+    $('t').focus({preventScroll:true});
+  });
+}
+
+function blockReportForInvalidStoredTime(){
+  const message='旧记录中的出生时间格式无效，已停止生成，避免把非法时间当成“未填写”。请重新选择正确时间，或清空后按缺时暂排。';
+  CHART=null;
+  CURRENT_QIAN=null;
+  $('reportIdentity').textContent='需要修正出生时间';
+  $('reportJudgement').textContent='当前不展示身份与完整报告。';
+  $('reportPrecision').textContent=message;
+  $('reportPrecision').classList.add('is-blocking');
+  $('reportPrecision').hidden=false;
+  document.querySelector('.report-hero-nav').hidden=true;
+  $('out').replaceChildren();
+  $('reportEditDock').hidden=false;
+  $('editRow').style.display='flex';
+  $('editLink').setAttribute('aria-expanded','true');
+  $('reportStatus').textContent=message;
+  $('t').setAttribute('aria-invalid','true');
+  requestAnimationFrame(()=>{
+    $('reportEditDock').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});
+    $('t').focus({preventScroll:true});
+  });
+}
+
 function generateRule(){
   if (!reportPrivacyGranted()) return;
   if (!ensureEligibleBirthDate($('d').value)) return;
+  let chart;
+  try { chart = BaziEngine.computeChart(currentInput()); }
+  catch (_) {
+    $('reportStatus').textContent='出生时间格式无效，请重新选择。';
+    $('t').setAttribute('aria-invalid','true');
+    $('editRow').style.display='flex';
+    $('reportEditDock').hidden=false;
+    $('t').focus();
+    return;
+  }
+  if (chart.meta&&chart.meta.requiresBirthTime){blockReportForMissingBoundaryTime(chart);return}
+  $('t').removeAttribute('aria-invalid');
   try {
     localStorage.setItem('zx_input',JSON.stringify(reportChartPayload()));
     if ($('reportStatus')) $('reportStatus').textContent='';
   } catch (_) {
     if ($('reportStatus')) $('reportStatus').textContent='报告已在当前页面生成，但浏览器未能保存出生资料；刷新后可能需要重新填写。';
   }
-  const chart = BaziEngine.computeChart(currentInput());
   const sections = Explainer.validateSections(Explainer.buildSections(chart), chart)
     .map(s => s.issues.length ? { ...s, body:'(本章内容整理中)来源:知星', issues:[] } : s);
   render(chart, sections);
 }
+$('t').addEventListener('input',()=>{
+  $('t').removeAttribute('aria-invalid');
+  if($('reportStatus'))$('reportStatus').textContent='';
+});
 
 function reportChartPayload(){
   return { d:$('d').value, t:$('t').value, c:$('c').value, g:GENDER };
@@ -2562,11 +2683,18 @@ document.addEventListener('pointerdown', e => {
     return;
   }
   if (!await requestReportPrivacyConsent()) return;
+  const storedTime=data.t == null?'':String(data.t);
+  $('d').value = data.d; $('c').value = data.c || '';
+  GENDER = data.g || '';
+  if (storedTime && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(storedTime)) {
+    $('t').value='';
+    blockReportForInvalidStoredTime();
+    return;
+  }
+  $('t').value = storedTime;
   if (localDebugInput) {
     try { localStorage.setItem('zx_input',JSON.stringify(localDebugInput)); } catch (_) {}
   }
-  $('d').value = data.d; $('t').value = data.t || ''; $('c').value = data.c || '';
-  GENDER = data.g || '';
   if (window.zxMember && zxMember.start) zxMember.start().catch(() => {});
   await generateAuthorizedRule();
 })();
