@@ -32,10 +32,14 @@
     if (!raw || !isLocalDebugPage()) return '';
     try {
       var u = new URL(raw, location.href);
-      return /^https?:$/.test(u.protocol) && isLocalDebugHost(u.hostname) ? u.href.replace(/\/+$/, '') : '';
+      return /^https?:$/.test(u.protocol) && isLocalDebugHost(u.hostname) && !u.username && !u.password && !u.search && !u.hash ? u.href.replace(/\/+$/, '') : '';
     } catch (_) {
       return '';
     }
+  }
+
+  function privateReportsPage() {
+    return window.ZX_PRIVATE_REPORT_BUILD === true || (isLocalDebugPage() && new URLSearchParams(location.search).get('private-report') === '1');
   }
 
   function configuredApiBase(value) {
@@ -160,6 +164,14 @@
     dropSession(PAID_ASK_PURCHASE_KEY);
     dropSession(PAID_ASK_IDENTITY_RESUME_KEY);
     drop(PENDING_PAYMENT_KEY);
+    dropSession('zx_private_report_resume_id');
+    try {
+      for (var index = sessionStorage.length - 1; index >= 0; index--) {
+        var key = sessionStorage.key(index);
+        if (key && key.indexOf('zx_private_ask_pending_v1:') === 0) sessionStorage.removeItem(key);
+      }
+    } catch (_) {}
+    try { window.dispatchEvent(new CustomEvent('zx-private-session-cleared')); } catch (_) {}
   }
   function blockAutomaticOauth() {
     ss(PAID_ASK_AUTO_OAUTH_BLOCK_KEY, '1');
@@ -328,6 +340,13 @@
       sessionRefreshPromise = null;
       dropSession(ACCESS_TOKEN_KEY);
       dropSession(ACCESS_TOKEN_EXPIRES_KEY);
+      if (privateReportsPage() && state && state.accountRef && error && (error.status === 401 || error.status === 403)) {
+        clearPaidAskSessionState();
+        state.authenticated = false;
+        state.identityKind = '';
+        state.accountRef = '';
+        state.paymentAvailable = false;
+      }
       throw error;
     });
     return sessionRefreshPromise;
@@ -351,7 +370,7 @@
     if (!API_BASE) return Promise.reject(new Error('no api'));
     opts = opts || {};
     var headers = Object.assign({ 'content-type': 'application/json' }, opts.headers || {});
-    var tok = token();
+    var tok = opts.anonymous === true ? '' : token();
     if (tok) headers.authorization = 'Bearer ' + tok;
     var controller = typeof AbortController === 'function' ? new AbortController() : null;
     var timeout = controller ? setTimeout(function () { controller.abort(); }, 20000) : null;
@@ -359,7 +378,8 @@
       method: opts.method || 'GET',
       headers: headers,
       body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: 'include',
+      credentials: opts.anonymous === true ? 'omit' : 'include',
+      cache: 'no-store',
       signal: controller ? controller.signal : undefined
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (data) {
@@ -381,7 +401,7 @@
         timeoutError.code = 'REQUEST_TIMEOUT';
         throw timeoutError;
       }
-      if (error && error.status === 401 && opts.noSessionRetry !== true &&
+      if (error && error.status === 401 && opts.anonymous !== true && opts.noSessionRetry !== true &&
           opts.sessionRetried !== true && !isAuthPath(path)) {
         dropSession(ACCESS_TOKEN_KEY);
         dropSession(ACCESS_TOKEN_EXPIRES_KEY);
@@ -420,12 +440,16 @@
     if (data.payment_available !== undefined) state.paymentAvailable = data.payment_available === true;
     if (data.authenticated !== undefined || data.wechat_authenticated !== undefined || data.identity_kind !== undefined) {
       var identityKind = String(data.identity_kind || '');
-      state.authenticated = data.authenticated === true &&
+      var authenticated = data.authenticated === true &&
         data.wechat_authenticated === true && identityKind === 'wechat';
-      state.identityKind = state.authenticated ? identityKind : '';
-      state.accountRef = state.authenticated && /^[a-f0-9]{64}$/.test(String(data.account_ref || ''))
-        ? String(data.account_ref)
-        : '';
+      var accountRef = authenticated && /^[a-f0-9]{64}$/.test(String(data.account_ref || ''))
+        ? String(data.account_ref) : '';
+      // A refresh may identify a different owner. Invalidate private views and
+      // in-flight responses before publishing the replacement identity.
+      if (state.accountRef && state.accountRef !== accountRef) clearPaidAskSessionState();
+      state.authenticated = authenticated;
+      state.identityKind = authenticated ? identityKind : '';
+      state.accountRef = accountRef;
     }
     return data;
   }
@@ -452,6 +476,7 @@
   }
 
   function initAnonymousAccount() {
+    if (privateReportsPage()) return Promise.resolve({ authenticated: false });
     return api('/account/init', { method: 'POST', body: { device_id: cid() } })
       .then(function (data) {
         saveTokens(data);
@@ -517,9 +542,29 @@
     return initPromise;
   }
 
+  function reportClientError(code) { var error = new Error(code); error.code = code; return error; }
+  function checkedPaidReportId(id) {
+    if (typeof id !== 'string' || !/^[a-f0-9]{48}$/.test(id)) throw reportClientError('REPORT_NOT_FOUND');
+    return id;
+  }
+  function privateReportServiceAvailable() {
+    return privateReportsPage() && !!API_BASE && (injectedPublicConfig.reportServiceAvailable === true || !!localDebugUrlParam('api'));
+  }
+  function privateReportApi(path, options) {
+    if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));
+    if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
+    return freshAccessToken().then(function () { return api(path, options); });
+  }
+  function checkedReportInput(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input) ||
+        Object.keys(input).some(function (key) { return !['d','t','c','g'].includes(key); })) throw reportClientError('REPORT_REQUEST_INVALID');
+    return normalizeChartPayload(input);
+  }
+
   window.zxMember = {
     configured: function () { return !!API_BASE && accountConsentGranted(); },
     serviceConfigured: function () { return !!API_BASE; },
+    paidReportServiceAvailable: privateReportServiceAvailable,
     snapshot: function () {
       return {
         ready: state.ready,
@@ -646,7 +691,47 @@
     deleteReport: function (reportId) {
       return api('/reports/' + encodeURIComponent(String(reportId || '')), { method: 'DELETE' });
     },
-    deepPeek: function () { return api('/deep/peek', { method: 'POST' }); },
+    paidReportPreview: function (input, confirmation) {
+      if (!confirmation || confirmation.transferConfirmed !== true) return Promise.reject(reportClientError('REPORT_TRANSFER_CONFIRMATION_REQUIRED'));
+      if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));
+      return api('/report-preview', {method:'POST', anonymous:true, noSessionRetry:true,
+        body:{input:checkedReportInput(input),transfer_confirmed:true}});
+    },
+    paidReportPrepare: function (input, confirmation) {
+      confirmation = confirmation || {};
+      if (confirmation.transferConfirmed !== true) return Promise.reject(reportClientError('REPORT_TRANSFER_CONFIRMATION_REQUIRED'));
+      if (confirmation.storageConfirmed !== true) return Promise.reject(reportClientError('REPORT_STORAGE_CONFIRMATION_REQUIRED'));
+      if (typeof confirmation.subjectIsSelf !== 'boolean' || (!confirmation.subjectIsSelf && confirmation.permissionConfirmed !== true)) {
+        return Promise.reject(reportClientError('REPORT_SUBJECT_PERMISSION_REQUIRED'));
+      }
+      return privateReportApi('/paid-reports/prepare', {method:'POST',body:{input:checkedReportInput(input),
+        transfer_confirmed:true,storage_confirmed:true,subject_is_self:confirmation.subjectIsSelf,
+        permission_confirmed:confirmation.permissionConfirmed === true}});
+    },
+    paidReportList: function (options) {
+      options = options || {}; var query = '';
+      if (options.before !== undefined) {
+        if (!Number.isSafeInteger(options.before) || options.before < 1) return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
+        query = '?before=' + options.before;
+      }
+      return privateReportApi('/paid-reports' + query);
+    },
+    paidReportRead: function (id, view) {
+      if (view !== undefined && view !== 'status') return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
+      return privateReportApi('/paid-reports/' + checkedPaidReportId(id) + (view === 'status' ? '?view=status' : ''));
+    },
+    paidReportRetry: function (id) { return privateReportApi('/paid-reports/' + checkedPaidReportId(id) + '/retry', {method:'POST',body:{}}); },
+    paidReportProducts: function (id, kind) {
+      if (kind !== undefined && kind !== 'report' && kind !== 'ask') return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
+      return privateReportApi('/' + (kind === 'ask' ? 'ask' : 'report') + '/products?report_id=' + checkedPaidReportId(id));
+    },
+    paidReportBalance: function (id) { return privateReportApi('/deep/peek', {method:'POST',body:{report_id:checkedPaidReportId(id)}}); },
+    wechatOAuthStart: function (returnPath) {
+      if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
+      if (!['/account.html','/checkout.html'].includes(returnPath)) return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
+      return api('/auth/wechat/oauth/start', {method:'POST',anonymous:true,noSessionRetry:true,body:{return_path:returnPath}});
+    },
+    deepPeek: function (reportId) { return privateReportsPage() ? this.paidReportBalance(reportId) : api('/deep/peek', { method: 'POST' }); },
     deepSave: function () {
       var error = new Error('browser-side answer persistence is retired');
       error.code = 'BROWSER_DEEP_SAVE_RETIRED';

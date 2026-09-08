@@ -123,13 +123,16 @@
     var style = document.createElement('style');
     style.id = 'zx-privacy-center-style';
     style.textContent = [
-      '#zxPrivacyDock{position:fixed;right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));z-index:46;display:flex;gap:8px;align-items:center;padding:6px;border:1px solid rgba(201,168,92,.3);border-radius:999px;background:rgba(14,18,32,.94);box-shadow:0 8px 28px rgba(0,0,0,.35);font:12px/1.2 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}',
+      '#zxPrivacyDock{position:relative;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;box-sizing:border-box;width:min(calc(100% - 32px),820px);margin:24px auto 0;padding:12px 0 max(20px,env(safe-area-inset-bottom));border-top:1px solid rgba(201,168,92,.22);font:12px/1.2 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}',
       '#zxPrivacyDock[hidden],#zxPrivacyCenter[hidden]{display:none!important}',
-      '#zxPrivacyDock a,#zxPrivacyDock button{min-height:38px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:#e8e4d8;font:inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}',
+      '#zxPrivacyDock a,#zxPrivacyDock button{min-height:44px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:#e8e4d8;font:inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}',
       '#zxPrivacyDock a{color:#c9a85c}',
       '#zxPrivacyDock a:focus-visible,#zxPrivacyDock button:focus-visible,#zxPrivacyCenter a:focus-visible,#zxPrivacyCenter button:focus-visible{outline:2px solid #f0d695;outline-offset:2px}',
-      '#zxPrivacyCenter{position:fixed;inset:0;z-index:140;display:grid;place-items:center;padding:20px;background:rgba(8,11,20,.9);font:14px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}',
-      '#zxPrivacyCenterPanel{width:min(100%,480px);max-height:calc(100vh - 40px);overflow:auto;padding:24px 20px;border:1px solid rgba(201,168,92,.34);border-radius:12px;background:#1a2233;color:#e8e4d8;box-shadow:0 18px 55px rgba(0,0,0,.52)}',
+      '#zxPrivacyCenter{position:fixed;inset:0;z-index:140;display:grid;place-items:center;box-sizing:border-box;width:100%;height:100%;height:100dvh;max-width:none;max-height:none;margin:0;border:0;border-radius:0;padding:20px;background:rgba(8,11,20,.9);font:14px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}',
+      '#zxPrivacyCenter::backdrop{background:transparent}',
+      '#zxPrivacyCenterPanel{box-sizing:border-box;width:min(100%,480px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;overscroll-behavior:contain;padding:24px 20px;border:1px solid rgba(201,168,92,.34);border-radius:12px;background:#1a2233;color:#e8e4d8;box-shadow:0 18px 55px rgba(0,0,0,.52)}',
+      '#zxPrivacyCenterPanel .zx-privacy-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}',
+      '#zxPrivacyCenterPanel .zx-privacy-heading button{flex:none;min-width:60px;padding:8px 12px}',
       '#zxPrivacyCenterPanel h2{margin:0 0 10px;color:#c9a85c;font:700 20px/1.5 "Songti SC","STSong",serif}',
       '#zxPrivacyCenterPanel p{margin:0 0 12px;color:#bcc4d0}',
       '#zxPrivacyCenterPanel .zx-privacy-state{padding:11px 13px;border-left:2px solid #c9a85c;background:rgba(201,168,92,.07)}',
@@ -138,28 +141,28 @@
       '#zxPrivacyCenterPanel .zx-privacy-primary{background:#c9a85c;color:#241c0c;font-weight:700}',
       '#zxPrivacyCenterPanel .zx-privacy-danger{border-color:rgba(213,105,92,.65);color:#f0b5ad}',
       '#zxPrivacyCenterStatus{min-height:24px;color:#f0d695}',
-      '@media(max-width:480px){#zxPrivacyDock{right:8px;bottom:max(8px,env(safe-area-inset-bottom));gap:2px}#zxPrivacyDock a,#zxPrivacyDock button{padding:0 10px}#zxPrivacyCenter{padding:14px}#zxPrivacyCenterPanel{max-height:calc(100vh - 28px);padding:21px 17px}}'
+      '@media(max-width:480px){#zxPrivacyDock{gap:2px}#zxPrivacyDock a,#zxPrivacyDock button{padding:0 10px}#zxPrivacyCenter{padding:14px}#zxPrivacyCenterPanel{max-height:calc(100vh - 28px);max-height:calc(100dvh - 28px);padding:21px 17px}}'
     ].join('');
 
     var complaintHref = 'mailto:' + SUPPORT_EMAIL + '?subject=' + encodeURIComponent('知星投诉或举报');
-    var dock = document.createElement('div');
+    var dock = document.createElement('nav');
     dock.id = 'zxPrivacyDock';
     dock.setAttribute('aria-label', '隐私与投诉快捷入口');
-    dock.innerHTML = '<a href="' + complaintHref + '">投诉/举报</a><button id="zxPrivacyOpen" type="button">隐私选择</button>';
+    dock.innerHTML = '<button id="zxPrivacyOpen" type="button" aria-haspopup="dialog" aria-controls="zxPrivacyCenter">隐私选择</button><a href="' + complaintHref + '">反馈 / 投诉举报</a>';
 
-    var center = document.createElement('div');
+    var center = document.createElement('dialog');
     center.id = 'zxPrivacyCenter';
+    center.setAttribute('aria-labelledby', 'zxPrivacyCenterTitle');
     center.hidden = true;
-    center.innerHTML = '<section id="zxPrivacyCenterPanel" role="dialog" aria-modal="true" aria-labelledby="zxPrivacyCenterTitle" tabindex="-1">' +
-      '<h2 id="zxPrivacyCenterTitle">隐私选择与本机资料</h2>' +
+    center.innerHTML = '<section id="zxPrivacyCenterPanel" tabindex="-1">' +
+      '<div class="zx-privacy-heading"><h2 id="zxPrivacyCenterTitle">隐私选择与本机资料</h2><button id="zxPrivacyClose" type="button">关闭</button></div>' +
       '<p class="zx-privacy-state" id="zxPrivacyChoiceState"></p>' +
-      '<p>本期产品改进统计已关闭且接收端点为空，不会发送产品埋点。微信账号服务按“设备与账号功能”的确认启用；把盘面摘要、问题和必要的近期对话发送给 DeepSeek 前，会单独征求问星处理同意。</p>' +
+      '<p>本期不收集产品使用统计。启用账号功能需要你确认；把盘面摘要、问题和必要的近期对话发送给 DeepSeek 前，也会单独征求同意。</p>' +
       '<div class="zx-privacy-actions">' +
         '<button class="zx-privacy-primary" id="zxPrivacyRevoke" type="button">撤回问星处理与统计同意</button>' +
-        '<button class="zx-privacy-danger" id="zxPrivacyClear" type="button">清除页面可删除的本机知星资料</button>' +
+        '<button class="zx-privacy-danger" id="zxPrivacyClear" type="button">清除本机知星资料</button>' +
         '<a class="zx-privacy-link" href="' + complaintHref + '">提交投诉或举报</a>' +
         '<a class="zx-privacy-link" id="zxPrivacyPolicy" href="' + privacyPageHref() + '">查看隐私政策</a>' +
-        '<button id="zxPrivacyClose" type="button">关闭</button>' +
       '</div>' +
       '<p>投诉或举报按“受理 → 核验 → 处理 → 反馈”办理；该通道由人工值守，我们会在 15 个工作日内或法律规定期限内反馈。涉及微信账号服务、微信支付或 DeepSeek 的个人信息请求，我们会按需协调服务提供方处理。</p>' +
       '<p id="zxPrivacyCenterStatus" role="status" aria-live="polite"></p>' +
@@ -189,11 +192,13 @@
       renderChoices();
       dock.hidden = true;
       center.hidden = false;
+      center.showModal();
       document.documentElement.style.overflow = 'hidden';
-      document.getElementById('zxPrivacyRevoke').focus();
+      panel.focus();
     }
 
     function closeCenter() {
+      center.close();
       center.hidden = true;
       dock.hidden = DOCK_SUPPRESSED;
       document.documentElement.style.overflow = previousOverflow;
@@ -202,6 +207,10 @@
 
     openButton.addEventListener('click', openCenter);
     closeButton.addEventListener('click', closeCenter);
+    center.addEventListener('cancel', function (event) {
+      event.preventDefault();
+      closeCenter();
+    });
     center.addEventListener('click', function (event) {
       if (event.target === center) closeCenter();
     });
@@ -216,7 +225,7 @@
       if (!items.length) return;
       var first = items[0];
       var last = items[items.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) { event.preventDefault(); last.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     });
 
@@ -233,12 +242,12 @@
     });
 
     document.getElementById('zxPrivacyClear').addEventListener('click', function () {
-      if (!window.confirm('将清除当前页面有权删除的 LocalStorage 与 SessionStorage 中所有 zx_ 前缀资料，包括出生资料、报告阅读位置和隐私选择。不会自动删除服务端账号、订单、次数、问答结果或 HttpOnly Cookie。此操作无法恢复，是否继续？')) return;
+      if (!window.confirm('将清除当前浏览器中知星保存的出生资料、报告阅读位置和隐私选择。云端账号、订单、问星次数、答案及受保护的登录信息不会自动删除。此操作无法恢复，是否继续？')) return;
       try {
         clearAllLocalData();
         if (window.ZxAnalytics && typeof window.ZxAnalytics.clear === 'function') window.ZxAnalytics.clear();
         renderChoices();
-        status.textContent = '已清除页面可删除的本机知星存储资料，页面即将刷新。服务端记录和 HttpOnly Cookie 不会因此自动删除，可通过投诉/举报入口提出处理请求。';
+        status.textContent = '已清除本机知星资料，页面即将刷新。云端记录和受保护的登录信息不会自动删除；如需处理，可通过反馈 / 投诉举报入口联系我们。';
         window.setTimeout(function () { window.location.reload(); }, 900);
       } catch (_) {
         renderChoices();

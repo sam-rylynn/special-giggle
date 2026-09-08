@@ -151,7 +151,12 @@
     try { return new URL(safe).origin === 'https://zhixng.cn'; }
     catch (_) { return false; }
   }
+  function privateReports() {
+    return window.ZX_PRIVATE_REPORT_BUILD === true || (window.ZxPaidReports && window.ZxPaidReports.isPrivate()) ||
+      ((location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) && new URLSearchParams(location.search).get('private-report') === '1');
+  }
   function publicConfigReady() {
+    if (privateReports()) return false;
     if (CONFIG.paidAskEnabled !== true || !safeApiBase(CONFIG.accountApiBase) ||
         !samePaymentOrigin(CONFIG.paymentOrigin) || !WECHAT_APP_ID_RE.test(CONFIG.wechatOfficialAccountAppId) ||
         !String(CONFIG.merchantLegalName || '').trim()) return false;
@@ -361,18 +366,18 @@
     if (!actions) return;
     clear(actions);
     if (!state.serviceConfigured || !publicConfigReady()) {
-      text('accountBadge', '暂不可用'); text('accountTitle', '微信身份与付费服务尚未完成配置');
-      text('accountBody', '当前不会创建账号会话、订单或发起微信支付。免费排盘与报告仍可查看。');
+      text('accountBadge', '未开放'); text('accountTitle', '账号与付费问星尚未开放');
+      text('accountBody', '你仍可查看排盘与报告。登录、购买及云端记录暂不可用。');
       return;
     }
     if (!isWeChatBrowser()) {
       text('accountBadge', '请在微信打开'); text('accountTitle', '付费问星仅在微信内开放');
-      text('accountBody', '请使用微信内置浏览器打开本页，完成服务号授权后可恢复次数、订单和已保存答复。免费排盘与报告不受影响。');
+      text('accountBody', '请使用微信内置浏览器打开本页，完成服务号授权后可恢复次数、订单和已保存答复。基础图谱仍可查看。');
       return;
     }
     if (!state.configured) {
       text('accountBadge', '待确认'); text('accountTitle', '请先启用设备与账号功能');
-      text('accountBody', '首次进入会直接前往微信服务号 OAuth；回来后仍需你明确启用设备与账号功能，才会连接资产服务。未确认时不会创建订单。');
+      text('accountBody', '微信授权后，还需你确认启用设备与账号功能，才能恢复账号资料。确认前不会创建订单。');
       if (typeof window.ZxAccountEnableFeatures === 'function') {
         actions.append(button('启用设备与账号功能', window.ZxAccountEnableFeatures, 'primary'));
       }
@@ -380,7 +385,7 @@
     }
     if (!state.authenticated || !state.accountRef || state.identityKind !== 'wechat') {
       text('accountBadge', '待授权'); text('accountTitle', '正在进入微信身份确认');
-      text('accountBody', '身份只由服务号 OAuth 与知星后端会话确认；页面不接收或保存 OpenID。');
+      text('accountBody', '请使用原微信账号登录，以找回已购次数、订单和已保存答复。');
       actions.append(button('微信授权登录', function () {
         startWechatIdentity('/account.html').catch(function () {
           text('accountBody', '微信授权未完成，当前不会创建订单或发起问星。');
@@ -396,17 +401,19 @@
   }
   function renderCredits() {
     var remaining = creditsState.remaining;
-    text('memberBadge', remaining == null ? '未读取' : '剩 ' + remaining + ' 次');
-    text('memberTitle', remaining == null ? '暂时无法确认问星次数' : '当前可用 ' + remaining + ' 次问星');
-    text('memberBody', remaining == null
-      ? '次数读取失败时不会假定仍有额度，也不会发起问星。'
-      : '首问和每次追问各消耗 1 次；模型失败、超时或答案未成功持久化时不扣次数。');
+    var closed = !publicConfigReady();
+    var authenticated = snapshot().authenticated && snapshot().accountRef;
+    text('memberBadge', closed ? '未开放' : remaining == null ? '未读取' : '剩 ' + remaining + ' 次');
+    text('memberTitle', closed ? '问星次数暂不可查询' : remaining == null ? '暂时无法确认问星次数' : '当前可用 ' + remaining + ' 次问星');
+    text('memberBody', closed ? '服务开放后，可登录原微信账号查询已购次数。' : remaining == null
+      ? (authenticated ? '暂时无法读取次数，请稍后重试。' : '登录原微信账号后，可查询已购次数。')
+      : '首问和每次追问各消耗 1 次；模型失败、超时或答案未成功保存时不扣次数。');
     if ($('memberPolicy')) {
       $('memberPolicy').hidden = remaining == null;
       $('memberPolicy').textContent = '已生成的完整答复保存到账号，可在“问答存档”恢复。问星次数不自动续费；分享不会增加次数。';
     }
     var actions = $('memberActions');
-    if (actions) { clear(actions); actions.append(link('去问星', './report.html#sec-deep')); }
+    if (actions) { clear(actions); if (!closed && remaining != null) actions.append(link('去问星', './report.html#sec-deep')); }
   }
   function planNodes() {
     return [
@@ -438,15 +445,15 @@
   function renderUpgradeState(paymentAvailable) {
     var panel = $('member-upgrade');
     if (!panel) return;
-    panel.hidden = false;
+    panel.hidden = !publicConfigReady();
     var state = snapshot();
     var ready = publicConfigReady() && paymentAvailable === true;
     var message = '';
-    if (!ready) message = '正式服务号、商户号、政策版本或支付后端尚未全部签收，当前不会创建订单。';
-    else if (!isWeChatBrowser()) message = '付费问星仅在微信内开放；本页不提供 H5 支付回退。';
-    else if (!state.authenticated || !state.accountRef) message = '完成服务号 OAuth 后，可主动选择单次问星或三次问星包。';
-    else if (!wechatState.enabled) message = '服务号 OAuth 绑定尚未完成正式配置，当前不会创建订单。';
-    else if (!wechatState.bound) message = '选择商品并确认后，将先跳转微信进行 snsapi_base 支付身份绑定；知星前端不会读取 openid。';
+    if (!ready) message = '问星购买尚未开放，暂时不能下单。';
+    else if (!isWeChatBrowser()) message = '请在微信内打开本页，登录后再选择商品。';
+    else if (!state.authenticated || !state.accountRef) message = '微信登录后，可主动选择单次问星或三次问星包。';
+    else if (!wechatState.enabled) message = '微信支付暂不可用，当前不能下单。';
+    else if (!wechatState.bound) message = '确认商品后，将前往微信确认本次支付身份。';
     else message = '请选择一种商品。页面不会默认勾选，购买不自动续费。';
     text('upgradeBadge', ready && state.authenticated && state.accountRef && isWeChatBrowser() && wechatState.enabled ? '可选择' : '不可购买');
     text('upgradeStateTitle', ready ? '按次购买问星服务' : '问星购买当前不可用');
@@ -582,13 +589,13 @@
     event.preventDefault();
     if (!selectedProduct || !$('purchaseAdultConsent').checked || !$('purchaseConsent').checked || !$('purchasePaymentConsent').checked) return;
     if (!publicConfigReady() || !isWeChatBrowser() || !snapshot().authenticated || !snapshot().accountRef || !wechatState.enabled) {
-      text('purchaseError', '当前环境或正式配置不满足 JSAPI 支付条件，订单没有创建。'); return;
+      text('purchaseError', '当前暂时无法付款，订单没有创建。请稍后再试。'); return;
     }
     var primary = $('purchasePrimary'); primary.disabled = true;
     try {
       if (!wechatState.bound) {
         pendingPurchase(selectedProduct);
-        text('purchaseError', '正在前往微信绑定支付身份；不会向页面返回 openid。');
+        text('purchaseError', '正在前往微信确认支付身份…');
         await startWechatIdentity('/checkout.html');
         return;
       }
@@ -626,13 +633,13 @@
   }
   function orderLabel(state) {
     return {
-      waiting: ['待支付', '等待微信支付', '请在微信内点击支付。支付结果只由后端查单确认。'],
+      waiting: ['待支付', '等待微信支付', '付款后会自动查询结果，请等待订单确认。'],
       confirming: ['确认中', '支付结果确认中', '请不要重复付款，页面会继续查询订单和次数到账状态。'],
       active: ['已到账', '问星次数已到账', '可以返回问星；首问和追问各消耗 1 次。'],
       expired: ['已关闭', '本次支付未完成', '订单已关闭或过期，没有发放问星次数。'],
       failed: ['未完成', '本次支付没有完成', '没有发放问星次数，请稍后重新尝试。'],
       refunding: ['退款中', '退款正在处理', '到账进度以微信支付和知星订单记录为准。'],
-      refunded: ['已退款', '订单已退款', '退款和对应次数调整以知星后端记录为准。']
+      refunded: ['已退款', '订单已退款', '退款和对应次数调整以订单及原支付渠道记录为准。']
     }[state];
   }
   function productForOrder(order) {
@@ -643,16 +650,20 @@
     var root = $('orderList');
     if (!root) return;
     clear(root);
-    if (!snapshot().authenticated || !snapshot().accountRef || !publicConfigReady()) {
+    if (!publicConfigReady()) {
+      text('orderBadge', '未开放'); text('orderStateTitle', '订单查询暂不可用');
+      text('orderStateBody', '已有订单问题可联系人工处理，请保留订单号和付款记录。'); return;
+    }
+    if (!snapshot().authenticated || !snapshot().accountRef) {
       text('orderBadge', '需授权'); text('orderStateTitle', '微信授权后可查看订单');
-      text('orderStateBody', '订单、支付、退款和次数到账状态只从知星后端读取。'); return;
+      text('orderStateBody', '请使用原微信账号登录，查看订单、支付和退款进度。'); return;
     }
     try {
       var data = await api('/payments/orders');
       var items = Array.isArray(data && data.items) ? data.items : Array.isArray(data && data.orders) ? data.orders : [];
       text('orderBadge', String(items.length) + ' 笔');
       text('orderStateTitle', items.length ? '我的问星订单' : '还没有问星订单');
-      text('orderStateBody', '支付结果、退款和次数到账只以后端订单状态为准。');
+      text('orderStateBody', '支付、退款和次数到账进度会随订单更新。');
       items.forEach(function (input) {
         var data = unwrapOrder(input); var order = data.order; var state = orderState(order); var product = productForOrder(order);
         var article = document.createElement('article'); article.className = 'order-item';
@@ -683,6 +694,7 @@
     });
   }
   async function mountAccount(force) {
+    if (privateReports()) return window.ZxPaidReports ? window.ZxPaidReports.mountAccount() : undefined;
     if (!$('member-upgrade')) return;
     if (accountMountPromise && !force) return accountMountPromise;
     accountMountPromise = (async function () {
@@ -716,8 +728,8 @@
             oauthStartInFlight = false;
             text('accountBody', '微信授权未完成，当前不会创建订单或发起问星。');
           }
-        } else if (callbackState) {
-          text('accountBody', '后端未能确认微信会话，当前不会创建订单或发起问星。可重新授权。');
+        } else if (callbackState && publicConfigReady()) {
+          text('accountBody', '微信登录尚未确认，当前不会创建订单或发起问星。可重新授权。');
         }
         return;
       }
@@ -776,6 +788,7 @@
   function renderCountdown(expiresAt) {
     window.clearInterval(checkoutCountdown);
     var end = timeValue(expiresAt);
+    if ($('checkoutCountdown')) $('checkoutCountdown').hidden = end == null;
     if (end == null || !$('checkoutCountdown')) { text('checkoutCountdown', ''); return; }
     function tick() {
       var seconds = Math.max(0, Math.floor((end - Date.now()) / 1000));
@@ -791,23 +804,24 @@
   function renderCheckout(input) {
     var data = unwrapOrder(input); var order = data.order; var checkout = data.checkout;
     var state = orderState(order); var labels = orderLabel(state); var product = productForOrder(order);
+    ['checkoutDetails', 'checkoutRefundNotice', 'checkoutRecoveryNote'].forEach(function (id) { if ($(id)) $(id).hidden = false; });
     text('checkoutBadge', labels[0]); text('checkoutTitle', labels[1]); text('checkoutBody', labels[2]);
     text('checkoutProduct', product ? product.title + ' · ' + product.questionCredits + ' 次' : '问星次数服务');
     text('checkoutAmount', money(order.amount_fen)); text('checkoutOrderNo', order.order_no || '—');
     text('checkoutCreatedAt', formatDateTime(order.created_at) || '—');
     text('checkoutExpiresAt', formatDateTime(order.expires_at || checkout.expires_at) || '—');
     var granted = Number(order.granted_credits);
-    text('checkoutCredits', Number.isInteger(granted) && granted >= 0 ? granted + ' 次已到账' : (product ? product.questionCredits + ' 次，支付确认后到账' : '待后端确认'));
-    renderCountdown(order.expires_at || checkout.expires_at);
+    text('checkoutCredits', Number.isInteger(granted) && granted >= 0 ? granted + ' 次已到账' : (product ? product.questionCredits + ' 次，支付确认后到账' : '待订单确认'));
+    renderCountdown(state === 'waiting' ? order.expires_at || checkout.expires_at : null);
     var actions = $('checkoutActions'); clear(actions); renderServiceLinks($('checkoutServiceLinks'));
     if (state === 'waiting') {
       var params = validateJsapiCheckout(checkout);
       if (!publicConfigReady() || !isWeChatBrowser() || !params) {
-        text('checkoutNotice', '正式 JSAPI 配置、微信环境或拉起参数校验未通过，当前不会发起支付。');
+        text('checkoutNotice', '当前暂时无法拉起微信支付，本次没有发起付款。请返回订单列表后重试。');
         actions.append(link('返回选择商品', './account.html#member-upgrade', 'primary'));
         return;
       }
-      text('checkoutNotice', '点击后由微信支付拉起付款。页面不会接收 openid，也不会仅凭微信返回提示发放次数。');
+      text('checkoutNotice', '付款后请等待订单确认，问星次数到账后会显示在这里。');
       actions.append(button('微信支付', async function () {
         if (checkoutInFlight) return;
         checkoutInFlight = true;
@@ -816,7 +830,7 @@
           if (result.outcome === 'cancelled') {
             text('checkoutNotice', '你取消了支付，没有发放问星次数。可在订单有效期内重新支付。');
           } else {
-            text('checkoutNotice', '微信已返回支付结果，正在由知星后端查单确认，请不要重复付款。');
+            text('checkoutNotice', '正在确认微信支付结果，请不要重复付款。');
             scheduleCheckoutPoll(800);
           }
         } catch (_) { text('checkoutNotice', '微信支付没有完成，当前不会发放问星次数。请稍后重试。'); }
@@ -859,12 +873,22 @@
     return true;
   }
   async function mountCheckout() {
+    if (privateReports()) return window.ZxPaidReports ? window.ZxPaidReports.mountCheckout() : undefined;
     if (!$('paidCheckoutPage')) return;
-    if (!publicConfigReady() || !isWeChatBrowser()) {
-      text('checkoutBadge', '暂不可用'); text('checkoutTitle', '仅支持微信 JSAPI 支付');
-      text('checkoutBody', '服务号 AppId、支付后端或当前浏览器环境未满足条件；不会回退到 H5 支付。');
-      text('checkoutNotice', '请从微信内打开正式页面。');
-      clear($('checkoutActions')); $('checkoutActions').append(link('返回我的', './account.html#member-upgrade', 'primary'));
+    ['checkoutDetails', 'checkoutRefundNotice', 'checkoutRecoveryNote', 'checkoutCountdown'].forEach(function (id) { if ($(id)) $(id).hidden = true; });
+    renderServiceLinks($('checkoutServiceLinks'));
+    if (!publicConfigReady()) {
+      text('checkoutBadge', '未开放'); text('checkoutTitle', '问星购买尚未开放');
+      text('checkoutBody', '问星服务准备中，当前无法下单或付款。');
+      text('checkoutNotice', '如需处理已有订单，请保留订单号和付款记录，通过页面底部的反馈入口联系我们。');
+      clear($('checkoutActions')); $('checkoutActions').append(link('返回我的', './account.html', 'primary'));
+      return;
+    }
+    if (!isWeChatBrowser()) {
+      text('checkoutBadge', '请在微信打开'); text('checkoutTitle', '请在微信内查看订单');
+      text('checkoutBody', '使用原微信账号打开本页，以查询订单或继续付款。');
+      text('checkoutNotice', '本页尚未发起付款；已有订单会在微信登录后查询。');
+      clear($('checkoutActions')); $('checkoutActions').append(link('返回我的订单', './account.html#order-center', 'primary'));
       return;
     }
     try { await member().whenReady(); } catch (_) {}
@@ -872,10 +896,10 @@
     if (!identity.authenticated || !identity.accountRef || identity.identityKind !== 'wechat') {
       var callbackState = oauthCallbackState();
       text('checkoutBadge', '需授权'); text('checkoutTitle', '正在确认微信身份');
-      text('checkoutBody', '订单和问星次数只归属后端已确认的微信账号。');
+      text('checkoutBody', '请使用原微信账号登录，以恢复订单和问星次数。');
       clear($('checkoutActions'));
       if (callbackState) {
-        text('checkoutNotice', '后端未能确认微信会话，当前不会发起支付。');
+        text('checkoutNotice', '微信登录尚未确认，当前不会发起支付。');
         $('checkoutActions').append(button('重新微信授权', function () {
           startWechatIdentity('/checkout.html').catch(function () {});
         }, 'primary'));
@@ -901,6 +925,7 @@
     if (!orderNo) {
       text('checkoutBadge', '无订单'); text('checkoutTitle', '没有可恢复的支付订单');
       text('checkoutBody', '请返回商品页主动选择并确认商品。');
+      text('checkoutNotice', '本页尚未发起付款。如已付款，请到“我的订单”查询。');
       clear($('checkoutActions')); $('checkoutActions').append(link('返回选择商品', './account.html#member-upgrade', 'primary')); return;
     }
     await refreshCheckout();
@@ -932,6 +957,10 @@
     peek: peekCredits,
     wechatStatus: refreshWechatStatus,
     ensureIdentity: function (resumePath) {
+      if (privateReports()) {
+        if (!window.ZxPaidReports) return Promise.reject(new Error('REPORT_SERVICE_UNAVAILABLE'));
+        return window.ZxPaidReports.startLogin(window.ZxPaidReports.reportId());
+      }
       var identity = snapshot();
       if (identity.authenticated && identity.accountRef && identity.identityKind === 'wechat') {
         return Promise.resolve(Object.freeze({ authenticated: true, accountRef: identity.accountRef }));
@@ -942,7 +971,7 @@
     mountCheckout: mountCheckout
   });
   window.ZxPaidH5 = window.ZxPaidAsk;
-  bindPageEvents();
+  if (!privateReports()) bindPageEvents();
   if ($('member-upgrade')) mountAccount();
   if ($('paidCheckoutPage')) mountCheckout();
 })();

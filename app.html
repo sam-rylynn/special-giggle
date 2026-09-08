@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-ricESab6zAvUCNcsYPbGlrXb0u/L0SSTPx6jz4Gaw9U='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-0hXTPiO4vimaS8wNDhbjJEd49eLYKNsVtp/JbWgla+w='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -12,6 +13,7 @@
 <link rel="preload" as="image" href="./media/hero-taiji-desktop.webp" type="image/webp" media="(max-width:899px)">
 <link rel="preload" as="image" href="./media/hero-taiji-desktop.webp" imagesrcset="./media/hero-taiji-desktop.webp 1920w, ./media/hero-taiji-desktop-hd.webp 2560w" imagesizes="100vw" type="image/webp" media="(min-width:900px)">
 <style>
+  @font-face{font-family:"Zhixing Idiom Kai";src:url('./media/fonts/zhixing-idiom-kai.woff2') format('woff2');font-style:normal;font-weight:400;font-display:swap}
   :root{
     --ink:#0E1220; --panel:#1A2233; --gold:#C9A85C; --gold-dim:#b8a36c;
     --moon:#E8E4D8; --cinnabar:#B5472F; --mist:#98A2B3;
@@ -95,7 +97,7 @@
   .cta:active{transform:translateY(1px)}
   .hint{margin-top:14px;text-align:center;color:var(--mist);font-size:12px}
   .form-note{margin:-4px 0 18px;color:#9ba5b5;font-size:12px;line-height:1.75}
-  .age-hint{margin-top:-8px;color:#8f99aa;font-size:12px;line-height:1.6}
+  .age-hint{margin-top:10px;color:var(--mist);font-size:.8125rem;line-height:1.65}
   .field-error{margin-top:8px;padding:9px 11px;border-left:2px solid var(--cinnabar);background:rgba(181,71,47,.1);color:#efb0a3;font-size:12px;line-height:1.65}
   .result-precision{margin:0 auto 18px;padding:12px 14px;border:1px solid rgba(201,168,92,.34);border-left:3px solid var(--gold);border-radius:8px;background:rgba(201,168,92,.08);color:#d7dde7;font-size:12.5px;line-height:1.75;text-align:left}
   .result-precision.is-boundary{border-color:rgba(181,71,47,.5);border-left-color:var(--cinnabar);background:rgba(181,71,47,.11);color:#efc0b6}
@@ -124,30 +126,18 @@
   .field input,.field select{width:100%;height:50px;padding:0 14px;border-radius:8px;background:#10182a;border:1px solid rgba(232,228,216,.16);color:var(--moon);font-size:16px;font-family:var(--sans);color-scheme:dark;-webkit-appearance:none;appearance:none;box-sizing:border-box}
   .field input::-webkit-date-and-time-value{text-align:left}
   .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9A85C' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-  .row2{align-items:flex-end}
+  .row2{align-items:flex-start}
   .field input:focus,.field select:focus{outline:2px solid #f0d695;outline-offset:2px;border-color:var(--gold)}
   .row2{display:flex;gap:12px}.row2 .field{flex:1}
-  .optional{color:var(--mist);font-size:11px;margin-left:6px}
+  .optional{display:block;color:var(--mist);font-size:.8125rem;margin-top:4px;letter-spacing:0;line-height:1.6;font-weight:400}
+  .row2 .field{min-width:0}
+  .row2 label{min-height:4.5em}
+  @media(max-width:359px){.row2{flex-direction:column;gap:0}.row2 .field{width:100%}.row2 label{min-height:0}}
 
-  /* ---------- 推算仪式(升级版) ---------- */
-  #ritual{display:none;text-align:center;padding:40px 0 26px}
-  .rit-svg{width:min(64vw,240px);margin:0 auto;display:block;filter:drop-shadow(0 0 26px rgba(201,168,92,.35))}
-  .rit-draw{stroke:var(--gold);fill:none;stroke-dasharray:calc(var(--len)*1px);stroke-dashoffset:calc(var(--len)*1px);animation:draw 2.4s ease forwards}
-  @keyframes draw{to{stroke-dashoffset:0}}
-  .rit-sweep{transform-origin:100px 100px;animation:spin 3.2s linear infinite}
-  .rit-orbit{transform-origin:100px 100px;animation:spinR 5.5s linear infinite}
-  .rit-pulse{transform-origin:100px 100px;animation:pulse 2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.5);opacity:.35}}
-  .rit-glyph{opacity:0;animation:gfade .8s ease forwards}
-  @keyframes gfade{to{opacity:.9}}
-  #ritual .lines{margin-top:30px;min-height:110px}
-  #ritual .lines div{opacity:0;transform:translateY(6px);transition:all .7s;font-family:var(--serif);color:var(--mist);font-size:14px;letter-spacing:.22em;margin:10px 0}
-  #ritual .lines div.on{opacity:1;transform:none;color:var(--moon)}
-  #ritual .lines div.done{color:var(--gold-dim)}
-  #ritual .lines div.done::after{content:" ·毕";color:var(--gold);font-size:12px}
+  /* ---------- 已算好盘面的星轨显现 ---------- */
+  #ritual{display:none;text-align:center;padding:16px 0 26px}
   @media(prefers-reduced-motion:reduce){
-    .rot-zodiac,.rot-lodges,.rot-bagua,.tw,.rit-sweep,.rit-orbit,.rit-pulse,.rizhu-chars,.scroll-cue,.deep-rip{animation:none}
-    .rit-draw{animation:none;stroke-dashoffset:0}
+    .rot-zodiac,.rot-lodges,.rot-bagua,.tw,.rizhu-chars,.scroll-cue,.deep-rip{animation:none}
   }
 
   /* ---------- 首屏价值层:是什么 / 两套文化如何分工 / 你会得到什么 ---------- */
@@ -240,9 +230,22 @@
   .aux-block .src-tag{color:var(--mist);border-color:rgba(107,114,128,.5)}
 
   .confirmed-home{display:block}
-  .confirmed-hero{border:1px solid rgba(201,168,92,.22);border-radius:10px;padding:20px 18px;text-align:center;background:linear-gradient(180deg,rgba(201,168,92,.11),rgba(26,34,51,.96))}
-  .confirmed-judgement{width:100%;max-width:20em;margin:0 auto 10px;overflow-wrap:anywhere;color:#f5e8c3;font-family:var(--serif);font-size:clamp(22px,5.8vw,30px);font-weight:700;line-height:1.42}
-  .confirmed-copy{width:100%;max-width:34em;margin:0 auto;overflow-wrap:anywhere;color:#d8dce4;font-size:14px;line-height:1.75;text-align:center}
+  /* 仅更新成语题签；下方正文、节选与书本图标沿用原有阅读排版。 */
+  .confirmed-hero{position:relative;isolation:isolate;border-block:1px solid rgba(201,168,92,.38);padding:32px 12px 30px;text-align:center}
+  .confirmed-hero-art{position:absolute;z-index:-1;inset:0 0 auto;width:100%;height:auto;pointer-events:none;-webkit-mask-image:linear-gradient(#000 65%,transparent);mask-image:linear-gradient(#000 65%,transparent)}
+  .idiom-composition{container-type:inline-size;max-width:28rem;margin:0 auto 26px}
+  .idiom-sources,.confirmed-judgement{display:grid;grid-template-columns:minmax(0,1fr) 1rem minmax(0,1fr);column-gap:1rem;align-items:center}
+  .idiom-sources{margin-bottom:18px;color:var(--gold);font-size:.8125rem;line-height:1.8}
+  .idiom-source{justify-self:center;padding-bottom:4px;border-bottom:1px solid rgba(201,168,92,.35);text-wrap:balance}
+  .idiom-source:last-child{grid-column:3}
+  .confirmed-judgement{width:100%;margin:0;color:#f5e4b6;font-family:"Zhixing Idiom Kai","STKaiti","KaiTi",var(--serif);font-size:clamp(2.5rem,10vw,3.75rem);font-size:min(clamp(2.5rem,10vw,3.75rem),calc((100cqi - 3rem) / 4.3));font-weight:400;font-synthesis:none;line-height:1.2;letter-spacing:0;text-shadow:0 1px 0 rgba(131,107,57,.45)}
+  .idiom-group{display:block;justify-self:center;min-width:0}
+  .idiom-line{display:grid;grid-template-columns:repeat(2,1em);gap:.1em .12em;white-space:nowrap}
+  .idiom-char{display:block}
+  .idiom-divider{display:flex;justify-content:center;align-self:center;min-width:0;color:var(--gold-dim);font-family:var(--serif);font-size:1em;line-height:1;white-space:normal}
+  .is-inked .idiom-char{animation:idiom-ink .85s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--ink-order)*75ms)}
+  @keyframes idiom-ink{0%{opacity:.35;transform:translateY(7px);filter:blur(2px);text-shadow:0 0 0 transparent}55%{opacity:1;filter:blur(0);text-shadow:0 0 18px rgba(246,218,151,.8)}100%{opacity:1;transform:none;filter:none;text-shadow:0 1px 0 #836b39,0 0 18px rgba(201,168,92,.17)}}
+  .confirmed-copy{width:100%;max-width:27em;margin:0 auto;color:#d8dce4;font-size:1rem;line-height:1.95;text-align:center;text-wrap:pretty}
   .confirmed-section{padding:32px 2px;border-top:1px solid rgba(201,168,92,.2)}
   .confirmed-hero+.confirmed-section{margin-top:18px}
   .confirmed-section h3{margin-bottom:16px;color:var(--gold);font-family:var(--serif);font-size:19px;letter-spacing:.06em}
@@ -250,15 +253,54 @@
   .confirmed-subsection h4{margin-bottom:7px;color:var(--moon);font-family:var(--serif);font-size:15px;letter-spacing:.04em}
   .confirmed-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:20px;color:var(--mist);font-size:11px;line-height:1.7}
   .confirmed-meta span:first-child{color:var(--gold-dim)}
-  .confirmed-scenes{display:grid;gap:16px;margin-top:12px}
-  .confirmed-scene{border-left:2px solid rgba(201,168,92,.5);padding-left:14px}
-  .confirmed-scene h4{color:var(--moon);font-family:var(--serif);font-size:15px}
-  .confirmed-scene p{margin-top:4px;color:#cbd1dc;font-size:14px;line-height:1.85;text-align:justify}
+  .confirmed-scenes{display:grid;gap:28px;margin-top:12px;counter-reset:reading-step}
+  .confirmed-scene{position:relative;padding-left:36px;counter-increment:reading-step}
+  .confirmed-scene::before{content:counter(reading-step,decimal-leading-zero);position:absolute;left:0;top:2px;color:var(--gold-dim);font-family:var(--serif);font-size:.8125rem;font-variant-numeric:tabular-nums}
+  .confirmed-scene h4{color:var(--moon);font-family:var(--serif);font-size:1.125rem;line-height:1.6;text-wrap:balance}
+  .confirmed-scene p{margin-top:10px;color:#cbd1dc;font-size:1rem;line-height:1.95;text-align:left;text-wrap:pretty}
   .confirmed-list{display:grid;gap:8px;padding-left:1.2em;color:#d8dce4;font-size:14px;line-height:1.85}
-  .confirmed-overuse{margin:0 -2px;padding:26px 20px;border:1px solid rgba(201,168,92,.24);border-radius:10px;background:rgba(201,168,92,.055)}
+  .reading-preview-content{text-align:left}
+  .reading-preview-questions{display:grid;gap:16px;padding-left:1.5em;color:#d8dce4;font-size:1rem;line-height:1.95;text-align:left}
+  .reading-preview-questions li{padding-left:6px;text-wrap:pretty}
+  .reading-preview-questions li::marker{color:var(--gold-dim);font-variant-numeric:tabular-nums}
+  .reading-preview-note{margin-top:20px;color:var(--mist);font-size:.9375rem;line-height:1.85;text-align:left;text-wrap:pretty}
+  .confirmed-overuse{margin:0;padding:28px 0;border-block:1px solid rgba(201,168,92,.24)}
   .confirmed-overuse-item+.confirmed-overuse-item{margin-top:18px;padding-top:16px;border-top:1px dashed rgba(201,168,92,.2)}
   .confirmed-overuse-item h4{margin-bottom:6px;color:var(--gold-dim);font-family:var(--serif);font-size:14px;letter-spacing:.08em}
-  .confirmed-overuse-item p{color:#d8dce4;font-size:14px;line-height:1.9;text-align:justify}
+  .confirmed-overuse-item p{color:#d8dce4;font-size:1rem;line-height:1.95;text-align:left}
+  .report-preview{margin-top:36px;padding-top:30px;border-top:1px solid rgba(201,168,92,.3)}
+  .reading-kicker{display:flex;align-items:center;gap:10px;color:var(--gold-dim);font-size:.8125rem;letter-spacing:.1em}
+  .reading-icon{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+  .reading-section-heading{display:flex;align-items:center;gap:10px}
+  .report-preview h3{margin:16px 0;color:#f5e8c3;font-family:var(--serif);font-size:clamp(1.5rem,6vw,1.875rem);line-height:1.55;text-wrap:balance}
+  .report-excerpt{color:var(--moon);font-size:1.0625rem;line-height:2;quotes:none;text-wrap:pretty}
+  .report-preview-stage{margin-top:20px;color:#e2c581;font-size:1rem;font-weight:650;line-height:1.7}
+  .report-excerpt strong{color:#f7e2ae;font-weight:650;text-decoration:underline;text-decoration-color:rgba(226,197,129,.5);text-decoration-thickness:1px;text-underline-offset:.24em}
+  .report-preview-source{margin-top:16px;color:var(--mist);font-size:.8125rem;line-height:1.7}
+  .report-offer{margin-top:28px;padding:26px 20px;border:1px solid rgba(201,168,92,.35);border-radius:8px;background:rgba(201,168,92,.045)}
+  .report-offer h4{font-family:var(--serif);font-size:1.25rem;color:var(--moon)}
+  .report-offer p{margin-top:8px;color:#cbd1dc;font-size:.9375rem;line-height:1.85}
+  .report-prepare{margin-top:20px;padding-top:18px;border-top:1px solid rgba(201,168,92,.3);text-align:left}
+  .report-prepare[hidden],.report-prepare label[hidden],.report-login[hidden],#reportPreviewRetry[hidden]{display:none}
+  .report-prepare fieldset{margin:16px 0;padding:0;border:0}
+  .report-prepare legend{color:var(--moon);margin-bottom:8px}
+  .report-prepare label{display:flex;align-items:flex-start;gap:10px;min-height:44px;padding:8px 0;font-size:.9375rem;line-height:1.7;color:var(--moon)}
+  .report-prepare input{flex:none;width:18px;height:18px;margin-top:4px;accent-color:var(--gold)}
+  .report-prepare .prepare-options{display:flex;flex-wrap:wrap;gap:12px 28px}
+  .report-prepare .prepare-options label{align-items:center}
+  .report-login{display:block;margin-top:12px;color:var(--gold)}
+  .report-chapters{display:flex;flex-wrap:wrap;gap:8px 18px;list-style:none;margin:18px 0;color:var(--gold);font-size:.875rem}
+  .report-gift{padding-top:16px;border-top:1px solid rgba(201,168,92,.18)}
+  .report-gift strong{display:block;color:var(--moon);font-weight:600}
+  .report-gift span{display:block;margin-top:8px}
+  .report-offer .btn{width:100%;margin-top:20px;min-height:48px}
+  .report-offer .btn:disabled{opacity:.65;cursor:not-allowed}
+  .report-offer .offer-status{font-size:.8125rem;color:var(--mist);text-align:center}
+  .report-outline{margin-top:18px;border-top:1px solid rgba(201,168,92,.18)}
+  .report-outline summary{min-height:44px;padding:12px 0;color:var(--gold-dim);font-size:.875rem;cursor:pointer}
+  .report-outline summary:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  #localReportPreview .btn{font-size:.8125rem;color:var(--mist)}
+  @media(max-width:359px){.confirmed-hero{padding-inline:0}.idiom-sources,.confirmed-judgement{column-gap:.5rem}.report-offer{padding:22px 16px}}
 
   .btn-row{display:flex;gap:12px;margin-top:22px}
   .btn{flex:1;padding:14px 0;border-radius:999px;cursor:pointer;text-align:center;font-family:var(--serif);font-size:15px;letter-spacing:.2em;text-indent:.2em;border:1px solid var(--gold)}
@@ -272,14 +314,18 @@
   .share-gate-actions .btn{min-width:135px;padding:11px 12px;font-family:var(--sans);font-size:12px;letter-spacing:.04em;text-indent:0}
   .share-gate-actions .btn:disabled{cursor:not-allowed;opacity:.45}
   .share-gate-status{min-height:18px;margin-top:9px;color:var(--gold-dim);font-size:11px;line-height:1.6}
+  .share-gate-status:empty{display:none}
   .share-notice{position:fixed;z-index:70;top:14px;left:50%;width:min(88vw,440px);transform:translateX(-50%);padding:12px 42px 12px 14px;border:1px solid rgba(201,168,92,.35);border-radius:10px;background:rgba(18,24,39,.96);box-shadow:0 12px 40px rgba(0,0,0,.45);color:var(--moon);font-size:13px;line-height:1.6}
   .share-notice button{position:absolute;right:0;top:0;width:44px;height:44px;border:0;background:transparent;color:var(--mist);font-size:20px;cursor:pointer}
   .again{display:block;min-height:44px;width:max-content;margin:8px auto 0;padding:0 8px;border:0;background:transparent;color:var(--mist);font-family:var(--sans);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
   .cta:focus-visible,.btn:focus-visible,.again:focus-visible,.resume-go:focus-visible,.scroll-cue:focus-visible{outline:2px solid #f0d695;outline-offset:4px}
 
-  #posterLayer{display:block;position:fixed;inset:0;z-index:50;background:rgba(8,11,20,.9);overflow:auto;padding:26px 0}
+  #posterLayer{display:block;position:fixed;inset:0;z-index:50;background:#0E1220;overflow:auto;padding:0 0 max(24px,env(safe-area-inset-bottom));overscroll-behavior:contain}
   #posterLayer[hidden]{display:none}
   #posterLayer .inner{max-width:600px;margin:0 auto;padding:0 22px;text-align:center}
+  .poster-header{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;background:#0E1220}
+  .poster-header h2{font-family:var(--serif);font-size:1rem;font-weight:600;color:var(--moon)}
+  .poster-header .btn{flex:none;min-height:44px;padding:8px 14px}
   #posterCanvas{width:100%;border-radius:10px;box-shadow:0 12px 50px rgba(0,0,0,.6)}
   #posterLayer .tip{color:var(--mist);font-size:12px;margin:12px 0}
   .poster-equivalent{margin:14px 0;padding:12px 14px;border:1px solid rgba(201,168,92,.22);border-radius:8px;color:#cbd1dc;font-size:13px;line-height:1.75;text-align:left}
@@ -319,7 +365,13 @@
   body[data-view-state="result"] #introSection,
   body[data-view-state="result"] #resumePanel,
   body[data-view-state="result"] #formCard{display:none!important}
+  /* 放在所有组件规则之后，避免后定义的动画覆盖减少动态偏好。 */
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .rot,.tw,.rit-sweep,.rit-orbit,.rit-pulse,.rizhu-chars,.scroll-cue,.deep-rip,.is-inked .idiom-char{animation:none!important;transition:none!important}
+  }
 </style>
+<link rel="stylesheet" href="./chart-ritual.css?v=d5226c2c3f2e">
 </head>
 <body data-view-state="new" data-new-mode="landing">
 <a class="skip-link" href="#mainContent">跳到主要内容</a>
@@ -472,8 +524,8 @@
     </figure>
     <div class="gets">
       <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>一句古典物象,一句扎心真话——先照见你是哪块料。</p></div></div>
-      <div class="get"><span class="get-n">贰</span><div><h3>深度发展报告</h3><p>四柱结构 · 五行能量 · 性格骨架 · 关系与行动 · 知星时间轴 · 星盘参照／多视角对照 · 今日知星卡。</p></div></div>
-      <div class="get"><span class="get-n">叁</span><div><h3>问星<em>按次付费</em></h3><p>从第一问起按次使用；单次 ¥2.90，三次包 ¥6，首问和追问各计 1 次。</p></div></div>
+      <div class="get"><span class="get-n">贰</span><div><h3>深度发展报告<em>按盘购买</em></h3><p>总览、盘面、关系、行动、时间，五章展开你的双盘合成判断。先读一段，再决定。</p></div></div>
+      <div class="get"><span class="get-n">叁</span><div><h3>赠送1次问星</h3><p>根据你的盘面对知星进行任意提问解读。</p></div></div>
     </div>
     <button class="scroll-cue" id="scrollCue" type="button">↓ 先生成你的日主</button>
   </section>
@@ -491,31 +543,7 @@
     <div class="hint" id="formReadiness">本服务暂不向不满 14 周岁的用户提供。页面不会要求身份证号、详细住址或联系方式来生成基础报告。</div>
   </section>
 
-  <!-- 推算仪式:升级版 -->
-  <section id="ritual">
-    <svg class="rit-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <defs><radialGradient id="rglow" cx="50%" cy="50%">
-        <stop offset="0%" stop-color="#C9A85C" stop-opacity=".4"/><stop offset="70%" stop-color="#C9A85C" stop-opacity="0"/>
-      </radialGradient></defs>
-      <circle cx="100" cy="100" r="96" fill="url(#rglow)"/>
-      <circle class="rit-draw" cx="100" cy="100" r="88" stroke-width="1.4" style="--len:553"/>
-      <circle class="rit-draw" cx="100" cy="100" r="66" stroke-width=".7" opacity=".6" style="--len:415;animation-delay:.5s"/>
-      <circle class="rit-draw" cx="100" cy="100" r="44" stroke-width=".5" opacity=".45" style="--len:277;animation-delay:1s"/>
-      <g id="ritGua" font-size="11" fill="#E8E4D8" text-anchor="middle"></g>
-      <g class="rit-sweep">
-        <line x1="100" y1="100" x2="100" y2="14" stroke="#C9A85C" stroke-width="1.2" opacity=".85"/>
-        <line x1="100" y1="100" x2="100" y2="14" stroke="#C9A85C" stroke-width="5" opacity=".12"/>
-      </g>
-      <g class="rit-orbit"><circle cx="100" cy="34" r="2.4" fill="#E8E4D8" opacity=".9"/></g>
-      <g class="rit-pulse"><circle cx="100" cy="100" r="6" fill="none" stroke="#C9A85C" stroke-width="1"/></g>
-      <circle cx="100" cy="100" r="3" fill="#C9A85C"/>
-    </svg>
-    <div class="lines">
-      <div>正在排定日柱干支……</div>
-      <div>正在定位太阳落宫……</div>
-      <div>正在凝练本命关键词……</div>
-    </div>
-  </section>
+  <section id="ritual" aria-label="图谱生成仪式" hidden></section>
 
   <!-- 结果:日主为主视觉 -->
   <section id="result" role="region" aria-labelledby="resultTitle" tabindex="-1" hidden>
@@ -533,33 +561,72 @@
 
     <div class="confirmed-home" id="confirmedHome" hidden>
       <div class="confirmed-hero">
-        <p class="confirmed-judgement" id="confirmedJudgement"></p>
+        <img class="confirmed-hero-art" src="./media/idiom-star-sea.webp" width="1600" height="901" alt="" aria-hidden="true" loading="lazy" decoding="async">
+        <div class="idiom-composition">
+          <div class="idiom-sources"><p class="idiom-source" id="idiomDayMaster"></p><p class="idiom-source" id="idiomSun"></p></div>
+          <h3 class="confirmed-judgement" id="confirmedJudgement"></h3>
+        </div>
         <p class="confirmed-copy" id="confirmedExplanation"></p>
       </div>
       <section class="confirmed-section confirmed-entry">
-        <h3>三步看懂自己</h3>
+        <h3 class="reading-section-heading"><svg class="reading-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/><circle cx="12" cy="12" r="10"/></svg>三步看懂自己</h3>
         <div class="confirmed-scenes" id="homeSteps"></div>
         <p class="confirmed-meta"><span id="confirmedRelation"></span><span id="confirmedSource"></span></p>
       </section>
       <section class="confirmed-section confirmed-overuse">
-        <h3>你容易卡住的地方</h3>
+        <h3 class="reading-section-heading"><svg class="reading-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>你容易卡住的地方</h3>
         <div id="confirmedOveruse"></div>
       </section>
-      <section class="confirmed-section">
-        <h3>深度报告会继续回答</h3>
-        <ul class="confirmed-list" id="confirmedReportQuestions"></ul>
+      <section class="confirmed-section" id="confirmedReadingPreview" hidden>
+        <h3 id="confirmedReadingPreviewTitle"></h3>
+        <div class="reading-preview-content" id="confirmedReadingPreviewBody"></div>
       </section>
     </div>
 
+    <section class="report-preview" id="reportPreview" aria-labelledby="reportPreviewTitle">
+      <!-- Lucide 0.468.0, ISC; license: ./vendor/lucide-LICENSE.txt -->
+      <p class="reading-kicker"><svg class="reading-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>深度报告 · 节选</p>
+      <p class="report-preview-stage" id="reportPreviewStage"></p>
+      <h3 id="reportPreviewTitle"></h3>
+      <blockquote class="report-excerpt" id="reportPreviewBody"></blockquote>
+      <p class="report-preview-source" id="reportPreviewSource"></p>
+      <div class="report-offer" aria-labelledby="reportOfferTitle">
+        <h4 id="reportOfferTitle">继续读懂你的完整双盘</h4>
+        <p>一次购买，反复阅读。</p>
+        <button class="btn gold" id="reportPurchaseBtn" type="button" disabled aria-describedby="reportOfferStatus">购买完整报告</button>
+        <p class="offer-status" id="reportOfferStatus" role="status" aria-live="polite">购买暂未开放，不会发起扣款。</p>
+        <button class="btn ghost" id="reportPreviewRetry" type="button" hidden>重新读取节选</button>
+        <div class="report-prepare" id="reportPreparePanel" hidden>
+          <h4>确认这份报告的资料</h4>
+          <p id="reportPrepareSummary"></p>
+          <fieldset><legend>这是谁的出生资料？</legend><div class="prepare-options">
+            <label><input type="radio" name="reportSubject" value="self">我本人</label>
+            <label><input type="radio" name="reportSubject" value="other">其他人</label>
+          </div></fieldset>
+          <label id="reportPermissionLabel" hidden><input type="checkbox" id="reportPermission">我已取得资料本人的许可，可以为其生成并保存这份报告。</label>
+          <label><input type="checkbox" id="reportStorageConsent">我同意启用微信账号功能，将上述出生资料发送并保存到我的知星账号，用于报告交付、重复阅读和跨设备恢复。</label>
+          <p>这一步仅确认资料，不会扣款。报告价格和购买条款将在购买前另行确认。</p>
+          <button class="btn gold" id="reportPrepareConfirm" type="button" disabled>确认资料并继续</button>
+          <button class="btn ghost" id="reportPrepareCancel" type="button">暂不保存</button>
+          <a class="report-login" id="reportLoginLink" hidden>前往微信登录</a>
+        </div>
+        <p class="report-gift"><strong>赠送1次问星</strong><span>根据你的盘面对知星进行任意提问解读。</span></p>
+        <details class="report-outline"><summary>查看五章内容</summary>
+          <ul class="report-chapters" aria-label="报告五章"><li>壹 · 总览</li><li>贰 · 盘面</li><li>叁 · 关系</li><li>肆 · 行动</li><li>伍 · 时间</li></ul>
+          <ul class="confirmed-list" id="confirmedReportQuestions"></ul>
+        </details>
+      </div>
+    </section>
+
     <div class="share-gate" id="shareGate" aria-live="polite">
-      <div class="share-gate-head"><span id="shareGateTitle">双盘印证分享卡</span> <span class="share-gate-badge" id="shareGateBadge">可选分享</span></div>
-      <p id="shareGateBody">分享卡只展示八字与太阳星座共同确认的能力，不出现强弱、关系冲突或私人处境。</p>
+      <div class="share-gate-head"><span id="shareGateTitle">日主身份分享卡</span> <span class="share-gate-badge" id="shareGateBadge">可选分享</span></div>
+      <p id="shareGateBody">分享卡使用对应日主的定稿图，不包含出生日期、时间或地点。</p>
       <div class="share-gate-actions" id="shareGateActions">
-        <button class="btn ghost" id="shareActionBtn" type="button">生成我的双盘印证卡</button>
+        <button class="btn ghost" id="shareActionBtn" type="button">生成我的日主身份卡</button>
       </div>
       <div class="share-gate-status" id="shareGateStatus"></div>
     </div>
-    <div class="btn-row" id="localReportPreview"><button class="btn gold" id="deepBtn" type="button">免费查看深度发展报告</button></div>
+    
     <button class="again" id="againBtn" type="button">重新生成一次</button>
     <div class="divider">观 星 台</div>
   </section>
@@ -579,10 +646,10 @@
 <div id="consent"><div class="box" role="dialog" aria-modal="true" aria-labelledby="consentTitle" aria-describedby="consentSummary">
   <h3 id="consentTitle">开始前，先确认资料如何使用</h3>
   <p id="consentSummary">你填写的出生日期、出生时间、出生城市和性别，会用于生成个人文化图谱、基础内容和深度发展报告。未主动保存到账号报告库且未开启个人图谱云端同步时，资料只保存在当前浏览器，用于返回继续查看。</p>
-  <p>本次确认只用于生成图谱和免费报告，不会自动发送给第三方大模型。问星从第一问起按次付费；首次提问前会另行说明发送范围并取得 AI 处理同意。</p>
+  <p>本次确认只用于生成基础图谱和报告预览，不会自动发送给第三方大模型，也不会自动购买。首次问星前会另行说明发送范围并取得 AI 处理同意。</p>
   <p class="privacy-link">提交前请阅读<a href="./privacy.html" target="_blank" rel="noopener">《隐私政策》</a>，了解运营主体、处理范围、保存期限和你的资料权利。</p>
-  <label class="consent-check"><input type="checkbox" id="consentCheck">我已阅读上述说明，同意在当前浏览器处理并保存出生资料，用于生成个人文化图谱和返回查看。</label>
-  <p>产品改进统计默认关闭。你可随时通过页面右下角“隐私选择”撤回问星处理同意，或清除页面可删除的本机知星存储资料。</p>
+  <label class="consent-check"><input type="checkbox" id="consentCheck"><span id="consentCheckText">我已阅读上述说明，同意在当前浏览器处理并保存出生资料，用于生成个人文化图谱和返回查看。</span></label>
+  <p>产品改进统计默认关闭。你可随时通过页尾“隐私选择”撤回问星处理同意，或清除页面可删除的本机知星存储资料。</p>
   <div class="actions">
     <button class="cta" style="margin-top:0" id="consentOk" disabled>同意并继续</button>
     <button class="btn ghost" id="consentCancel">暂不使用</button>
@@ -590,24 +657,28 @@
 </div></div>
 
 <div id="posterLayer" role="dialog" aria-modal="true" aria-labelledby="posterLayerTitle" tabindex="-1" hidden><div class="inner">
-  <h2 id="posterLayerTitle" class="sr-only">双盘印证卡分享预览</h2>
+  <div class="poster-header"><h2 id="posterLayerTitle">日主身份卡分享预览</h2><button class="btn ghost" id="posterClose" type="button">关闭</button></div>
   <canvas id="posterCanvas" width="750" height="1000" role="img" aria-label="根据当前图谱生成的知星分享卡" aria-describedby="posterEquivalent">知星分享卡图片预览</canvas>
   <p class="poster-equivalent" id="posterEquivalent"></p>
-  <div class="tip">分享与保存均为自愿操作，不发放问星次数或其他权益</div>
   <button class="btn gold" style="width:100%;margin-bottom:10px" id="sharePosterBtn" type="button">分享这张卡</button>
   <button class="btn ghost" style="width:100%;margin-bottom:10px" id="savePosterBtn" type="button">仅保存图片</button>
-  <button class="btn ghost" style="width:100%" id="posterClose">关 闭</button>
 </div></div>
 
-<script src="./vendor/qrcode-generator.js"></script>
-<script src="./share-qr.js"></script>
-<script src="./public-config.js"></script>
-<script src="./privacy-consent.js"></script>
-<script src="./analytics.js"></script>
-<script src="./minimum-age.js"></script>
-<script src="./bazi-engine.js"></script>
-<script src="./content-copy-home-v3.js"></script>
-<script src="./content-home-v1.js"></script>
+<script src="./vendor/qrcode-generator.js?v=79ec86f82856"></script>
+<script src="./share-qr.js?v=107fa109a833"></script>
+<script src="./public-config.js?v=8e7f6ace89c0"></script>
+<script src="./privacy-consent.js?v=1babd09d8cad"></script>
+<script src="./analytics.js?v=2986447e1859"></script>
+<script src="./minimum-age.js?v=96cd776ebf44"></script>
+<script src="./member.js?v=4b65c901791f"></script>
+<script src="./paid-reports.js?v=f3214adc938b"></script>
+<script src="./bazi-engine.js?v=fa5cf42481a0"></script>
+<script src="./content-home-v1.js?v=ee4855e88ba1"></script>
+
+
+
+
+<script src="./chart-ritual.js?v=ab2b6c25bb54"></script>
 <script>
 /* ============ 星空背景 ============ */
 (function(){
@@ -707,16 +778,6 @@ const USE_IMAGE_HERO=true;   // ⚠ 底图含太极:合规渠道置 false → �
     hd.appendChild(r);setTimeout(()=>r.remove(),950);
   });
 })();
-(function(){
-  // 仪式盘的八卦(逐个浮现)
-  const rg=document.getElementById('ritGua');
-  GUA.forEach((s,i)=>{const a=(i*45-90)*Math.PI/180,r=55;
-    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('x',100+r*Math.cos(a));t.setAttribute('y',100+r*Math.sin(a)+4);
-    t.setAttribute('class','rit-glyph');t.style.animationDelay=(1.2+i*.22)+'s';
-    t.textContent=s;rg.appendChild(t)});
-})();
-
 /* ============ 确定性计算 ============ */
 const HOME_STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
 const HOME_BRANCHES=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
@@ -751,6 +812,7 @@ function showShareNotice(message){
 }
 $('shareNoticeClose').onclick=()=>$('shareNotice').hidden=true;
 
+let chartRitualRun=null;
 function setViewState(state,{formOnly=false}={}){
   if(!['new','returning','result'].includes(state))throw new Error('invalid view state');
   document.body.dataset.viewState=state;
@@ -758,6 +820,8 @@ function setViewState(state,{formOnly=false}={}){
   $('resumePanel').hidden=state!=='returning';
   $('formCard').hidden=state!=='new';
   if(state!=='result'){
+    if(chartRitualRun){chartRitualRun.cancel();chartRitualRun=null;}
+    $('ritual').hidden=true;
     $('ritual').style.display='none';
     $('result').style.display='none';
     $('result').hidden=true;
@@ -790,6 +854,30 @@ function currentConfirmedInput(){
     city:$('bCity').value,
     gender:$('bGender')?$('bGender').value:''
   };
+}
+
+function currentTabInputRecord(input){
+  const pad=value=>String(value).padStart(2,'0');
+  return {
+    version:1,sourcePath:location.pathname,targetPath:new URL(reportUrl(),location.href).pathname,
+    input:{d:`${input.y}-${pad(input.m)}-${pad(input.d)}`,
+      t:Number.isInteger(input.hh)?`${pad(input.hh)}:${pad(input.mm||0)}`:'',
+      c:input.city||'',g:input.gender||''}
+  };
+}
+
+function currentTabSavedInput(){
+  try{
+    const record=JSON.parse(sessionStorage.getItem('zx_active_input_v1')||'null');
+    const input=record&&record.input;
+    if(record&&record.version===1&&record.sourcePath===location.pathname
+      &&record.targetPath===new URL(reportUrl(),location.href).pathname
+      &&input&&typeof input.d==='string'&&ZxMinimumAge.evaluateMinimumAge(input.d).allowed
+      &&typeof input.t==='string'&&(!input.t||/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(input.t))
+      &&typeof input.c==='string'&&['','男','女','其他'].includes(input.g))return input;
+    sessionStorage.removeItem('zx_active_input_v1');
+  }catch(_){}
+  return null;
 }
 
 function clearBirthTimeError(){
@@ -870,17 +958,16 @@ function reportUrl(){
 
 function renderShareGate(message){
   const provisional=CUR&&CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
-  $('shareGateTitle').textContent='保存这张双盘印证';
+  $('shareGateTitle').textContent='保存这张日主卡';
   $('shareGateBadge').textContent='可选分享';
   $('shareGateBody').textContent=provisional
-    ? '出生时间未填，卡片会明确标注“缺时暂排”；补充准确时间后再生成定稿更稳妥。'
+    ? '出生时间未填，日主按正午暂排；补充准确时间后再生成日主卡更稳妥。'
     : '想留住这次结果，可以生成一张适合保存或转发的图片。';
-  $('shareActionBtn').textContent='生成我的双盘印证卡';
+  $('shareActionBtn').textContent='生成我的日主身份卡';
   $('shareGateActions').hidden=false;
   $('sharePosterBtn').hidden=false;
-  $('localReportPreview').hidden=false;
-  $('deepBtn').textContent='免费查看深度发展报告';
-  $('shareGateStatus').textContent=message||'分享是可选操作，不会发放问星次数，也不影响免费报告查看。';
+  
+  $('shareGateStatus').textContent=message||'';
 }
 
 function posterBlob(){
@@ -893,7 +980,7 @@ function posterBlob(){
 
 function downloadCurrentPoster(){
   const link=document.createElement('a');
-  link.download='知星-双盘印证卡.jpg';
+  link.download='知星-日主身份卡.jpg';
   link.href=$('posterCanvas').toDataURL('image/jpeg',.92);
   document.body.appendChild(link);
   link.click();
@@ -902,10 +989,10 @@ function downloadCurrentPoster(){
 
 async function handoffPoster(status){
   const blob=await posterBlob();
-  const filename='知星-双盘印证卡.jpg';
+  const filename='知星-日主身份卡.jpg';
   const file=blob&&typeof File==='function'?new File([blob],filename,{type:'image/jpeg'}):null;
   const provisional=CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
-  const text=(provisional?'[缺时暂排] ':'')+CUR.dualShare.body;
+  const text=(provisional?'[缺时暂排] ':'')+'这是我的知星日主身份卡：'+CUR.home.dayMaster.label+'。';
   const fileShare={title:'知星',text,files:file?[file]:[]};
   const linkShare={title:'知星',text,url:'https://zhixng.cn/'};
   const shareData=navigator.canShare&&navigator.canShare(fileShare)
@@ -925,11 +1012,11 @@ async function handoffPoster(status){
 async function openCurrentPosterPreview(){
   if(!CUR)return;
   const status=$('shareGateStatus');
-  status.textContent='正在生成双盘印证卡……';
+  status.textContent='正在生成日主身份卡……';
   try{
     await preparePoster();
     openPosterLayer();
-    status.textContent='双盘印证卡已生成。分享或保存均不影响报告和问星次数。';
+    status.textContent='日主身份卡已生成。';
   }catch(error){
     trackEvent('share_failed',{outcome:'failed',reason:'unknown'});
     status.textContent='海报暂时没有准备好，请刷新后重试。';
@@ -943,7 +1030,7 @@ async function sharePreparedPoster(){
   try{
     await handoffPoster(status);
     closePosterLayer();
-    renderShareGate('系统分享已完成；本次分享不会发放问星次数或其他权益。');
+    renderShareGate('系统分享已完成。');
     requestAnimationFrame(()=>$('shareActionBtn').focus());
   }catch(error){
     if(error&&error.name==='AbortError'){
@@ -953,7 +1040,7 @@ async function sharePreparedPoster(){
     }
     if(error&&error.name==='NotSupportedError'){
       trackEvent('share_failed',{outcome:'unavailable',reason:'configuration'});
-      status.textContent='当前浏览器不支持系统分享，你仍可保存图片。报告查看和问星次数不受影响。';
+      status.textContent='当前浏览器不支持系统分享，你仍可保存图片。';
       return;
     }
     trackEvent('share_failed',{outcome:'failed',reason:'unknown'});
@@ -965,12 +1052,12 @@ function savePreparedPoster(){
   if(!CUR)return;
   downloadCurrentPoster();
   trackEvent('poster_saved',{method:'download',outcome:'completed'});
-  $('shareGateStatus').textContent='分享卡已保存；本次保存不会发放问星次数或其他权益。';
+  $('shareGateStatus').textContent='分享卡已保存。';
 }
 
 async function confirmInboundShare(){
   if(!INBOUND_SHARE_TOKEN)return;
-  showShareNotice('分享链接不携带问星次数或解锁权益。你可以直接生成自己的图谱并免费查看深度报告。');
+  showShareNotice('分享链接不携带问星次数或购买权益。你可以生成自己的图谱，先读报告节选。');
 }
 
 /* 下滑引导 → 平滑滚到表单 */
@@ -978,9 +1065,14 @@ const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion
 const preferredScrollBehavior=()=>reduceMotion?'auto':'smooth';
 if($('scrollCue')) $('scrollCue').onclick=showFormDirect;
 
-const LOCAL_REPORT_PREVIEW=location.protocol==='file:'||['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+function privateReportMode(){return !!(window.ZxPaidReports&&ZxPaidReports.isPrivate()) || window.ZX_PRIVATE_REPORT_BUILD===true}
+let privatePreviewConsent=false;
+let privateHomeRevision=0;
+let preparedHomeReport=null;
+let prepareInFlight=false;
+const LOCAL_REPORT_PREVIEW=!privateReportMode()&&(location.protocol==='file:'||['localhost','127.0.0.1','[::1]'].includes(location.hostname));
 const PUBLIC_LEGAL_INTERACTION_READY=true;
-$('localReportPreview').hidden=false;
+
 if(!LOCAL_REPORT_PREVIEW&&!PUBLIC_LEGAL_INTERACTION_READY){
   $('goBtn').disabled=true;
   $('goBtn').textContent='正式交互当前不可用';
@@ -1026,6 +1118,10 @@ function consentFocusable(){
     .filter(element=>!element.hidden&&element.offsetParent!==null);
 }
 function openConsent(){
+  if(privateReportMode()){
+    $('consentSummary').textContent='你填写的出生日期、时间、城市和性别，会在当前浏览器生成基础图谱并保存在本机，便于返回查看；同一组资料会发送到知星服务器，用于生成这张盘的十年解读节选。节选请求不会把资料保存到账号。';
+    $('consentCheckText').textContent='我已阅读上述说明，同意在本机处理并保存出生资料，并将这些资料发送到知星服务器生成报告节选。';
+  }
   $('consentCheck').checked=false;
   $('consentOk').disabled=true;
   $('consentOk').textContent='同意并继续';
@@ -1066,22 +1162,29 @@ $('consent').addEventListener('keydown',event=>{
   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
-let resultTimer=null;
 function startGenerationFromForm(precomputedChart){
   const input=currentConfirmedInput();
   if(!HOME_CONTENT||!window.BaziEngine)throw new Error('content runtime unavailable');
   const chart=precomputedChart||chartForCurrentForm();
   if(!chart)return false;
+  privateHomeRevision++;
+  preparedHomeReport=null;
+  $('reportPreparePanel').hidden=true;
+  $('reportLoginLink').hidden=true;
   const day=chart.pillars.day;
   CUR={
     sign:chart.astro.sun.sign,
     dp:{stem:day.stem,branch:day.branch},
     late:chart.boundaries.some(item=>item.type==='晚子时(日界)'&&item.relation==='after'),
     input,
+    reportInput:{d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:$('bGender')?$('bGender').value:''},
     chart,
     home:HOME_CONTENT.buildHome(chart),
     dualShare:HOME_CONTENT.buildShare(chart)
   };
+  try{sessionStorage.setItem('zx_active_input_v1',JSON.stringify(currentTabInputRecord(chart.input)))}catch(_){}
+  if(chartRitualRun){chartRitualRun.cancel();chartRitualRun=null;}
+  if(document.fonts)document.fonts.load('32px "Zhixing Idiom Brush"',CUR.dualShare.title).catch(()=>{});
   setViewState('result');
   $('result').hidden=true;
   $('result').style.display='none';
@@ -1091,15 +1194,13 @@ function startGenerationFromForm(precomputedChart){
   r.tabIndex=-1;
   r.focus({preventScroll:true});
   r.scrollIntoView({behavior:preferredScrollBehavior(),block:'start'});
-  r.querySelectorAll('.rit-draw').forEach(el=>{el.style.animation='none';void el.offsetWidth;el.style.animation=''});
-  const lines=r.querySelectorAll('.lines div');
-  lines.forEach(line=>line.classList.remove('on','done'));
-  lines.forEach((line,index)=>{
-    setTimeout(()=>line.classList.add('on'),600+index*1500);
-    setTimeout(()=>line.classList.add('done'),600+index*1500+1300);
-  });
-  if(resultTimer)clearTimeout(resultTimer);
-  resultTimer=setTimeout(showResult,600+3*1500+800);
+  if(window.ZhixingChartRitual){
+    chartRitualRun=ZhixingChartRitual.play(r,{
+      dayMaster:CUR.home.dayMaster.label,
+      sunLabel:'太阳'+CUR.sign,
+      onComplete:()=>{chartRitualRun=null;showResult();}
+    });
+  }else showResult();
   return true;
 }
 $('consentOk').onclick=()=>{
@@ -1124,27 +1225,29 @@ $('consentOk').onclick=()=>{
     return;
   }
   closeConsent(false);
+  privatePreviewConsent=privateReportMode();
   startGenerationFromForm(chart);
 };
 
 /* 返回用户:带出上次填写的盘,一键继续,不用重填(设备级;跨设备/会员待账号系统) */
 (function resumeLast(){
   if(!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){setViewState('new');return}
-  let last=null; try{last=JSON.parse(localStorage.getItem('zx_input')||'null')}catch(_){}
+  let last=currentTabSavedInput();
+  if(!last)try{last=JSON.parse(localStorage.getItem('zx_input')||'null')}catch(_){}
   if(!last||!last.d){setViewState('new');return}
   const age=ZxMinimumAge.evaluateMinimumAge(last.d);
   if(!age.valid||!age.allowed){try{localStorage.removeItem('zx_input')}catch(_){}setViewState('new');return}
   if($('bDate')) $('bDate').value=last.d;
-  if($('bTime')&&last.t) $('bTime').value=last.t;
-  if($('bCity')&&last.c) $('bCity').value=last.c;
-  if($('bGender')&&last.g) try{$('bGender').value=last.g}catch(_){}
+  if($('bTime')) $('bTime').value=last.t||'';
+  if($('bCity')) $('bCity').value=last.c||'';
+  if($('bGender')) try{$('bGender').value=last.g||''}catch(_){}
   $('resumeSummary').textContent=last.d+(last.t?' · '+last.t:'')+(last.c?' · '+last.c:'');
   setViewState('returning');
 })();
 
 $('resumeContinueBtn').onclick=()=>{
   if(!validateBirthDate()){showFormDirect();return}
-  if(!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){
+  if(privateReportMode()||!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){
     setViewState('new',{formOnly:true});
     openConsent();
     return;
@@ -1162,21 +1265,95 @@ function replaceTextList(id,items){
   }));
 }
 
+let idiomRevealObserver=null;
+function revealIdiomWhenVisible(){
+  const title=$('confirmedJudgement');
+  if(idiomRevealObserver)idiomRevealObserver.disconnect();
+  title.classList.remove('is-inked');
+  if(reduceMotion||typeof IntersectionObserver!=='function')return;
+  idiomRevealObserver=new IntersectionObserver(entries=>{
+    if(entries.some(entry=>entry.isIntersecting)){
+      title.classList.add('is-inked');
+      idiomRevealObserver.disconnect();
+    }
+  },{threshold:.5});
+  idiomRevealObserver.observe(title);
+}
+
+// Keep approved wording intact while giving each question its own reading row.
+function renderReadingPreview(body){
+  const container=$('confirmedReadingPreviewBody');
+  container.replaceChildren();
+  const parts=String(body||'').match(/[^？?]+[？?]|[^？?]+$/g)||[];
+  let questions=null;
+  for(const part of parts){
+    const text=part.trim();
+    if(!text)continue;
+    if(/[？?]$/.test(text)){
+      if(!questions){
+        questions=document.createElement('ol');
+        questions.className='reading-preview-questions';
+        container.append(questions);
+      }
+      const item=document.createElement('li');
+      item.textContent=text;
+      questions.append(item);
+    }else{
+      const note=document.createElement('p');
+      note.className='reading-preview-note';
+      note.textContent=text;
+      container.append(note);
+      questions=null;
+    }
+  }
+}
+
 function renderContentHome(){
   const home=CUR.home;
+  let reviewedHome=null;
+  let showReadingPreview=false;
+  const publicReviewed=typeof HOME_CONTENT.publicReviewedHome==='function' ? HOME_CONTENT.publicReviewedHome(CUR.chart) : null;
+  if(publicReviewed && home.source===publicReviewed.overviewSource){
+    reviewedHome=publicReviewed.home;
+    showReadingPreview=publicReviewed.showReadingPreview===true;
+  }
+  
   const share=CUR.dualShare;
   $('rzChars').textContent=home.dayMaster.label;
   $('rzImage').textContent=home.dayMaster.image;
   $('homeIdentity').textContent=home.identity;
+  const titleSources=home.source.split('｜');
+  $('idiomDayMaster').textContent=titleSources[0]||('日主·'+home.dayMaster.label);
+  $('idiomSun').textContent=titleSources[1]||'';
   $('confirmedJudgement').textContent=share.title;
+  // 只设计题签排版，不改变已确认的成语、标点和可读文本。
+  const idioms=share.title.split(' · ');
+  $('confirmedJudgement').setAttribute('aria-label',share.title);
+  if(idioms.length===2){
+    let inkOrder=0;
+    $('confirmedJudgement').replaceChildren(...idioms.flatMap((text,index)=>{
+      const phrase=document.createElement('span');phrase.className='idiom-line';phrase.setAttribute('aria-hidden','true');
+      for(const character of text){
+        const glyph=document.createElement('span');glyph.className='idiom-char';glyph.textContent=character;
+        glyph.style.setProperty('--ink-order',inkOrder++);phrase.append(glyph);
+      }
+      const group=document.createElement('span');group.className='idiom-group';group.append(phrase);
+      if(index===0)return [group];
+      const divider=document.createElement('span');divider.className='idiom-divider';divider.textContent=' · ';
+      divider.setAttribute('aria-hidden','true');
+      return [divider,group];
+    }));
+  }
+  revealIdiomWhenVisible();
   $('confirmedExplanation').textContent=share.body;
   $('confirmedRelation').textContent=`双盘关系 · ${home.fusionType}`;
   $('confirmedSource').textContent=home.source;
-  $('homeSteps').replaceChildren(...home.steps.map(scene=>{
+  $('homeSteps').replaceChildren(...home.steps.map((scene,index)=>{
     const article=document.createElement('article');
     article.className='confirmed-scene';
     const title=document.createElement('h4');
-    title.textContent=scene.title;
+    title.textContent=reviewedHome && index===0 ? reviewedHome.stepTitle
+      : reviewedHome && index===2 ? reviewedHome.combinationTitle : scene.title;
     const body=document.createElement('p');
     body.textContent=scene.body;
     article.append(title,body);
@@ -1199,7 +1376,166 @@ function renderContentHome(){
     return item;
   }));
   replaceTextList('confirmedReportQuestions',home.reportQuestions);
+  $('confirmedReadingPreview').hidden=!showReadingPreview;
+  $('confirmedReadingPreviewTitle').textContent=showReadingPreview ? reviewedHome.reportPreview.title : '';
+  renderReadingPreview(showReadingPreview ? reviewedHome.reportPreview.body : '');
+  if(privateReportMode()){
+    loadPrivateHomePreview();
+    return;
+  }
+  
 }
+
+function renderHomeReportExcerpt(excerpt){
+  $('reportPreview').hidden=!excerpt;
+  $('reportPreviewStage').textContent=excerpt ? excerpt.stage : '';
+  $('reportPreviewTitle').textContent=excerpt ? excerpt.title : '';
+  $('reportPreviewBody').replaceChildren();
+  $('reportPreviewSource').textContent='';
+  if(excerpt){
+    const paragraph=$('reportPreviewBody');
+    const emphasis=typeof excerpt.bold==='string' ? excerpt.bold : '';
+    const position=emphasis ? excerpt.body.indexOf(emphasis) : -1;
+    if(position<0) paragraph.textContent=excerpt.body;
+    else{
+      const strong=document.createElement('strong');
+      strong.textContent=emphasis;
+      paragraph.append(document.createTextNode(excerpt.body.slice(0,position)),strong,
+        document.createTextNode(excerpt.body.slice(position+emphasis.length)));
+    }
+    $('reportPreviewSource').textContent='节选自「'+excerpt.chapter+'」｜'+excerpt.source;
+  }
+}
+
+async function loadPrivateHomePreview(){
+  if(!privateReportMode()||!CUR)return;
+  const target=CUR, revision=++privateHomeRevision;
+  renderHomeReportExcerpt(null);
+  $('reportPreview').hidden=false;
+  $('reportPreviewTitle').textContent='正在读取这张盘的十年解读';
+  $('reportOfferStatus').textContent='报告节选读取中，请稍候。';
+  $('reportPurchaseBtn').disabled=true;
+  $('reportPurchaseBtn').textContent='查看购买信息';
+  $('reportPreviewRetry').hidden=true;
+  try{
+    if(!privatePreviewConsent||!window.ZxPaidReports)throw new Error('REPORT_PREVIEW_CONSENT_REQUIRED');
+    const preview=await ZxPaidReports.preview(target.reportInput,{transferConfirmed:true});
+    if(CUR!==target||revision!==privateHomeRevision)return;
+    const excerpt=preview&&preview.excerpt;
+    if(!excerpt){
+      $('reportPreviewTitle').textContent='补充资料后查看十年解读';
+      const missing=preview&&preview.missingCriticalInput||[];
+      $('reportPreviewBody').textContent=missing.includes('birth_time')&&missing.includes('gender')
+        ?'请补充出生时间与性别，才能生成对应的时间解读。'
+        :missing.includes('birth_time')?'请补充出生时间，才能生成对应的时间解读。'
+        :missing.includes('gender')?'请补充性别，才能生成对应的时间解读。':'这组资料暂时没有可用的十年节选，请核对资料后重试。';
+      $('reportOfferStatus').textContent='请返回资料表单补充后再继续。';
+      return;
+    }
+    if(typeof excerpt.body!=='string'||typeof excerpt.title!=='string'||typeof excerpt.source!=='string')throw new Error('REPORT_PREVIEW_INVALID');
+    renderHomeReportExcerpt(excerpt);
+    $('reportPurchaseBtn').disabled=false;
+    $('reportOfferStatus').textContent='先确认这份报告的资料，再查看购买信息；这一步不会扣款。';
+  }catch(error){
+    if(CUR!==target||revision!==privateHomeRevision)return;
+    $('reportPreviewTitle').textContent='报告节选暂时无法读取';
+    $('reportPreviewBody').textContent='基础图谱已保留，请稍后重新读取这张盘的节选。';
+    $('reportOfferStatus').textContent='购买暂未开放，不会发起扣款。';
+    $('reportPreviewRetry').hidden=false;
+  }
+}
+
+$('reportPreviewRetry').onclick=()=>loadPrivateHomePreview();
+function resetReportPrepare(){
+  document.querySelectorAll('input[name="reportSubject"]').forEach(node=>{node.checked=false});
+  $('reportStorageConsent').checked=false;
+  $('reportPermission').checked=false;
+  $('reportPermissionLabel').hidden=true;
+  $('reportPrepareConfirm').disabled=true;
+  $('reportLoginLink').hidden=true;
+}
+function syncReportPrepare(){
+  const selected=document.querySelector('input[name="reportSubject"]:checked');
+  document.querySelectorAll('#reportPreparePanel input').forEach(node=>{node.disabled=prepareInFlight});
+  $('reportPrepareCancel').disabled=prepareInFlight;
+  $('reportPermissionLabel').hidden=!selected||selected.value!=='other';
+  $('reportPrepareConfirm').disabled=prepareInFlight||!selected||!$('reportStorageConsent').checked
+    ||(selected.value==='other'&&!$('reportPermission').checked);
+}
+document.querySelectorAll('#reportPreparePanel input').forEach(node=>node.addEventListener('change',syncReportPrepare));
+$('reportPurchaseBtn').onclick=()=>{
+  if(!privateReportMode()||!CUR||!window.ZxPaidReports)return;
+  if(preparedHomeReport){
+    if(preparedHomeReport.entitlement_status==='active')location.href=ZxPaidReports.reportUrl(preparedHomeReport.report_id);
+    else ZxPaidReports.checkoutReport(preparedHomeReport.report_id);
+    return;
+  }
+  resetReportPrepare();
+  $('reportPrepareSummary').textContent=[CUR.reportInput.d,CUR.reportInput.t,CUR.reportInput.c,CUR.reportInput.g].filter(Boolean).join(' · ');
+  $('reportPreparePanel').hidden=false;
+  document.querySelector('input[name="reportSubject"]').focus();
+};
+$('reportPrepareCancel').onclick=()=>{
+  $('reportPreparePanel').hidden=true;
+  resetReportPrepare();
+  $('reportPurchaseBtn').focus();
+};
+$('reportPrepareConfirm').onclick=async()=>{
+  const selected=document.querySelector('input[name="reportSubject"]:checked');
+  if(prepareInFlight||!privateReportMode()||!CUR||!selected||!$('reportStorageConsent').checked
+    ||(selected.value==='other'&&!$('reportPermission').checked))return;
+  const current=CUR,revision=privateHomeRevision;
+  prepareInFlight=true;
+  syncReportPrepare();
+  try{
+    ZxPrivacyConsent.grant(['device_account']);
+    await zxMember.start();
+    if(CUR!==current||revision!==privateHomeRevision)return;
+    if(!zxMember.authenticated()){
+      $('reportOfferStatus').textContent='请先完成微信登录，再返回这里确认并保存报告资料。';
+      $('reportLoginLink').href=ZxPaidReports.loginUrl();
+      $('reportLoginLink').hidden=false;
+      return;
+    }
+    const result=await ZxPaidReports.prepare(current.reportInput,{transferConfirmed:true,storageConfirmed:true,
+      subjectIsSelf:selected.value==='self',permissionConfirmed:selected.value==='other'&&$('reportPermission').checked});
+    if(CUR!==current||revision!==privateHomeRevision)return;
+    if(!result||!/^[a-f0-9]{48}$/.test(result.report_id||''))throw new Error('REPORT_PREPARATION_INVALID');
+    preparedHomeReport=result;
+    if(result.preview&&result.preview.excerpt)renderHomeReportExcerpt(result.preview.excerpt);
+    $('reportPreparePanel').hidden=true;
+    if(result.entitlement_status==='active'){
+      $('reportPurchaseBtn').textContent=result.delivery_status==='ready'?'继续阅读完整报告':'查看报告交付进度';
+      $('reportPurchaseBtn').disabled=false;
+      $('reportOfferStatus').textContent='这份报告已购买，无需重复付款。';
+    }else{
+      const price=ZxPaidReports.priceLabel(result.purchase);
+      const purchaseAvailable=!!price&&result.purchase.available===true&&ZxPaidReports.purchaseReady();
+      $('reportPurchaseBtn').textContent='购买完整报告'+(price?' · '+price:'');
+      $('reportPurchaseBtn').disabled=!purchaseAvailable;
+      $('reportOfferStatus').textContent=purchaseAvailable?'资料已确认，请在购买页核对条款后再支付。'
+        :'资料已保存，'+(price?'完整报告售价'+price+'；':'')+'购买暂未开放，不会发起扣款。';
+    }
+  }catch(error){
+    if(CUR!==current||revision!==privateHomeRevision)return;
+    $('reportOfferStatus').textContent=error&&error.status===401?'登录已失效，请重新登录后再确认资料。':'报告资料暂未确认成功，请稍后重试；不会发起扣款。';
+  }finally{
+    prepareInFlight=false;
+    syncReportPrepare();
+  }
+};
+window.addEventListener('zx-private-session-cleared',()=>{
+  if(!privateReportMode())return;
+  privateHomeRevision++;
+  preparedHomeReport=null;
+  $('reportPreparePanel').hidden=true;
+  resetReportPrepare();
+  if(CUR){
+    $('reportPurchaseBtn').textContent='查看购买信息';
+    $('reportPurchaseBtn').disabled=!$('reportPreviewSource').textContent;
+    $('reportOfferStatus').textContent='登录状态已清除，请重新登录并确认这份报告的资料。';
+  }
+});
 
 function renderResultPrecision(){
   const box=$('resultPrecision');
@@ -1232,16 +1568,17 @@ function showResult(){
 }
 
 $('againBtn').onclick=()=>{
+  privateHomeRevision++;
+  privatePreviewConsent=false;
+  preparedHomeReport=null;
   CUR=null;
   showFormDirect();
 };
 
-/* ============ 深度报告入口：免费查看，不以分享作为前置条件 ============ */
-$('deepBtn').onclick=()=>{
-  location.href=reportUrl();   // 出生信息也已存 localStorage(zx_input)兜底
-};
+/* ============ 本机审核入口：不是购买权益，也不作为公开付费校验 ============ */
 
-/* ============ 分享卡：所有组合统一使用双盘印证卡 ============ */
+
+/* ============ 分享卡：恢复十张已确认日主身份卡 ============ */
 let posterReturnFocus=null;
 let posterPreviousOverflow='';
 function posterFocusable(){
@@ -1254,7 +1591,10 @@ function openPosterLayer(){
   $('posterLayer').hidden=false;
   document.body.style.overflow='hidden';
   setModalBackgroundInert(true);
-  requestAnimationFrame(()=>$('sharePosterBtn').focus());
+  requestAnimationFrame(()=>{
+    $('posterLayer').scrollTop=0;
+    $('posterClose').focus({preventScroll:true});
+  });
 }
 function closePosterLayer(){
   $('posterLayer').hidden=true;
@@ -1277,81 +1617,72 @@ $('sharePosterBtn').onclick=sharePreparedPoster;
 $('savePosterBtn').onclick=savePreparedPoster;
 confirmInboundShare();
 
+/* 视觉只认 2026-07-10 审核通过的十张日主身份卡；Canvas 仅负责导出与官网二维码，不再生成另一套卡面。 */
+const DAY_MASTER_CARD_FILES={
+  甲:'day-master-jia-wood.webp',乙:'day-master-yi-wood.webp',丙:'day-master-bing-fire.webp',丁:'day-master-ding-fire.webp',
+  戊:'day-master-wu-earth.webp',己:'day-master-ji-earth.webp',庚:'day-master-geng-metal.webp',辛:'day-master-xin-metal.webp',
+  壬:'day-master-ren-water.webp',癸:'day-master-gui-water.webp'
+};
+const DAY_MASTER_ASSET_ROOT=/\/web\/[^/]*$/.test(location.pathname)?'../v1/img/share/day-master/':'./img/share/day-master/';
+const DAY_MASTER_IMAGES=new Map();
+function loadDayMasterPosterImage(stem){
+  const file=DAY_MASTER_CARD_FILES[stem];
+  if(!file)return Promise.reject(new Error('missing day-master asset mapping'));
+  if(DAY_MASTER_IMAGES.has(stem))return DAY_MASTER_IMAGES.get(stem);
+  const pending=new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.decoding='async';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('day-master poster unavailable'));
+    img.src=DAY_MASTER_ASSET_ROOT+file;
+  });
+  DAY_MASTER_IMAGES.set(stem,pending);
+  pending.catch(()=>DAY_MASTER_IMAGES.delete(stem));
+  return pending;
+}
 async function preparePoster(){
   if(!CUR)throw new Error('missing chart');
-  drawDualChartCard();
+  const current=CUR,stem=current.chart.dayMaster.stem;
+  const img=await loadDayMasterPosterImage(stem);
+  if(CUR!==current)throw new Error('chart changed while loading poster');
+  drawDayMasterPosterAsset(img);
   const c=$('posterCanvas');
-  c.dataset.assetId=`${CUR.dp.stem}-${CUR.sign}`;
-  c.dataset.renderMode='dual-chart';
+  c.dataset.assetId=stem;
+  c.dataset.renderMode='asset';
   c.dataset.qrMode='official';
   c.dataset.shareLinkMode='none';
-  $('posterLayerTitle').textContent='双盘印证卡分享预览';
-  $('sharePosterBtn').textContent='分享这张双盘印证卡';
-  return 'dual-chart';
+  $('posterLayerTitle').textContent='日主身份卡分享预览';
+  $('sharePosterBtn').textContent='分享这张日主身份卡';
+  return 'asset';
 }
-function canvasWrappedText(context,text,x,y,maxWidth,lineHeight){
-  let line='';
-  let currentY=y;
-  for(const char of Array.from(text)){
-    const next=line+char;
-    if(line&&context.measureText(next).width>maxWidth){
-      context.fillText(line,x,currentY);
-      line=char;
-      currentY+=lineHeight;
-    }else{
-      line=next;
-    }
-  }
-  if(line){context.fillText(line,x,currentY);currentY+=lineHeight}
-  return currentY;
-}
-function drawDualChartCard(){
-  const share=CUR.dualShare;
-  const provisional=CUR.chart&&CUR.chart.meta&&CUR.chart.meta.inputPrecision&&CUR.chart.meta.inputPrecision.birthTime==='missing';
+function drawDayMasterPosterAsset(img){
   const c=$('posterCanvas'),x=c.getContext('2d');
-  const W=750,H=1000;
+  const W=img.naturalWidth||750,H=img.naturalHeight||1333,scale=W/750;
   c.width=W;c.height=H;
-  const background=x.createLinearGradient(0,0,W,H);
-  background.addColorStop(0,'#0b1324');
-  background.addColorStop(.54,'#18233a');
-  background.addColorStop(1,'#08111d');
-  x.fillStyle=background;x.fillRect(0,0,W,H);
+  x.clearRect(0,0,W,H);
+  x.drawImage(img,0,0,W,H);
 
-  const glow=x.createRadialGradient(W*.5,H*.3,20,W*.5,H*.3,360);
-  glow.addColorStop(0,'rgba(201,168,92,.2)');
-  glow.addColorStop(1,'rgba(201,168,92,0)');
-  x.fillStyle=glow;x.fillRect(0,0,W,H);
-  x.strokeStyle='rgba(201,168,92,.72)';x.lineWidth=2;x.strokeRect(34,34,W-68,H-68);
-  x.strokeStyle='rgba(201,168,92,.2)';x.lineWidth=1;x.strokeRect(48,48,W-96,H-96);
+  // 定稿源图保留主体视觉；导出时覆盖旧公开品牌，统一为当前知星名称与说明语。
+  const brandTop=Math.round(H*.862),brandHeight=Math.round(H*.105);
+  const brandCover=x.createLinearGradient(0,brandTop,0,brandTop+brandHeight);
+  brandCover.addColorStop(0,'rgba(4,10,17,.82)');
+  brandCover.addColorStop(.16,'rgba(4,10,17,1)');
+  brandCover.addColorStop(1,'rgba(4,10,17,1)');
+  x.fillStyle=brandCover;x.fillRect(Math.round(W*.045),brandTop,Math.round(W*.70),brandHeight);
+  x.textAlign='left';x.fillStyle='#d7b766';x.font=`700 ${Math.round(22*scale)}px "Songti SC","STSong",serif`;
+  x.fillText('知 星',Math.round(W*.17),brandTop+Math.round(48*scale));
+  x.fillStyle='rgba(232,228,216,.84)';x.font=`${Math.round(13*scale)}px "Songti SC","STSong",serif`;
+  x.fillText('以易理观己，以星盘为证',Math.round(W*.17),brandTop+Math.round(77*scale));
 
-  x.textAlign='center';
-  x.fillStyle='#c9a85c';x.font='18px "Songti SC","STSong",serif';
-  x.fillText('知 星 · 双 盘 印 证',W/2,108);
-  x.fillStyle='#f4e7bf';x.font='700 42px "Songti SC","STSong",serif';
-  const identity=share.identity+(provisional?' · 缺时暂排':'');
-  x.fillText(share.identity,W/2,provisional?195:210);
-  if(provisional){x.fillStyle='#c9a85c';x.font='20px "Songti SC","STSong",serif';x.fillText('缺 时 暂 排',W/2,242)}
-  x.fillStyle='#d7b766';x.font='700 54px "Songti SC","STSong",serif';
-  x.fillText(share.title,W/2,312);
-  x.strokeStyle='rgba(201,168,92,.48)';x.beginPath();x.moveTo(190,350);x.lineTo(560,350);x.stroke();
-
-  x.textAlign='left';x.fillStyle='rgba(232,228,216,.94)';x.font='28px "Songti SC","STSong",serif';
-  canvasWrappedText(x,share.body,105,430,540,52);
-  x.fillStyle='rgba(232,228,216,.68)';x.font='20px "PingFang SC","Microsoft YaHei",sans-serif';
-  const source=share.source+(provisional?' · 出生时间未填，日主暂排':'');
-  canvasWrappedText(x,source,105,650,540,36);
-
-  x.fillStyle='#d7b766';x.font='700 24px "Songti SC","STSong",serif';
-  x.fillText('知 星',105,884);
-  x.fillStyle='rgba(232,228,216,.8)';x.font='16px "Songti SC","STSong",serif';
-  x.fillText('以易理观己，以星盘为证',105,918);
+  // 卡面不再叠加日柱、星座、来源或额外说明；仅在既定右下角绘制与品牌标识同量级的官网入口码。
   if(!window.ZxShareQr)throw new Error('share qr unavailable');
-  const qr=window.ZxShareQr.drawOfficial(x,{x:574,y:832,size:100,quietZone:4});
-  x.strokeStyle='#C9A85C';x.lineWidth=2;
-  x.strokeRect(qr.left-2,qr.top-2,qr.actualSize+4,qr.actualSize+4);
-
-  c.setAttribute('aria-label',`知星双盘印证卡：${identity}，${share.title}`);
-  $('posterEquivalent').textContent=`${identity}。${share.title}。${share.body} ${source}。卡片右下角为知星官网入口二维码。`;
+  const qrSize=Math.round(W*.116),qrX=Math.round(W*.755),qrY=H-qrSize-Math.round(H*.048);
+  const qr=window.ZxShareQr.drawOfficial(x,{x:qrX,y:qrY,size:qrSize,quietZone:2});
+  x.strokeStyle='#C9A85C';x.lineWidth=Math.max(1,Math.round(2*scale));
+  x.strokeRect(qr.left-x.lineWidth,qr.top-x.lineWidth,qr.actualSize+x.lineWidth*2,qr.actualSize+x.lineWidth*2);
+  const identity=CUR.home.dayMaster;
+  c.setAttribute('aria-label',`知星日主身份卡：${identity.label}，${identity.image}`);
+  $('posterEquivalent').textContent=`日主 ${identity.label}，${identity.image}。卡片右下角为知星官网入口二维码。`;
 }
 </script>
 </body>
