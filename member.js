@@ -555,6 +555,18 @@
     if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
     return freshAccessToken().then(function () { return api(path, options); });
   }
+  function privateReportMutation(path, options) {
+    if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));
+    if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
+    var owner = state.accountRef;
+    if (!state.authenticated || state.identityKind !== 'wechat' || !owner) return Promise.reject(reportClientError('WECHAT_AUTHENTICATION_REQUIRED'));
+    function sameOwner() { if (!state.authenticated || state.accountRef !== owner) throw reportClientError('REPORT_ACCOUNT_CHANGED'); }
+    return freshAccessToken().then(function () {
+      sameOwner();
+      // Never replay an irreversible confirmation under a newly refreshed owner.
+      return api(path, Object.assign({}, options, {noSessionRetry:true}));
+    }).then(function (result) { sameOwner(); return result; });
+  }
   function checkedReportInput(input) {
     if (!input || typeof input !== 'object' || Array.isArray(input) ||
         Object.keys(input).some(function (key) { return !['d','t','c','g'].includes(key); })) throw reportClientError('REPORT_REQUEST_INVALID');
@@ -721,6 +733,22 @@
       return privateReportApi('/paid-reports/' + checkedPaidReportId(id) + (view === 'status' ? '?view=status' : ''));
     },
     paidReportRetry: function (id) { return privateReportApi('/paid-reports/' + checkedPaidReportId(id) + '/retry', {method:'POST',body:{}}); },
+    paidReportDelete: function (id, confirmation) {
+      if (!confirmation || confirmation.confirmed !== true) return Promise.reject(reportClientError('REPORT_DELETE_CONFIRMATION_REQUIRED'));
+      return privateReportMutation('/paid-reports/' + checkedPaidReportId(id), {method:'DELETE',body:{confirmed:true}});
+    },
+    paidReportCorrect: function (id, input, confirmation, idempotencyKey) {
+      confirmation = confirmation || {};
+      if (confirmation.transferConfirmed !== true) return Promise.reject(reportClientError('REPORT_TRANSFER_CONFIRMATION_REQUIRED'));
+      if (confirmation.storageConfirmed !== true) return Promise.reject(reportClientError('REPORT_STORAGE_CONFIRMATION_REQUIRED'));
+      if (typeof confirmation.subjectIsSelf !== 'boolean' || (!confirmation.subjectIsSelf && confirmation.permissionConfirmed !== true)) return Promise.reject(reportClientError('REPORT_SUBJECT_PERMISSION_REQUIRED'));
+      if (confirmation.discardPreviousConfirmed !== true) return Promise.reject(reportClientError('REPORT_CORRECTION_CONFIRMATION_REQUIRED'));
+      if (typeof idempotencyKey !== 'string' || !/^[a-z0-9._:-]{16,128}$/i.test(idempotencyKey)) return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
+      return privateReportMutation('/paid-reports/' + checkedPaidReportId(id) + '/correct', {method:'POST',headers:{'Idempotency-Key':idempotencyKey},
+        body:{input:checkedReportInput(input),transfer_confirmed:true,storage_confirmed:true,subject_is_self:confirmation.subjectIsSelf,
+          permission_confirmed:confirmation.permissionConfirmed===true,discard_previous_confirmed:true}});
+    },
+    accountClosure: function () { return privateReportApi('/account/closure'); },
     paidReportProducts: function (id, kind) {
       if (kind !== undefined && kind !== 'report' && kind !== 'ask') return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
       return privateReportApi('/' + (kind === 'ask' ? 'ask' : 'report') + '/products?report_id=' + checkedPaidReportId(id));
@@ -740,8 +768,17 @@
     deepHistory: function () { return api('/deep/history'); },
     deleteDeepAnswer: function (id) { return api('/deep/history/' + encodeURIComponent(id), { method: 'DELETE' }); },
     clearDeepHistory: function () { return api('/deep/history', { method: 'DELETE' }); },
-    deleteAccount: function () {
-      return api('/account', { method: 'DELETE' }).then(function (result) {
+    deleteAccount: function (confirmation) {
+      var privateMode = privateReportsPage();
+      var closureOwner = state.accountRef;
+      if (privateMode && (!confirmation || confirmation.confirmed !== true || confirmation.refundBeforeDelete !== true || confirmation.irreversibleConfirmed !== true)) {
+        return Promise.reject(reportClientError('ACCOUNT_CLOSURE_CONFIRMATION_REQUIRED'));
+      }
+      var request = privateMode ? privateReportMutation('/account', {method:'DELETE',body:{confirmed:true,refund_before_delete:true,irreversible_confirmed:true}}) : api('/account', {method:'DELETE'});
+      return request.then(function (result) {
+        if (privateMode && (!closureOwner || !state.authenticated || state.accountRef !== closureOwner)) throw reportClientError('REPORT_ACCOUNT_CHANGED');
+        if (privateMode && result.status === 'closure_pending') return result;
+        if (privateMode && (result.status !== 'completed' || result.ok !== true || result.recoverable !== false)) throw reportClientError('ACCOUNT_CLOSURE_RESPONSE_INVALID');
         clearPaidAskSessionState();
         blockAutomaticOauth();
         clearTokens();

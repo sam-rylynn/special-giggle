@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-0hXTPiO4vimaS8wNDhbjJEd49eLYKNsVtp/JbWgla+w='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-6xda5SjFkcs+CNgEtJ2P8e/qS7Im0JhNZ+Cx6bzHGxs='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -577,9 +577,17 @@
         <h3 class="reading-section-heading"><svg class="reading-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>你容易卡住的地方</h3>
         <div id="confirmedOveruse"></div>
       </section>
-      <section class="confirmed-section" id="confirmedReadingPreview" hidden>
-        <h3 id="confirmedReadingPreviewTitle"></h3>
-        <div class="reading-preview-content" id="confirmedReadingPreviewBody"></div>
+      <section class="confirmed-section" id="confirmedReadingPreview" aria-labelledby="confirmedReadingPreviewTitle">
+        <h3 id="confirmedReadingPreviewTitle">这份报告，能帮你看清什么？</h3>
+        <div class="reading-preview-content" id="confirmedReadingPreviewBody">
+          <ol class="reading-preview-questions">
+            <li>你的优势到底在哪，怎样用才不白费力气？</li>
+            <li>为什么有些关系越在乎，反而越累？</li>
+            <li>想做的事那么多，现在最值得先抓住哪一件？</li>
+            <li>今明两年该把力气放在哪，未来十年要提前准备什么？</li>
+          </ol>
+          <p class="reading-preview-note">结合你的八字与星盘，看清原因，也找到可以试着去做的具体建议。</p>
+        </div>
       </section>
     </div>
 
@@ -613,7 +621,6 @@
         <p class="report-gift"><strong>赠送1次问星</strong><span>根据你的盘面对知星进行任意提问解读。</span></p>
         <details class="report-outline"><summary>查看五章内容</summary>
           <ul class="report-chapters" aria-label="报告五章"><li>壹 · 总览</li><li>贰 · 盘面</li><li>叁 · 关系</li><li>肆 · 行动</li><li>伍 · 时间</li></ul>
-          <ul class="confirmed-list" id="confirmedReportQuestions"></ul>
         </details>
       </div>
     </section>
@@ -670,10 +677,11 @@
 <script src="./privacy-consent.js?v=1babd09d8cad"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
-<script src="./member.js?v=4b65c901791f"></script>
-<script src="./paid-reports.js?v=f3214adc938b"></script>
+<script src="./member.js?v=822fa4b43abd"></script>
+<script src="./paid-reports.js?v=b61fa1de0fb7"></script>
 <script src="./bazi-engine.js?v=fa5cf42481a0"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
+<script src="./home-decade-preview.js?v=964f74f5a801"></script>
 
 
 
@@ -860,6 +868,7 @@ function currentTabInputRecord(input){
   const pad=value=>String(value).padStart(2,'0');
   return {
     version:1,sourcePath:location.pathname,targetPath:new URL(reportUrl(),location.href).pathname,
+    ...(privateReportMode()?{createdAt:Date.now()}:{}),
     input:{d:`${input.y}-${pad(input.m)}-${pad(input.d)}`,
       t:Number.isInteger(input.hh)?`${pad(input.hh)}:${pad(input.mm||0)}`:'',
       c:input.city||'',g:input.gender||''}
@@ -871,10 +880,14 @@ function currentTabSavedInput(){
     const record=JSON.parse(sessionStorage.getItem('zx_active_input_v1')||'null');
     const input=record&&record.input;
     if(record&&record.version===1&&record.sourcePath===location.pathname
+      &&(!privateReportMode()||privateDraftFresh(record.createdAt))
       &&record.targetPath===new URL(reportUrl(),location.href).pathname
       &&input&&typeof input.d==='string'&&ZxMinimumAge.evaluateMinimumAge(input.d).allowed
       &&typeof input.t==='string'&&(!input.t||/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(input.t))
-      &&typeof input.c==='string'&&['','男','女','其他'].includes(input.g))return input;
+      &&typeof input.c==='string'&&['','男','女','其他'].includes(input.g)){
+      if(privateReportMode())privateDraftWrittenAt=record.createdAt;
+      return input;
+    }
     sessionStorage.removeItem('zx_active_input_v1');
   }catch(_){}
   return null;
@@ -1070,6 +1083,27 @@ let privatePreviewConsent=false;
 let privateHomeRevision=0;
 let preparedHomeReport=null;
 let prepareInFlight=false;
+const PRIVATE_DRAFT_MAX_AGE=24*60*60*1000;
+let privateDraftWrittenAt=0;
+function privateDraftFresh(createdAt){return Number.isSafeInteger(createdAt)&&createdAt>0&&createdAt<=Date.now()&&Date.now()-createdAt<PRIVATE_DRAFT_MAX_AGE;}
+function prunePrivateDrafts(){
+  if(!privateReportMode())return false;
+  for(const [storage,key] of [[localStorage,'zx_input'],[sessionStorage,'zx_active_input_v1']]){
+    try{const value=JSON.parse(storage.getItem(key)||'null');if(value&&!privateDraftFresh(value.createdAt))storage.removeItem(key);}catch(_){try{storage.removeItem(key);}catch(_){} }
+  }
+  try{sessionStorage.removeItem('zx_report_handoff_v1');}catch(_){}
+  if(!privateDraftWrittenAt||privateDraftFresh(privateDraftWrittenAt))return false;
+  privateDraftWrittenAt=0;privateHomeRevision++;privatePreviewConsent=false;preparedHomeReport=null;CUR=null;
+  for(const id of ['bDate','bTime','bCity','bGender'])if($(id))$(id).value='';
+  $('resumeSummary').textContent='';$('reportPrepareSummary').textContent='';$('reportPreparePanel').hidden=true;resetReportPrepare();
+  setViewState('new');$('formReadiness').textContent='本机出生资料已超过 24 小时，已清除。已购报告可登录原微信账号继续查看。';
+  return true;
+}
+if(privateReportMode()){
+  setInterval(prunePrivateDrafts,60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)prunePrivateDrafts();});
+  window.addEventListener('pageshow',prunePrivateDrafts);
+}
 const LOCAL_REPORT_PREVIEW=!privateReportMode()&&(location.protocol==='file:'||['localhost','127.0.0.1','[::1]'].includes(location.hostname));
 const PUBLIC_LEGAL_INTERACTION_READY=true;
 
@@ -1119,8 +1153,8 @@ function consentFocusable(){
 }
 function openConsent(){
   if(privateReportMode()){
-    $('consentSummary').textContent='你填写的出生日期、时间、城市和性别，会在当前浏览器生成基础图谱并保存在本机，便于返回查看；同一组资料会发送到知星服务器，用于生成这张盘的十年解读节选。节选请求不会把资料保存到账号。';
-    $('consentCheckText').textContent='我已阅读上述说明，同意在本机处理并保存出生资料，并将这些资料发送到知星服务器生成报告节选。';
+    $('consentSummary').textContent='你填写的出生日期、时间、城市和性别，会在当前浏览器生成基础图谱，在本机最多保存 24 小时；同一组资料会发送到知星服务器，用于生成这张盘的十年解读节选。节选请求不会把资料保存到账号。';
+    $('consentCheckText').textContent='我已阅读上述说明，同意在本机处理并保存出生资料最多 24 小时，并将这些资料发送到知星服务器生成报告节选。';
   }
   $('consentCheck').checked=false;
   $('consentOk').disabled=true;
@@ -1167,6 +1201,7 @@ function startGenerationFromForm(precomputedChart){
   if(!HOME_CONTENT||!window.BaziEngine)throw new Error('content runtime unavailable');
   const chart=precomputedChart||chartForCurrentForm();
   if(!chart)return false;
+  if(privateReportMode())privateDraftWrittenAt=Date.now();
   privateHomeRevision++;
   preparedHomeReport=null;
   $('reportPreparePanel').hidden=true;
@@ -1219,7 +1254,8 @@ $('consentOk').onclick=()=>{
   if(!chart){closeConsent(false);return}
   trackEvent('birth_consent_granted',{outcome:'granted'});
   try{
-    localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:'')}));
+    localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:''),
+      ...(privateReportMode()?{createdAt:Date.now()}: {})}));
   }catch(_){
     $('consentOk').textContent='本机资料暂时无法保存';
     return;
@@ -1231,9 +1267,10 @@ $('consentOk').onclick=()=>{
 
 /* 返回用户:带出上次填写的盘,一键继续,不用重填(设备级;跨设备/会员待账号系统) */
 (function resumeLast(){
+  prunePrivateDrafts();
   if(!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){setViewState('new');return}
   let last=currentTabSavedInput();
-  if(!last)try{last=JSON.parse(localStorage.getItem('zx_input')||'null')}catch(_){}
+  if(!last)try{last=JSON.parse(localStorage.getItem('zx_input')||'null');if(privateReportMode()&&last)privateDraftWrittenAt=last.createdAt;}catch(_){}
   if(!last||!last.d){setViewState('new');return}
   const age=ZxMinimumAge.evaluateMinimumAge(last.d);
   if(!age.valid||!age.allowed){try{localStorage.removeItem('zx_input')}catch(_){}setViewState('new');return}
@@ -1246,6 +1283,7 @@ $('consentOk').onclick=()=>{
 })();
 
 $('resumeContinueBtn').onclick=()=>{
+  if(prunePrivateDrafts())return;
   if(!validateBirthDate()){showFormDirect();return}
   if(privateReportMode()||!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){
     setViewState('new',{formOnly:true});
@@ -1280,42 +1318,12 @@ function revealIdiomWhenVisible(){
   idiomRevealObserver.observe(title);
 }
 
-// Keep approved wording intact while giving each question its own reading row.
-function renderReadingPreview(body){
-  const container=$('confirmedReadingPreviewBody');
-  container.replaceChildren();
-  const parts=String(body||'').match(/[^？?]+[？?]|[^？?]+$/g)||[];
-  let questions=null;
-  for(const part of parts){
-    const text=part.trim();
-    if(!text)continue;
-    if(/[？?]$/.test(text)){
-      if(!questions){
-        questions=document.createElement('ol');
-        questions.className='reading-preview-questions';
-        container.append(questions);
-      }
-      const item=document.createElement('li');
-      item.textContent=text;
-      questions.append(item);
-    }else{
-      const note=document.createElement('p');
-      note.className='reading-preview-note';
-      note.textContent=text;
-      container.append(note);
-      questions=null;
-    }
-  }
-}
-
 function renderContentHome(){
   const home=CUR.home;
   let reviewedHome=null;
-  let showReadingPreview=false;
   const publicReviewed=typeof HOME_CONTENT.publicReviewedHome==='function' ? HOME_CONTENT.publicReviewedHome(CUR.chart) : null;
   if(publicReviewed && home.source===publicReviewed.overviewSource){
     reviewedHome=publicReviewed.home;
-    showReadingPreview=publicReviewed.showReadingPreview===true;
   }
   
   const share=CUR.dualShare;
@@ -1375,10 +1383,6 @@ function renderContentHome(){
     item.append(title,body);
     return item;
   }));
-  replaceTextList('confirmedReportQuestions',home.reportQuestions);
-  $('confirmedReadingPreview').hidden=!showReadingPreview;
-  $('confirmedReadingPreviewTitle').textContent=showReadingPreview ? reviewedHome.reportPreview.title : '';
-  renderReadingPreview(showReadingPreview ? reviewedHome.reportPreview.body : '');
   if(privateReportMode()){
     loadPrivateHomePreview();
     return;
@@ -1438,10 +1442,23 @@ async function loadPrivateHomePreview(){
     $('reportOfferStatus').textContent='先确认这份报告的资料，再查看购买信息；这一步不会扣款。';
   }catch(error){
     if(CUR!==target||revision!==privateHomeRevision)return;
-    $('reportPreviewTitle').textContent='报告节选暂时无法读取';
-    $('reportPreviewBody').textContent='基础图谱已保留，请稍后重新读取这张盘的节选。';
+    // The free excerpt remains readable when the paid report service is closed.
+    // This module contains only the public next-decade paragraph, never a full report.
+    let excerpt=null;
+    try{excerpt=window.ZhixingHomeDecadePreview&&ZhixingHomeDecadePreview.buildTeaser(target.chart)}catch(_){}
+    if(excerpt){
+      renderHomeReportExcerpt(excerpt);
+      $('reportPreviewRetry').hidden=!!(error&&error.code==='REPORT_SERVICE_UNAVAILABLE');
+      $('reportPreviewRetry').textContent='重新查看购买信息';
+    }else{
+      const missingTime=!target.reportInput.t,missingGender=!target.reportInput.g;
+      $('reportPreviewTitle').textContent=missingTime||missingGender?'补充资料后查看十年解读':'这张盘暂时没有可用的十年节选';
+      $('reportPreviewBody').textContent=missingTime&&missingGender?'请补充出生时间与性别，才能生成对应的时间解读。'
+        :missingTime?'请补充出生时间，才能生成对应的时间解读。'
+        :missingGender?'请补充性别，才能生成对应的时间解读。':'请核对出生资料后重新生成。';
+      $('reportPreviewRetry').hidden=missingTime||missingGender;
+    }
     $('reportOfferStatus').textContent='购买暂未开放，不会发起扣款。';
-    $('reportPreviewRetry').hidden=false;
   }
 }
 
@@ -1464,6 +1481,7 @@ function syncReportPrepare(){
 }
 document.querySelectorAll('#reportPreparePanel input').forEach(node=>node.addEventListener('change',syncReportPrepare));
 $('reportPurchaseBtn').onclick=()=>{
+  if(prunePrivateDrafts())return;
   if(!privateReportMode()||!CUR||!window.ZxPaidReports)return;
   if(preparedHomeReport){
     if(preparedHomeReport.entitlement_status==='active')location.href=ZxPaidReports.reportUrl(preparedHomeReport.report_id);
@@ -1481,6 +1499,7 @@ $('reportPrepareCancel').onclick=()=>{
   $('reportPurchaseBtn').focus();
 };
 $('reportPrepareConfirm').onclick=async()=>{
+  if(prunePrivateDrafts())return;
   const selected=document.querySelector('input[name="reportSubject"]:checked');
   if(prepareInFlight||!privateReportMode()||!CUR||!selected||!$('reportStorageConsent').checked
     ||(selected.value==='other'&&!$('reportPermission').checked))return;

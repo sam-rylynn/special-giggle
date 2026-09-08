@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-lgpy3GRyex5rgrdioIECBA8vJ4Z0FlFFi0VcIEUGKig='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-1pgyoYDqxbjzM2lXQG0sFqtmwa8ikixPmweVFWZLRiY='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -497,6 +497,24 @@
   .private-answer-actions button{font-size:12px;letter-spacing:0;text-indent:0;padding:8px 14px}
   #privateReportState[hidden]{display:none}
   #reportStatus{min-height:1.6em;margin-top:8px;color:#f0cf9b;font-size:12px;text-align:center}
+  .report-download{margin:22px 0;padding:18px 20px;border:1px solid rgba(201,168,92,.3);border-radius:14px;background:rgba(26,34,51,.7)}
+  .report-download[hidden]{display:none}
+  .report-download .member-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0}
+  .report-download button{font-size:14px;letter-spacing:0;text-indent:0;min-height:44px}
+  .report-download p{margin:10px 0 0;font-size:12px;line-height:1.7;color:var(--mist)}
+  #reportDownloadStatus:empty{display:none}
+  .report-management{margin:22px 0;padding:18px 20px;border:1px solid rgba(201,168,92,.3);border-radius:14px;background:rgba(26,34,51,.7)}
+  .report-management[hidden],.report-management [hidden]{display:none}
+  .report-management summary{cursor:pointer;color:var(--gold);font-size:15px}
+  .report-management p,.report-management label{font-size:13px;line-height:1.8}
+  .report-management .member-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+  .report-management button{font-size:13px;letter-spacing:0;text-indent:0;min-height:44px}
+  .report-management .correction-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  .report-management .correction-fields label{display:grid;gap:6px;min-width:0}
+  .report-management input:not([type=checkbox]):not([type=radio]),.report-management select{width:100%;min-width:0;min-height:44px}
+  .report-management .confirm-check{display:flex;gap:8px;align-items:flex-start;margin:12px 0}
+  .report-management input[type=checkbox],.report-management input[type=radio]{flex:none;width:18px;height:18px;margin-top:3px}
+  #reportLifecycleStatus:empty{display:none}
 </style>
 </head>
 <body>
@@ -522,6 +540,37 @@
   </header>
 
   <section id="privateReportState" class="private-state" role="status" aria-live="polite" hidden></section>
+  <section id="reportDownload" class="report-download" aria-label="保存完整报告" hidden>
+    <div class="member-actions"><button id="reportDownloadHtml" type="button">下载完整报告 · HTML</button><button id="reportPrint" class="ghost" type="button">打印／另存为 PDF</button></div>
+    <p>HTML 文件可离线阅读，包含完整五章；不包含问星记录。PDF 请在浏览器打印窗口中选择“另存为 PDF”。已下载文件无法远程撤回，请妥善保管。</p>
+    <p id="reportDownloadStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section id="reportManagement" class="report-management" aria-label="报告保存与资料管理" hidden>
+    <p id="reportStorageExpiry"></p>
+    <details id="reportManageDetails"><summary>报告资料管理 · 点击展开</summary>
+      <p id="reportCorrectionAvailability"></p>
+      <div class="member-actions"><button id="reportCorrectionOpen" type="button" class="ghost">免费更正出生资料</button><button id="reportDeleteOpen" type="button" class="ghost">删除这份报告</button></div>
+      <form id="reportCorrectionForm" hidden>
+        <p>每份已购报告可免费更正一次。更正后，原报告及其问星记录会永久删除，无法恢复；新报告沿用原保存到期日，问星次数不重赠。已下载到设备的文件不受影响。</p>
+        <div class="correction-fields">
+          <label>出生日期<input id="correctionDate" type="date" required></label><label>出生时间<input id="correctionTime" type="time" required></label>
+          <label>出生城市<input id="correctionCity" type="text" maxlength="60" required autocomplete="off"></label><label>出生性别<select id="correctionGender" required><option value="">请选择</option><option value="男">男</option><option value="女">女</option></select></label>
+        </div>
+        <label class="confirm-check"><input type="radio" name="correctionSubject" value="self">更正的是我本人的资料</label>
+        <label class="confirm-check"><input type="radio" name="correctionSubject" value="other">更正的是他人的资料</label>
+        <label id="correctionPermissionRow" class="confirm-check" hidden><input id="correctionPermission" type="checkbox">我已获得对方同意，允许我提交、保存和更正其出生资料。</label>
+        <label class="confirm-check"><input id="correctionStorageConsent" type="checkbox">我同意将本次填写的出生资料发送给知星并保存到当前微信账号，用于更正这份报告。</label>
+        <label class="confirm-check"><input id="correctionDiscardConsent" type="checkbox">我确认永久删除原报告及其问星记录，并使用这一次免费更正机会。</label>
+        <div class="member-actions"><button id="reportCorrectionSubmit" type="submit" disabled>确认更正并替换原报告</button><button id="reportCorrectionCancel" type="button" class="ghost">取消</button></div>
+      </form>
+      <div id="reportDeleteConfirm" hidden>
+        <p>这份报告及其问星记录将从账号中永久删除，无法恢复。删除内容不等于申请退款；交易记录仍按规定期限保存。已下载到设备的文件需自行删除。</p>
+        <label class="confirm-check"><input id="reportDeleteConsent" type="checkbox">我确认永久删除这份报告及其问星记录，并了解删除后无法恢复。</label>
+        <div class="member-actions"><button id="reportDeleteSubmit" type="button" disabled>确认永久删除</button><button id="reportDeleteCancel" type="button" class="ghost">取消</button></div>
+      </div>
+    </details>
+    <p id="reportLifecycleStatus" role="status" aria-live="polite"></p>
+  </section>
   <div id="out"></div>
 
   <div class="reader-edit-dock" id="reportEditDock" hidden>
@@ -607,9 +656,10 @@
 <script src="./public-config.js?v=8e7f6ace89c0"></script>
 <script src="./privacy-consent.js?v=1babd09d8cad"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
-<script src="./member.js?v=4b65c901791f"></script>
+<script src="./member.js?v=822fa4b43abd"></script>
 <script src="./paid-h5.js?v=48c90859d882"></script>
-<script src="./paid-reports.js?v=f3214adc938b"></script>
+<script src="./paid-reports.js?v=b61fa1de0fb7"></script>
+<script src="./report-download.js?v=5e9d071a3ee9"></script>
 <script src="./bazi-engine.js?v=fa5cf42481a0"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
 
@@ -630,6 +680,11 @@ let CURRENT_QIAN = null;
 const PRIVATE_REPORT_MODE = !!(window.ZX_PRIVATE_REPORT_BUILD === true || (window.ZxPaidReports && ZxPaidReports.isPrivate()) || ((location.protocol==='file:' || ['localhost','127.0.0.1','[::1]'].includes(location.hostname)) && new URLSearchParams(location.search).get('private-report')==='1'));
 let PRIVATE_REPORT_ID = '';
 let PRIVATE_SNAPSHOT = null;
+let PRIVATE_DOWNLOAD_READY = false;
+let PRIVATE_DELIVERY_ID = '';
+let PRIVATE_REPORT_LIFECYCLE = null;
+let PRIVATE_CORRECTION_ATTEMPT = null;
+let PRIVATE_LIFECYCLE_BUSY = false;
 let PRIVATE_OWNER = '';
 let PRIVATE_READ_REVISION = 0;
 let PRIVATE_ASK_IDS = [];
@@ -1369,10 +1424,8 @@ async function shareQianPoster(){
   }
 }
 
-function render(chart, sections){
-  CHART = chart;
-  const editDock = $('reportEditDock');
-  if (editDock && $('out').contains(editDock)) $('out').after(editDock);
+// Rendering only: export uses the same fixed snapshot, never the current live DOM.
+function reportChapterMarkup(chart, sections){
   const byId = Object.fromEntries(sections.map(section => [section.id,section]));
   const useSection = (section, fallbackTitle) => section
     ? (structuredProfileSection(section) ? structuredSection(section) : sectionCard(section,chart,{title:fallbackTitle}))
@@ -1388,11 +1441,19 @@ function render(chart, sections){
     + astroCard(chart) + (skeletonInChart ? useSection(byId.skeleton,'性格骨架') : '') + chartCard(chart);
   const relationContent = useSection(byId.relation,'关系与协作');
   const actionContent = useSection(byId.action,'行动与决策');
-  let h = chapterCard('sec-overview','总览',overview)
+  return chapterCard('sec-overview','总览',overview)
     + chapterCard('sec-chart','盘面',chartContent)
     + chapterCard('sec-relation','关系',relationContent)
     + chapterCard('sec-action','行动',actionContent)
     + chapterCard('sec-phase','时间',useSection(byId.phase,'当前的进与收'));
+}
+
+function render(chart, sections){
+  CHART = chart;
+  const editDock = $('reportEditDock');
+  if (editDock && $('out').contains(editDock)) $('out').after(editDock);
+  const byId = Object.fromEntries(sections.map(section => [section.id,section]));
+  let h = reportChapterMarkup(chart,sections);
   h += deepCard();
   h += PRIVATE_REPORT_MODE ? privateQianCard() : qianCard();
   $('out').innerHTML = h;
@@ -2288,6 +2349,13 @@ function privateReportAccountUrl(){
 }
 function privateReportError(error){return String(error&&error.code||deepResponseCode(error&&error.data)||'REPORT_UNAVAILABLE');}
 function privateStatus(kind,code=''){
+  PRIVATE_REPORT_LIFECYCLE=null;PRIVATE_CORRECTION_ATTEMPT=null;PRIVATE_LIFECYCLE_BUSY=false;
+  $('reportManagement').hidden=true;$('reportLifecycleStatus').textContent='';
+  resetReportManagement();
+  PRIVATE_DOWNLOAD_READY=false;PRIVATE_DELIVERY_ID='';
+  $('reportDownload').hidden=true;
+  $('reportDownloadStatus').textContent='';
+  if(window.ZxReportDownload)ZxReportDownload.clear();
   CHART=null;PRIVATE_SNAPSHOT=null;PRIVATE_ASK_IDS=[];PRIVATE_OWNER='';
   PAID_ASK_STATE={loaded:false,remaining:null,allowed:false};
   if(PRIVATE_OWNER_TIMER){clearInterval(PRIVATE_OWNER_TIMER);PRIVATE_OWNER_TIMER=null;}
@@ -2308,6 +2376,8 @@ function privateStatus(kind,code=''){
     revoked:['这份报告的访问权已撤销','请到“我的”查看这笔订单与退款记录。'],
     unavailable:['暂时无法读取报告','请检查网络后重试；已购记录保留在你的账号中。'],
     notfound:['未找到这份报告','请从当前账号的“我的报告”重新打开。']
+    ,expired:['这份报告的保存期已结束','报告内容已不可读取，请到“我的”查看当前账号的其他报告。']
+    ,deleted:['这份报告已永久删除','报告及其问星记录无法恢复。已下载到设备的文件需自行保管或删除。']
   };
   const [title,body]=states[kind]||states.unavailable;
   $('reportIdentity').textContent=title;$('reportJudgement').textContent=body;
@@ -2329,6 +2399,8 @@ function privateStatus(kind,code=''){
 }
 async function showPrivateReadError(error){
   const revision=PRIVATE_READ_REVISION,code=privateReportError(error);
+  if(code==='REPORT_EXPIRED')return privateStatus('expired',code);
+  if(code==='REPORT_CONTENT_DELETED')return privateStatus('deleted',code);
   if(error&&error.data&&error.data.failed)return privateStatus('failed',code);
   if(error&&error.status===401||['REPORT_AUTH_REQUIRED','AUTH_REQUIRED','WECHAT_AUTHENTICATION_REQUIRED','PRIVACY_CONSENT_REQUIRED'].includes(code))return privateStatus('login',code);
   if(code==='REPORT_NOT_OWNED'){
@@ -2368,6 +2440,11 @@ async function loadPrivateReport(){
     REPORT_CHAPTER_STORAGE_KEY=REPORT_CHAPTER_KEY_PREFIX+PRIVATE_OWNER+':'+PRIVATE_REPORT_ID+':'+result.snapshot.contentVersion;
     $('privateReportState').hidden=true;
     render(result.snapshot.chart,result.snapshot.sections);
+    PRIVATE_DELIVERY_ID=/^[a-f0-9]{48}$/.test(result.delivery_id||'')?result.delivery_id:'';
+    PRIVATE_DOWNLOAD_READY=result.readable===true&&result.entitlement_status==='active'&&result.delivery_status==='ready'&&!!PRIVATE_DELIVERY_ID;
+    $('reportDownload').hidden=!PRIVATE_DOWNLOAD_READY||!window.ZxReportDownload;
+    $('reportDownloadHtml').disabled=false;$('reportPrint').disabled=false;
+    configureReportManagement(result);
     $('reportEditDock').hidden=true;
     if(typeof result.snapshot.disclaimer==='string'){document.querySelector('.meta').textContent=result.snapshot.disclaimer;document.querySelector('.meta').style.whiteSpace='pre-line';}
     await restorePrivateAnswers(revision);
@@ -2380,6 +2457,156 @@ async function loadPrivateReport(){
     },500);
   }catch(error){if(revision===PRIVATE_READ_REVISION)await showPrivateReadError(error);}
 }
+function privateDownloadCurrent(revision,snapshot,owner,id){
+  const session=memberSnapshot();
+  return PRIVATE_REPORT_MODE&&PRIVATE_DOWNLOAD_READY&&PRIVATE_READ_REVISION===revision&&PRIVATE_SNAPSHOT===snapshot&&
+    PRIVATE_REPORT_ID===id&&PRIVATE_OWNER===owner&&session.authenticated&&session.identityKind==='wechat'&&session.accountRef===owner;
+}
+async function exportPrivateReport(kind){
+  const revision=PRIVATE_READ_REVISION,snapshot=PRIVATE_SNAPSHOT,owner=PRIVATE_OWNER,id=PRIVATE_REPORT_ID;
+  const deliveryId=PRIVATE_DELIVERY_ID;
+  const current=()=>privateDownloadCurrent(revision,snapshot,owner,id);
+  if(!current()||!window.ZxReportDownload)return;
+  $('reportDownloadHtml').disabled=true;$('reportPrint').disabled=true;
+  $('reportDownloadStatus').textContent='正在确认报告访问状态……';
+  try{
+    const status=await ZxPaidReports.status(id);
+    if(!current())return;
+    if(status.report_id!==id||status.readable!==true||status.entitlement_status!=='active'||status.delivery_status!=='ready'){
+      privateStatus(status.entitlement_status==='revoked'?'revoked':'unavailable','REPORT_DOWNLOAD_UNAVAILABLE');return;
+    }
+    if(status.delivery_id!==deliveryId){
+      await loadPrivateReport();
+      if(PRIVATE_OWNER===owner&&PRIVATE_REPORT_ID===id&&PRIVATE_SNAPSHOT)$('reportDownloadStatus').textContent='报告已在其他设备更新，已重新读取当前版本。请核对内容后再次点击下载或打印。';
+      return;
+    }
+    const overview=snapshot.sections.find(section=>section.id==='overview');
+    const identity=`${snapshot.chart.dayMaster.stem}${snapshot.chart.dayMaster.element} × 太阳${String(snapshot.chart.astro?.sun?.sign||'星座').replace(/座$/,'')}`;
+    const html=ZxReportDownload.document({identity,judgement:overview?.hero||'',asOfAt:snapshot.asOfAt,
+      disclaimer:snapshot.disclaimer,chaptersHtml:reportChapterMarkup(snapshot.chart,snapshot.sections)});
+    if(!current())return;
+    if(kind==='print'){
+      await ZxReportDownload.print(html,current);
+      if(current())$('reportDownloadStatus').textContent='请在浏览器打印窗口中选择打印机或“另存为 PDF”。若窗口未弹出，可先下载 HTML 再使用浏览器打印。';
+    }else{
+      ZxReportDownload.save(html,current);
+      if(current())$('reportDownloadStatus').textContent='已发起 HTML 下载。下载的文件可离线阅读，请妥善保管。';
+    }
+  }catch(error){
+    if(!current())return;
+    if(error&&error.status===401){privateStatus('login','REPORT_AUTH_REQUIRED');return;}
+    if(error&&error.message==='REPORT_PRINT_BLOCKED'){
+      $('reportDownloadStatus').textContent='浏览器拦截了打印窗口。请允许弹出窗口后重试，或下载 HTML 后使用浏览器打印。';return;
+    }
+    $('reportDownloadStatus').textContent='暂时无法准备下载，请联网后重试。你也可以稍后从“我的报告”重新打开。';
+  }finally{if(current()){$('reportDownloadHtml').disabled=false;$('reportPrint').disabled=false;}}
+}
+$('reportDownloadHtml').onclick=()=>exportPrivateReport('html');
+$('reportPrint').onclick=()=>exportPrivateReport('print');
+function resetReportManagement(){
+  $('reportCorrectionForm').reset();$('reportCorrectionForm').hidden=true;
+  $('reportDeleteConfirm').hidden=true;$('reportDeleteConsent').checked=false;
+  $('reportDeleteSubmit').disabled=true;$('reportCorrectionSubmit').disabled=true;
+  $('correctionPermissionRow').hidden=true;$('reportManageDetails').open=false;
+}
+function configureReportManagement(result){
+  PRIVATE_REPORT_LIFECYCLE={expiresAt:result.storage_expires_at||result.expires_at,
+    correctionsRemaining:result.corrections_remaining,correctionAllowed:result.correction_allowed===true&&result.corrections_remaining===1};
+  const available=PRIVATE_DOWNLOAD_READY&&[0,1].includes(result.corrections_remaining);
+  $('reportManagement').hidden=!available;
+  if(!available)return;
+  const expiry=PRIVATE_REPORT_LIFECYCLE.expiresAt;
+  $('reportStorageExpiry').textContent=Number.isSafeInteger(expiry)&&expiry>0
+    ?'保存至 '+new Date(expiry).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false})+'（北京时间）'
+    :'保存到期时间暂未确认，请稍后刷新查看。';
+  $('reportCorrectionAvailability').textContent=result.corrections_remaining>0?'本报告剩余 1 次免费出生资料更正机会。':'本报告的免费出生资料更正机会已使用。';
+  $('reportCorrectionOpen').disabled=!PRIVATE_REPORT_LIFECYCLE.correctionAllowed;
+  $('reportDeleteOpen').disabled=false;
+}
+function reportManagementCurrent(revision,snapshot,owner,id){
+  const session=memberSnapshot();
+  return PRIVATE_REPORT_MODE&&PRIVATE_READ_REVISION===revision&&PRIVATE_SNAPSHOT===snapshot&&PRIVATE_OWNER===owner&&
+    PRIVATE_REPORT_ID===id&&session.authenticated&&session.identityKind==='wechat'&&session.accountRef===owner;
+}
+function updateCorrectionConsent(){
+  const subject=document.querySelector('input[name="correctionSubject"]:checked')?.value;
+  $('correctionPermissionRow').hidden=subject!=='other';
+  $('reportCorrectionSubmit').disabled=PRIVATE_LIFECYCLE_BUSY||!subject||!$('correctionStorageConsent').checked||
+    !$('correctionDiscardConsent').checked||(subject==='other'&&!$('correctionPermission').checked);
+}
+function openReportCorrection(input){
+  if(!PRIVATE_REPORT_LIFECYCLE?.correctionAllowed||PRIVATE_LIFECYCLE_BUSY||!PRIVATE_SNAPSHOT)return;
+  if(deepRequestInFlight||readPrivatePending()){$('reportLifecycleStatus').textContent='请先完成或恢复正在处理的问星，再更正出生资料。';return;}
+  resetReportManagement();$('reportManageDetails').open=true;$('reportCorrectionForm').hidden=false;
+  const value=input||PRIVATE_SNAPSHOT.input;
+  $('correctionDate').value=value.d||'';$('correctionTime').value=value.t||'';
+  $('correctionCity').value=value.c||'';$('correctionGender').value=value.g||'';
+  $('correctionDate').focus();updateCorrectionConsent();
+}
+function setReportMutationBusy(){
+  PRIVATE_LIFECYCLE_BUSY=true;PRIVATE_DOWNLOAD_READY=false;
+  $('reportDownload').hidden=true;
+  if(window.ZxReportDownload)ZxReportDownload.clear();
+  $('reportManagement').querySelectorAll('button').forEach(button=>button.disabled=true);
+  if($('deepAsk'))$('deepAsk').disabled=true;
+}
+async function recoverReportMutation(error,owner,id,attempt){
+  await loadPrivateReport();
+  if(PRIVATE_OWNER!==owner||PRIVATE_REPORT_ID!==id||!PRIVATE_SNAPSHOT)return;
+  const code=String(error?.code||'');
+  $('reportLifecycleStatus').textContent=code==='REPORT_FREE_CORRECTION_USED'
+    ?'这份报告的免费更正机会已使用，已刷新当前报告。'
+    :code==='REPORT_CORRECTION_PENDING_ASK'
+    ?'请先处理正在进行的问星，再更正出生资料。'
+    :'操作结果暂时未确认，已重新读取报告状态。请核对当前内容后再操作。';
+  if(attempt&&PRIVATE_REPORT_LIFECYCLE?.correctionAllowed){
+    PRIVATE_CORRECTION_ATTEMPT=attempt;openReportCorrection(attempt.input);
+  }
+}
+$('reportCorrectionOpen').onclick=()=>openReportCorrection();
+$('reportCorrectionCancel').onclick=()=>resetReportManagement();
+$('reportDeleteCancel').onclick=()=>resetReportManagement();
+$('reportCorrectionForm').addEventListener('change',updateCorrectionConsent);
+$('reportDeleteOpen').onclick=()=>{
+  if(PRIVATE_LIFECYCLE_BUSY||!PRIVATE_SNAPSHOT)return;
+  resetReportManagement();$('reportManageDetails').open=true;$('reportDeleteConfirm').hidden=false;
+};
+$('reportDeleteConsent').onchange=()=>{$('reportDeleteSubmit').disabled=PRIVATE_LIFECYCLE_BUSY||!$('reportDeleteConsent').checked;};
+$('reportDeleteSubmit').onclick=async()=>{
+  const revision=PRIVATE_READ_REVISION,snapshot=PRIVATE_SNAPSHOT,owner=PRIVATE_OWNER,id=PRIVATE_REPORT_ID;
+  const current=()=>reportManagementCurrent(revision,snapshot,owner,id);
+  if(PRIVATE_LIFECYCLE_BUSY||!snapshot||!current()||!$('reportDeleteConsent').checked)return;
+  setReportMutationBusy();$('reportLifecycleStatus').textContent='正在删除这份报告及其问星记录……';
+  try{
+    const result=await ZxPaidReports.remove(id,{confirmed:true});if(!current())return;
+    if(result.deleted!==true||result.report_id!==id||result.recoverable!==false)throw new Error('REPORT_DELETE_RESPONSE_INVALID');
+    try{sessionStorage.removeItem(privatePendingKey());}catch(_){}
+    ++PRIVATE_READ_REVISION;privateStatus('deleted','REPORT_CONTENT_DELETED');
+  }catch(error){if(current())await recoverReportMutation(error,owner,id);}
+};
+$('reportCorrectionForm').onsubmit=async event=>{
+  event.preventDefault();updateCorrectionConsent();
+  const revision=PRIVATE_READ_REVISION,snapshot=PRIVATE_SNAPSHOT,owner=PRIVATE_OWNER,id=PRIVATE_REPORT_ID;
+  const current=()=>reportManagementCurrent(revision,snapshot,owner,id);
+  if(PRIVATE_LIFECYCLE_BUSY||!snapshot||!current()||!PRIVATE_REPORT_LIFECYCLE?.correctionAllowed||$('reportCorrectionSubmit').disabled||!$('reportCorrectionForm').reportValidity())return;
+  const input={d:$('correctionDate').value,t:$('correctionTime').value,c:$('correctionCity').value.trim(),g:$('correctionGender').value};
+  const serialized=JSON.stringify(input);
+  if(!PRIVATE_CORRECTION_ATTEMPT||PRIVATE_CORRECTION_ATTEMPT.serialized!==serialized){
+    const bytes=crypto.getRandomValues(new Uint8Array(16));
+    PRIVATE_CORRECTION_ATTEMPT={input,serialized,key:'report-correct:'+Array.from(bytes,byte=>byte.toString(16).padStart(2,'0')).join('')};
+  }
+  const attempt=PRIVATE_CORRECTION_ATTEMPT,subject=document.querySelector('input[name="correctionSubject"]:checked').value;
+  setReportMutationBusy();$('reportLifecycleStatus').textContent='正在更正出生资料并替换原报告……';
+  try{
+    const result=await ZxPaidReports.correct(id,input,{transferConfirmed:true,storageConfirmed:true,subjectIsSelf:subject==='self',
+      permissionConfirmed:$('correctionPermission').checked,discardPreviousConfirmed:true},attempt.key);
+    if(!current())return;
+    if(result.corrected!==true||result.report_id!==id||result.corrections_remaining!==0)throw new Error('REPORT_CORRECTION_RESPONSE_INVALID');
+    try{sessionStorage.removeItem(privatePendingKey());}catch(_){}
+    await loadPrivateReport();
+    if(PRIVATE_OWNER===owner&&PRIVATE_REPORT_ID===id&&PRIVATE_SNAPSHOT)$('reportLifecycleStatus').textContent='出生资料已更正，正在阅读替换后的报告。原保存到期日和问星次数保持不变。';
+  }catch(error){if(current())await recoverReportMutation(error,owner,id,attempt);}
+};
 function privateQianCard(){return `<div class="card" id="sec-qian"><div class="pad"><h2>日主身份卡</h2><p>日主身份卡可在首页查看、保存与分享。</p><div class="member-actions"><a class="ghost" href="${HOME_PAGE_HREF}">返回日主页</a></div></div></div>`;}
 function privateDeepCard(){
   return `<div class="card" id="sec-deep"><div class="pad"><h2>问星</h2><p class="deep-intro">根据这份已购报告提问，首问和每次追问各消耗 1 次。优先使用本报告赠送的次数，再使用已购买次数。</p>
@@ -2413,7 +2640,7 @@ function renderPrivateAskStatus(){
   const body=deepComposerAvailable()?(loaded?'首问与追问各消耗 1 次。用完后可选择 ¥2.90/次，或 ¥6/3次。':'请刷新次数后再提交。'):'问星服务尚未开放，报告可以继续阅读。';
   box.innerHTML=`<div class="member-title">${esc(title)}</div><p class="member-copy">${esc(body)}</p><div class="member-actions"><button id="privateAskRefresh" type="button" class="ghost">刷新次数</button><button id="privateAskPurchaseClosed" type="button" class="ghost" disabled>问星购买暂未开放</button><a id="privateAskHistory" href="#deepEcho">查看本盘问答</a></div>`;
   $('privateAskRefresh').onclick=()=>refreshPrivateAskState();
-  button.disabled=deepRequestInFlight||!deepComposerAvailable()||!(pending||(loaded&&PAID_ASK_STATE.allowed&&remaining>0));
+  button.disabled=PRIVATE_LIFECYCLE_BUSY||deepRequestInFlight||!deepComposerAvailable()||!(pending||(loaded&&PAID_ASK_STATE.allowed&&remaining>0));
   button.textContent=pending?'恢复上一问 · 不重复扣次':(button.disabled?'问星暂不可用':PRIVATE_ASK_IDS.length?'继续追问 · 消耗 1 次':'提交本次问星 · 消耗 1 次');
 }
 function privateAnswerHtml(item){return `<section class="private-answer" data-answer-id="${item.result_id}">${renderDeep(item.answer,item.question)}<p class="da-more">完整答案已保存到账户。</p><div class="private-answer-actions"><button type="button" class="ghost" data-delete-private-answer="${item.result_id}">删除这条答案</button></div></section>`;}
@@ -2438,7 +2665,7 @@ function updatePrivateNotice(message){
   const notice=document.createElement('p');notice.className='deep-echo private-ask-notice';notice.textContent=message;echo.appendChild(notice);
 }
 async function askPrivateReport(){
-  if(deepRequestInFlight||!PRIVATE_SNAPSHOT)return;
+  if(PRIVATE_LIFECYCLE_BUSY||deepRequestInFlight||!PRIVATE_SNAPSHOT)return;
   const revision=PRIVATE_READ_REVISION,owner=memberSnapshot();
   if(!owner.authenticated||owner.identityKind!=='wechat'||owner.accountRef!==PRIVATE_OWNER){++PRIVATE_READ_REVISION;privateStatus('login');return;}
   const stored=readPrivatePending(),question=stored?stored.question:$('deepQ').value.trim();

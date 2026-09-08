@@ -13,6 +13,16 @@
   var accountPending = null;
   function localPage() { return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname); }
   function isPrivate() { return window.ZX_PRIVATE_REPORT_BUILD === true || (localPage() && new URLSearchParams(location.search).get('private-report') === '1'); }
+  function pruneLocalDrafts() {
+    if(!isPrivate())return;
+    [[localStorage,'zx_input'],[sessionStorage,'zx_active_input_v1']].forEach(function(entry){
+      try{
+        var value=JSON.parse(entry[0].getItem(entry[1])||'null'),created=value&&value.createdAt,now=Date.now();
+        if(value&&(!Number.isSafeInteger(created)||created<=0||created>now||now-created>=86400000))entry[0].removeItem(entry[1]);
+      }catch(_){try{entry[0].removeItem(entry[1]);}catch(_){} }
+    });
+    try{sessionStorage.removeItem('zx_report_handoff_v1');}catch(_){}
+  }
   function error(code) { var e = new Error(code); e.code = code; return e; }
   function checkedId(id) { if (typeof id !== 'string' || !REPORT_RE.test(id)) throw error('REPORT_NOT_FOUND'); return id; }
   function reportId() {
@@ -60,6 +70,21 @@
     return offer && offer.currency === 'CNY' && Number.isSafeInteger(offer.amount_fen) && offer.amount_fen > 0 && offer.amount_fen <= 1000000
       ? '¥' + (offer.amount_fen / 100).toFixed(2) : '';
   }
+  function salesNotice() {
+    var config=window.ZX_PUBLIC_CONFIG||{},notice=config.reportSalesNotice,stopped=config.reportSalesStoppedAt;
+    var date=typeof stopped==='number'?stopped:typeof stopped==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(stopped)?Date.parse(stopped):NaN;
+    if(typeof notice!=='string'||!notice.trim()||notice.length>2000||!Number.isSafeInteger(date)||date<=0)return null;
+    return {text:notice.trim(),stoppedAt:date};
+  }
+  function renderSalesNotice() {
+    var value=salesNotice(),existing=$('reportSalesNotice');
+    if(!value){if(existing)existing.remove();return;}
+    var host=$('mainContent')||$('reportMain')||document.querySelector('main');if(!host)return;
+    var panel=existing||node('aside','','report-sales-notice');panel.id='reportSalesNotice';panel.setAttribute('role','status');
+    panel.style.cssText='margin:20px auto;padding:18px 20px;max-width:900px;border:1px solid #a58a50;border-radius:14px;background:#1a2233;color:#e8e4d8;font-size:14px;line-height:1.8';
+    panel.replaceChildren(node('strong','深度报告服务公告'),node('p',value.text),node('p','停售日期：'+new Date(value.stoppedAt).toLocaleDateString('zh-CN',{timeZone:'Asia/Shanghai'})));
+    if(!existing)host.prepend(panel);
+  }
   function purchaseReady() { return APPROVED_REPORT_POLICY !== null; }
   function consent() { return !!(window.ZxPrivacyConsent && window.ZxPrivacyConsent.has('device_account')); }
   function ownedCall(method, args) {
@@ -93,9 +118,13 @@
     if (item.delivery_status === 'failed') return '报告待重试';
     return '报告准备中';
   }
+  function storageExpiry(value) {
+    return Number.isSafeInteger(value) && value > 0 ? new Date(value).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false}) + '（北京时间）' : '';
+  }
   function privacyReset() {
     generation += 1;
-    ['reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks'].forEach(empty);
+    ['reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
+    hide('delete-account'); text('deleteLive','');
     text('reportCount', '—'); text('reportLive', '请重新登录后查看报告。');
     text('orderBadge', '需登录'); text('orderStateTitle', '登录后查看订单'); hide('orderStateTitle', false); text('orderStateBody', '登录后可查询支付与交付状态。');
     text('accountBadge', '未登录'); text('accountTitle', '请登录原微信账号'); text('accountBody', '已退出当前账号，报告内容已从页面清除。');
@@ -196,6 +225,8 @@
       if (!REPORT_RE.test(item.report_id || '')) return;
       var row = node('article', '', 'report-item');
       var content = node('div'); content.append(node('strong', item.title || '深度发展报告'), node('p', readableState(item), 'state-body'));
+      var expiry = storageExpiry(item.storage_expires_at || item.expires_at);
+      if (expiry) content.append(node('p','保存至 ' + expiry,'state-body'));
       var actions = node('div', '', 'report-item-actions');
       actions.append(link(item.entitlement_status === 'unpaid' ? '查看报告状态' : '进入报告', item.entitlement_status === 'unpaid' ? route('account', item.report_id, 'report-purchase') : reportUrl(item.report_id)));
       row.append(content, actions); list.append(row);
@@ -220,6 +251,55 @@
       text('orderBadge', String(orders.length) + ' 笔'); hide('orderStateTitle', orders.length > 0); text('orderStateTitle', orders.length ? '' : '暂无订单'); text('orderStateBody', '支付与交付状态以订单查询结果为准。');
     } catch (e) { if (epoch === generation) text('orderStateBody', message(e)); }
   }
+  function closureNotice(closure) {
+    var details = [];
+    if (Number.isSafeInteger(closure.refunds_pending) && closure.refunds_pending > 0) details.push('待退款 ' + closure.refunds_pending + ' 笔');
+    if (Number.isSafeInteger(closure.pending_orders) && closure.pending_orders > 0) details.push('待核对订单 ' + closure.pending_orders + ' 笔');
+    if (Number.isSafeInteger(closure.pending_requests) && closure.pending_requests > 0) details.push('处理中请求 ' + closure.pending_requests + ' 个');
+    return '注销申请已提交，退款结清后完成注销。当前尚未注销，请保留账号以便查看进度。' + (details.length ? ' ' + details.join('；') + '。' : '');
+  }
+  async function renderClosure(epoch) {
+    if (!member().accountClosure || epoch !== generation || !authenticated()) return;
+    hide('delete-account',false); text('deleteTitle','注销账号'); text('deleteLive','正在读取注销状态……');
+    var actions=empty('deleteActions');
+    try {
+      var result=await call('accountClosure'); if(epoch!==generation)return;
+      text('deleteLive','');
+      if(result.closure){
+        var closure=result.closure;
+        text('deleteTitle',closure.status==='completed'?'账号注销已完成':'注销处理中');
+        text('deleteBody',closure.status==='completed'?'服务器已确认注销完成；依法需要保留的交易记录按规定期限保存。':closureNotice(closure));
+        if(closure.status!=='completed')actions.append(button('刷新注销进度',function(){return renderClosure(epoch);}));
+        return;
+      }
+      text('deleteBody','注销会先结清应退款项，再永久删除账号中的报告和问星记录，无法恢复。已经下载到设备的文件仍由你自行保管；依法需要保留的交易记录按规定期限保存。');
+      var label=node('label','','confirm-check'),check=node('input');check.type='checkbox';check.id='privateClosureConsent';
+      label.append(check,node('span','我申请先处理退款，再注销账号，并确认账号资料删除后无法恢复。'));actions.append(label);
+      var submit=button('确认申请注销',async function(){
+        if(!check.checked||epoch!==generation)return;submit.disabled=true;
+        try{
+          var data=await call('deleteAccount',[{confirmed:true,refundBeforeDelete:true,irreversibleConfirmed:true}]);
+          // Completed deletion intentionally clears the owner session (and generation).
+          if(data.status==='completed'&&data.ok===true&&data.recoverable===false){
+            if(member().snapshot().authenticated)return;
+            hide('delete-account',false);empty('deleteActions');text('deleteTitle','账号注销已完成');text('deleteBody','服务器已确认注销完成，账号资料无法恢复。');text('deleteLive','');return;
+          }
+          if(epoch!==generation)return;
+          if(data.status!=='closure_pending'||!data.closure)throw error('ACCOUNT_CLOSURE_RESPONSE_INVALID');
+          empty('deleteActions');text('deleteTitle','注销处理中');text('deleteBody',closureNotice(data.closure));
+          append('deleteActions',button('刷新注销进度',function(){return renderClosure(epoch);}));text('deleteLive','');
+        }catch(e){
+          if(epoch!==generation)return;
+          text('deleteLive',e&&e.status===401?'会话已结束，当前无法确认注销是否完成。':'申请结果暂时无法确认，请先刷新注销进度，不要重复提交。');
+          empty('deleteActions');append('deleteActions',button('刷新注销进度',function(){return renderClosure(epoch);}));
+        }
+      });submit.id='privateClosureSubmit';submit.disabled=true;check.addEventListener('change',function(){submit.disabled=!check.checked;});actions.append(submit);
+    }catch(e){
+      if(epoch!==generation)return;
+      text('deleteLive',e&&e.status===401?'会话已结束，当前无法确认注销是否完成。':'暂时无法读取注销状态，请稍后刷新。');
+      append('deleteActions',button('刷新注销进度',function(){return renderClosure(epoch);}));
+    }
+  }
   function mountAccount() {
     if (!isPrivate() || !$('profile-summary')) return Promise.resolve();
     if (accountPending) return accountPending;
@@ -239,7 +319,7 @@
       if (!authenticated()) { text('reportLive', '登录后查看报告。'); renderLogin(); return; }
       text('accountBadge', '已登录'); text('accountTitle', '微信账号已确认'); text('accountBody', '报告与问星归属当前微信账号。返回首页可继续确认本机盘面。');
       var actions = empty('accountActions'); if (actions) actions.append(link('返回首页', homeUrl()), button('退出登录', async function () { await member().logout(); await mountAccount(); }));
-      await Promise.all([renderReportPage(epoch).catch(function (e) { if (epoch === generation) text('reportLive', message(e)); }), renderPurchase(epoch), renderOrders(epoch)]);
+      await Promise.all([renderReportPage(epoch).catch(function (e) { if (epoch === generation) text('reportLive', message(e)); }), renderPurchase(epoch), renderOrders(epoch),renderClosure(epoch)]);
     })().finally(function () { accountPending = null; });
     return accountPending;
   }
@@ -291,12 +371,18 @@
     read:function (id) { return call('paidReportRead', [id]); },
     status:function (id) { return call('paidReportRead', [id,'status']); },
     retry:function (id) { return call('paidReportRetry', [id]); },
+    remove:function (id,confirmation) { return call('paidReportDelete',[id,confirmation]); },
+    correct:function (id,input,confirmation,key) { return call('paidReportCorrect',[id,input,confirmation,key]); },
     balance:function (id) { return call('paidReportBalance', [id]); },
     products:function (id,kind) { return call('paidReportProducts', [id,kind || 'report']); },
-    priceLabel:priceLabel, purchaseReady:purchaseReady, startLogin:startLogin, mountAccount:mountAccount, mountCheckout:mountCheckout
+    priceLabel:priceLabel, salesNotice:salesNotice, pruneLocalDrafts:pruneLocalDrafts, purchaseReady:purchaseReady, startLogin:startLogin, mountAccount:mountAccount, mountCheckout:mountCheckout
   });
   window.ZxPaidReports = api;
+  pruneLocalDrafts();
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)pruneLocalDrafts();});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderSalesNotice,{once:true});else renderSalesNotice();
   window.addEventListener('pageshow', function (event) {
+    pruneLocalDrafts();
     if (event.persisted && isPrivate()) { privacyReset(); if ($('paidCheckoutPage')) mountCheckout(); else if ($('profile-summary')) mountAccount(); }
   });
 })();

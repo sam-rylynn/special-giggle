@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-XtxDZLpjm1OrpnbeqQ/sRmLbk3SFk8a0hAbAK+nT04c='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-s4lBDyORrKxfqmfFVVB01wiv+duU15FXD2wibVPAKZU='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -396,7 +396,7 @@
 </dialog>
 
 <script src="./public-config.js?v=8e7f6ace89c0"></script>
-<script src="./paid-reports.js?v=f3214adc938b"></script>
+<script src="./paid-reports.js?v=b61fa1de0fb7"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
 <script>
 'use strict';
@@ -407,7 +407,7 @@
   const source = /\/web\/account\.html$/.test(location.pathname);
   function load(src) { return new Promise((resolve, reject) => { const script = document.createElement('script'); script.src = src; script.onload = resolve; script.onerror = reject; document.head.append(script); }); }
   load(source ? '../privacy-consent.js' : './privacy-consent.js?v=1babd09d8cad')
-    .then(() => load(source ? '../member.js' : './member.js?v=4b65c901791f'))
+    .then(() => load(source ? '../member.js' : './member.js?v=822fa4b43abd'))
     .then(() => { if (!window.ZxPaidReports) throw new Error('REPORT_SERVICE_UNAVAILABLE'); return ZxPaidReports.mountAccount(); })
     .catch(() => { document.getElementById('accountTitle').textContent = '报告服务暂不可用'; document.getElementById('reportLive').textContent = '请稍后重新打开页面。'; });
 })();
