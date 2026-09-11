@@ -550,6 +550,21 @@
   function privateReportServiceAvailable() {
     return privateReportsPage() && !!API_BASE && (injectedPublicConfig.reportServiceAvailable === true || !!localDebugUrlParam('api'));
   }
+  var REPORT_PAYMENT_VERSIONS = Object.freeze({
+    agreementVersion:'user-agreement-2026.09.09-report-v1',privacyVersion:'privacy-2026.09.09-report-v1',
+    membershipTermsVersion:'paid-report-2026.09.09-v1',refundPolicyVersion:'refund-2026.09.09-report-v1',
+    aiDisclosureVersion:'ai-disclosure-2026.09.09-report-v1',purchaseNoticeVersion:'purchase-notice-2026.09.09-report-v1'
+  });
+  var REPORT_POLICY_PATHS = Object.freeze({userAgreementUrl:'/terms.html',privacyUrl:'/privacy.html',
+    membershipRulesUrl:'/membership-rules.html',refundUrl:'/refund-policy.html',aiDisclosureUrl:'/ai-disclosure.html',purchaseNoticeUrl:'/purchase-notice.html'});
+  function paidReportPurchaseReady() {
+    var expiry=Date.parse(injectedPublicConfig.reportAcceptanceExpiresAt || '');
+    if(injectedPublicConfig.reportAcceptanceMode === true && (!Number.isSafeInteger(expiry) || expiry<=Date.now()))return false;
+    return privateReportServiceAvailable() && injectedPublicConfig.reportPurchaseAvailable === true &&
+      injectedPublicConfig.paymentOrigin === 'https://zhixng.cn' && /^wx[a-f0-9]{16}$/.test(injectedPublicConfig.wechatOfficialAccountAppId || '') &&
+      Object.keys(REPORT_PAYMENT_VERSIONS).every(function(key){return injectedPublicConfig[key] === REPORT_PAYMENT_VERSIONS[key];}) &&
+      Object.keys(REPORT_POLICY_PATHS).every(function(key){return injectedPublicConfig[key] === 'https://zhixng.cn' + REPORT_POLICY_PATHS[key];});
+  }
   function privateReportApi(path, options) {
     if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));
     if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
@@ -574,6 +589,13 @@
   }
 
   window.zxMember = {
+    synastryCall: function (path, body) {
+      var allowed = /^\/synastry\/(?:profile|records|lookup|invitations|invitations\/inspect|invitations\/accept|invitations\/[a-f0-9]{64}\/revoke|pairs\/[a-f0-9]{64}(?:\/(?:retry|unlink|support|report))?)$/;
+      if (typeof path !== 'string' || !allowed.test(path)) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+      var read = path === '/synastry/profile' || path === '/synastry/records' || /^\/synastry\/pairs\/[a-f0-9]{64}$/.test(path);
+      // Reuse account consent, current-owner guard, token refresh and no cross-account mutation replay.
+      return privateReportMutation(path, read ? {method:'GET'} : {method:'POST',body:body || {}});
+    },
     configured: function () { return !!API_BASE && accountConsentGranted(); },
     serviceConfigured: function () { return !!API_BASE; },
     paidReportServiceAvailable: privateReportServiceAvailable,
@@ -749,6 +771,21 @@
           permission_confirmed:confirmation.permissionConfirmed===true,discard_previous_confirmed:true}});
     },
     accountClosure: function () { return privateReportApi('/account/closure'); },
+    paidReportPurchaseReady: paidReportPurchaseReady,
+    paidReportCreateOrder: function (id, confirmation, idempotencyKey) {
+      if (!paidReportPurchaseReady()) return Promise.reject(reportClientError('REPORT_SALES_NOT_APPROVED'));
+      if (!/MicroMessenger/i.test(navigator.userAgent || '')) return Promise.reject(reportClientError('WECHAT_BROWSER_REQUIRED'));
+      confirmation = confirmation || {};
+      if (confirmation.policyConsent !== true) return Promise.reject(reportClientError('PAYMENT_CONSENT_REQUIRED'));
+      if (confirmation.adultConfirmed !== true) return Promise.reject(reportClientError('PAYMENT_ADULT_CONFIRMATION_REQUIRED'));
+      if (typeof idempotencyKey !== 'string' || !/^[a-f0-9]{32}$/.test(idempotencyKey)) return Promise.reject(reportClientError('PAYMENT_IDEMPOTENCY_KEY_INVALID'));
+      return privateReportMutation('/payments/orders', {method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:{
+        product_code:'deep_report_v1',paid_report_id:checkedPaidReportId(id),channel:'wechatpay_jsapi',consent:true,adult_confirmed:true,
+        agreement_version:REPORT_PAYMENT_VERSIONS.agreementVersion,privacy_version:REPORT_PAYMENT_VERSIONS.privacyVersion,
+        membership_terms_version:REPORT_PAYMENT_VERSIONS.membershipTermsVersion,refund_policy_version:REPORT_PAYMENT_VERSIONS.refundPolicyVersion,
+        ai_disclosure_version:REPORT_PAYMENT_VERSIONS.aiDisclosureVersion,purchase_notice_version:REPORT_PAYMENT_VERSIONS.purchaseNoticeVersion
+      }});
+    },
     paidReportProducts: function (id, kind) {
       if (kind !== undefined && kind !== 'report' && kind !== 'ask') return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
       return privateReportApi('/' + (kind === 'ask' ? 'ask' : 'report') + '/products?report_id=' + checkedPaidReportId(id));

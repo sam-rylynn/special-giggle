@@ -4,9 +4,9 @@
 (function () {
   'use strict';
 
-  var NOTICE_VERSION = 'privacy-2026.08.25-paid-ask-v1';
+  var NOTICE_VERSION = 'privacy-2026.09.09-report-v1';
   var CHOICES_KEY = 'zx_privacy_choices_v1';
-  var SUPPORT_EMAIL = 'wuyh@sg1798.wecome.work';
+  var SUPPORT_EMAIL = 'wyh767745207@qq.com';
   var DOCK_SUPPRESSED = false;
   var EXPORT_KEYS = [
     'zx_input',

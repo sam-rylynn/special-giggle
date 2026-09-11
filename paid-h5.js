@@ -953,6 +953,12 @@
     isWeChatBrowser: isWeChatBrowser,
     normalizeProduct: normalizeProduct,
     validateJsapiCheckout: validateJsapiCheckout,
+    invokeReportJsapi: function (input) {
+      if (!privateReports() || !member() || !member().paidReportPurchaseReady() || !isWeChatBrowser()) return Promise.reject(new Error('REPORT_PAYMENT_UNAVAILABLE'));
+      var params = validateJsapiCheckout(input);
+      if (!params) return Promise.reject(new Error('WECHAT_CHECKOUT_INVALID'));
+      return invokeJsapi(params);
+    },
     credits: refreshCredits,
     peek: peekCredits,
     wechatStatus: refreshWechatStatus,

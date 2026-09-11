@@ -6,9 +6,9 @@
   var REPORT_RE = /^[a-f0-9]{48}$/;
   var ORDER_RE = /^[a-f0-9]{32}$/;
   var RESUME_KEY = 'zx_private_report_resume_id';
-  // The report price is confirmed separately from purchase approval. The old
-  // Ask agreement and report candidate cannot authorize a new purchase.
-  var APPROVED_REPORT_POLICY = null;
+  // Formal policy plus the server's per-account offer authorize purchase.
+  var pendingPurchaseKeys = new Map();
+  var submittedOrders = new Map(),checkoutRefreshTimer = null;
   var generation = 0;
   var accountPending = null;
   function localPage() { return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname); }
@@ -85,7 +85,7 @@
     panel.replaceChildren(node('strong','深度报告服务公告'),node('p',value.text),node('p','停售日期：'+new Date(value.stoppedAt).toLocaleDateString('zh-CN',{timeZone:'Asia/Shanghai'})));
     if(!existing)host.prepend(panel);
   }
-  function purchaseReady() { return APPROVED_REPORT_POLICY !== null; }
+  function purchaseReady() { return !!(window.zxMember && member().paidReportPurchaseReady && member().paidReportPurchaseReady()); }
   function consent() { return !!(window.ZxPrivacyConsent && window.ZxPrivacyConsent.has('device_account')); }
   function ownedCall(method, args) {
     return Promise.resolve().then(function () {
@@ -123,6 +123,8 @@
   }
   function privacyReset() {
     generation += 1;
+    pendingPurchaseKeys.clear();submittedOrders.clear();
+    if(checkoutRefreshTimer){clearTimeout(checkoutRefreshTimer);checkoutRefreshTimer=null;}
     ['reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
     hide('delete-account'); text('deleteLive','');
     text('reportCount', '—'); text('reportLive', '请重新登录后查看报告。');
@@ -194,6 +196,37 @@
     hide('report-purchase', !reportId());
     text('privatePurchaseBody', '登录后可查看这份报告。'); empty('privatePurchaseActions');
   }
+  function renderPurchaseConfirmation(id,epoch) {
+    var actions=$('privatePurchaseActions'),config=window.ZX_PUBLIC_CONFIG||{};
+    if(!actions)return;
+    actions.style.flexDirection='column';actions.style.alignItems='stretch';
+    var policies=node('p','','state-body');
+    [['用户协议','userAgreementUrl'],['隐私政策','privacyUrl'],['报告服务规则','membershipRulesUrl'],['退款政策','refundUrl'],['AI服务说明','aiDisclosureUrl'],['购买须知','purchaseNoticeUrl']].forEach(function(item,index){
+      var a=node('a',item[0]);a.href=config[item[1]];a.target='_blank';a.rel='noopener';policies.append(index ? document.createTextNode(' · ') : document.createTextNode(''),a);
+    });
+    function check(id,label){var wrap=node('label','','confirm-check'),input=node('input');input.type='checkbox';input.id=id;wrap.append(input,node('span',label));actions.append(wrap);return input;}
+    actions.append(policies);
+    var policy=check('reportPurchasePolicyConsent','我已阅读并同意以上六项条款，确认购买当前盘面的完整报告。');
+    var adult=check('reportPurchaseAdultConsent','我已满18周岁。');
+    var inFlight=false;
+    var submit=button('确认购买 ¥19.90',async function(){
+      if(inFlight||!policy.checked||!adult.checked||epoch!==generation)return;
+      inFlight=true;submit.disabled=true;
+      try{
+        var owner=member().snapshot().accountRef,key=owner+':'+id;
+        if(!pendingPurchaseKeys.has(key)){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);pendingPurchaseKeys.set(key,Array.from(bytes,function(b){return b.toString(16).padStart(2,'0');}).join(''));}
+        var result=await member().paidReportCreateOrder(id,{policyConsent:true,adultConfirmed:true},pendingPurchaseKeys.get(key));
+        if(epoch!==generation||member().snapshot().accountRef!==owner)return;
+        var order=result.order;
+        if(!order||!ORDER_RE.test(order.order_no||'')||order.paid_report_id!==id||order.product_code!=='deep_report_v1'||order.amount_fen!==1990||order.currency!=='CNY')throw error('ORDER_RESPONSE_INVALID');
+        window.location.assign(checkoutUrl(order.order_no,id));
+      }catch(e){if(epoch===generation){policy.checked=false;adult.checked=false;text('privatePurchaseBody',e.code==='WECHAT_BROWSER_REQUIRED'?'请在手机微信内打开本页完成支付。':'订单结果尚未确认。请先查看我的订单；再次确认会复用本次请求，避免重复建单。');}}
+      finally{inFlight=false;if(epoch===generation)submit.disabled=!policy.checked||!adult.checked;}
+    });
+    submit.id='reportPurchaseSubmit';submit.disabled=true;
+    function update(){submit.disabled=inFlight||!policy.checked||!adult.checked;}
+    policy.addEventListener('change',update);adult.addEventListener('change',update);actions.append(submit);
+  }
   async function renderPurchase(epoch) {
     var id = reportId(); if (!id) return;
     try {
@@ -211,9 +244,12 @@
         var catalog = await api.products(id); if (epoch !== generation) return;
         var report = (catalog.products || []).find(function (item) { return item.product_code === 'deep_report_v1'; });
         var price = priceLabel(report);
-        text('privatePurchaseBody', price ? price + ' · 赠送1次问星。根据你的盘面对知星进行任意提问解读。购买暂未开放。'
+        var allowed = purchaseReady() && report && report.purchase_eligible === true && report.payment_available === true &&
+          report.amount_fen === 1990 && report.currency === 'CNY';
+        text('privatePurchaseBody', price ? price + ' · 赠送1次问星。根据你的盘面对知星进行任意提问解读。' + (allowed ? '购买后可阅读完整五章，并下载保存。' : '购买暂未开放。')
           : '完整报告尚未开放购买。赠送1次问星，根据你的盘面对知星进行任意提问解读。');
-        var closed = button('暂未开放购买', function () {}); closed.disabled = true; append('privatePurchaseActions', closed);
+        if (allowed) renderPurchaseConfirmation(id,epoch);
+        else {var closed = button('暂未开放购买', function () {}); closed.disabled = true; append('privatePurchaseActions', closed);}
       }
     } catch (e) { if (epoch === generation) text('privatePurchaseBody', message(e)); }
   }
@@ -325,6 +361,7 @@
   }
   async function mountCheckout() {
     if (!isPrivate() || !$('paidCheckoutPage')) return;
+    if(checkoutRefreshTimer){clearTimeout(checkoutRefreshTimer);checkoutRefreshTimer=null;}
     var epoch = ++generation; var params = new URLSearchParams(location.search); var values = params.getAll('order');
     var orderNo = values.length === 1 && ORDER_RE.test(values[0]) ? values[0] : '';
     empty('checkoutActions'); hide('checkoutDetails'); hide('checkoutRefundNotice'); hide('checkoutCountdown'); hide('checkoutRecoveryNote', false);
@@ -345,11 +382,34 @@
       text('checkoutOrderNo', order.order_no); text('checkoutCreatedAt', order.created_at ? new Date(Number(order.created_at)).toLocaleString('zh-CN') : '—'); text('checkoutExpiresAt', order.expires_at ? new Date(Number(order.expires_at)).toLocaleString('zh-CN') : '—');
       text('checkoutCredits', order.status === 'refunded' ? '本单退款已完成' : done ? '以对应报告内可用次数为准' : '等待服务端交付'); hide('checkoutDetails', false);
       if (done && id) {
+        submittedOrders.delete(orderNo);
         text('checkoutBadge', '已完成'); text('checkoutTitle', '支付与交付已确认'); text('checkoutBody', '可返回对应报告继续阅读。');
         append('checkoutActions', link('返回这份报告', reportUrl(id) + (order.product_code === 'deep_report_v1' ? '' : '#sec-deep')));
       } else if (paid && order.status === 'entitlement_pending' && id) {
         text('checkoutBadge', '已付款'); text('checkoutTitle', '报告正在准备'); text('checkoutBody', '已确认收款，请勿重复付款。可进入报告查看交付状态并重试。');
         append('checkoutActions', link('查看报告状态', reportUrl(id)));
+      } else if (!paid && order.status === 'created' && submittedOrders.has(orderNo)) {
+        text('checkoutBadge','核对中');text('checkoutTitle','正在核对支付结果');
+        text('checkoutBody','已收到微信支付返回结果，请勿重复付款。正在向服务端确认收款与报告交付，也可点击下方刷新订单状态。');
+        if(Date.now()-submittedOrders.get(orderNo)<60000)checkoutRefreshTimer=setTimeout(function(){if(epoch===generation)mountCheckout();},11000);
+      } else if (!paid && id && order.status === 'created' && order.product_code === 'deep_report_v1' &&
+          order.amount_fen === 1990 && order.currency === 'CNY' && Number(order.expires_at)>Date.now() && purchaseReady() &&
+          window.ZxPaidAsk && window.ZxPaidAsk.validateJsapiCheckout(result)) {
+        text('checkoutBadge','待支付');text('checkoutTitle','确认微信支付');text('checkoutBody','完整深度报告 ¥19.90，赠送1次问星。请在微信支付页核对商户和金额。');
+        var pay=button('微信支付 ¥19.90',async function(){
+          if(epoch!==generation)return;pay.disabled=true;
+          try{
+            var owner=member().snapshot().accountRef,fresh=await ownedCall('paymentOrder',[orderNo]);
+            if(epoch!==generation||member().snapshot().accountRef!==owner)return;
+            var current=fresh.order;
+            if(!current||current.order_no!==orderNo||current.paid_report_id!==id||current.product_code!=='deep_report_v1'||current.amount_fen!==1990||current.currency!=='CNY'||current.status!=='created'||Number(current.expires_at)<=Date.now())throw error('ORDER_RESPONSE_INVALID');
+            var outcome=await window.ZxPaidAsk.invokeReportJsapi(fresh);
+            if(epoch!==generation)return;
+            if(outcome.outcome==='submitted')submittedOrders.set(orderNo,Date.now());
+            text('checkoutBody',outcome.outcome==='cancelled'?'已取消微信支付，订单尚未确认收款。':'微信支付结果已返回，正在向服务端核对付款与交付。');
+            await mountCheckout();
+          }catch(e){if(epoch===generation){text('checkoutBody','支付结果尚未确认，请刷新订单状态核对；系统不会根据浏览器提示发放报告。');pay.disabled=false;}}
+        });pay.id='reportCheckoutPay';append('checkoutActions',pay);
       } else {
         text('checkoutBadge', order.status === 'manual_review' ? '人工核验' : order.status === 'refunded' ? '已退款' : '待确认');
         text('checkoutTitle', order.status === 'manual_review' ? '订单需要人工核验' : order.status === 'refunded' ? '退款已完成' : '订单状态待确认');

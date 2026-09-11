@@ -372,6 +372,7 @@
   }
 </style>
 <link rel="stylesheet" href="./chart-ritual.css?v=d5226c2c3f2e">
+<link rel="stylesheet" href="./birth-location-picker.css?v=544f244a033d">
 </head>
 <body data-view-state="new" data-new-mode="landing">
 <a class="skip-link" href="#mainContent">跳到主要内容</a>
@@ -538,7 +539,7 @@
       <div class="field"><label for="bTime">出生时间<span class="optional">不确定可留空；节气交界日需补充</span></label><input type="time" id="bTime" aria-describedby="timeError"><div class="field-error" id="timeError" role="alert" hidden></div></div>
       <div class="field"><label for="bGender">排盘性别<span class="optional">用于当前传统排盘规则</span></label><select id="bGender"><option value="">不填</option><option>女</option><option>男</option><option>其他</option></select></div>
     </div>
-    <div class="field"><label for="bCity">出生城市<span class="optional">用于时间与地理位置换算</span></label><input type="text" id="bCity" placeholder="如：贵阳（无需填写详细住址）" autocomplete="address-level2"></div>
+    <div class="field"><label for="bCity">出生地点<span class="optional">用于时间与地理位置换算</span></label><input type="text" id="bCity" data-birth-location placeholder="输入省、市、区县，例如贵州黔南" maxlength="60" autocomplete="off"></div>
     <button class="cta" id="goBtn" type="button">生成我的日主图谱</button>
     <div class="hint" id="formReadiness">本服务暂不向不满 14 周岁的用户提供。页面不会要求身份证号、详细住址或联系方式来生成基础报告。</div>
   </section>
@@ -673,13 +674,15 @@
 
 <script src="./vendor/qrcode-generator.js?v=79ec86f82856"></script>
 <script src="./share-qr.js?v=107fa109a833"></script>
-<script src="./public-config.js?v=8e7f6ace89c0"></script>
-<script src="./privacy-consent.js?v=1babd09d8cad"></script>
+<script src="./public-config.js?v=313b0498352d"></script>
+<script src="./privacy-consent.js?v=baf0b66bced5"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
-<script src="./member.js?v=822fa4b43abd"></script>
-<script src="./paid-reports.js?v=b61fa1de0fb7"></script>
-<script src="./bazi-engine.js?v=fa5cf42481a0"></script>
+<script src="./member.js?v=de756a177add"></script>
+<script src="./display-profile.js?v=832d6efea439"></script>
+<script src="./paid-reports.js?v=9cd3ef52544f"></script>
+<script src="./bazi-engine.js?v=2f507cc27577"></script>
+<script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
 <script src="./home-decade-preview.js?v=964f74f5a801"></script>
 
@@ -1704,5 +1707,6 @@ function drawDayMasterPosterAsset(img){
   $('posterEquivalent').textContent=`日主 ${identity.label}，${identity.image}。卡片右下角为知星官网入口二维码。`;
 }
 </script>
+
 </body>
 </html>

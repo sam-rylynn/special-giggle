@@ -20,11 +20,11 @@
     privacyUrl: 'https://zhixng.cn/privacy.html',
     aiDisclosureUrl: 'https://zhixng.cn/ai-disclosure.html',
     purchaseNoticeUrl: 'https://zhixng.cn/purchase-notice.html',
-    agreementVersion: 'user-agreement-2026.08.25-paid-ask-v1',
-    privacyVersion: 'privacy-2026.08.25-paid-ask-v1',
-    membershipTermsVersion: 'ask-credits-2026.08.25-v1',
-    refundPolicyVersion: 'refund-2026.08.25-paid-ask-v1',
-    aiDisclosureVersion: 'ai-disclosure-2026.08.25-paid-ask-v1',
-    purchaseNoticeVersion: 'purchase-notice-2026.08.25-paid-ask-v1'
+    agreementVersion: 'user-agreement-2026.09.09-report-v1',
+    privacyVersion: 'privacy-2026.09.09-report-v1',
+    membershipTermsVersion: 'paid-report-2026.09.09-v1',
+    refundPolicyVersion: 'refund-2026.09.09-report-v1',
+    aiDisclosureVersion: 'ai-disclosure-2026.09.09-report-v1',
+    purchaseNoticeVersion: 'purchase-notice-2026.09.09-report-v1'
   });
 })();
