@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-6xda5SjFkcs+CNgEtJ2P8e/qS7Im0JhNZ+Cx6bzHGxs='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-9czi0N3fs7F5scVHmbMQHPt+F4Z0AApiQkVSogct7Ck='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -26,6 +26,11 @@
   html{background:var(--ink)}
   body{background:var(--ink);color:var(--moon);font-family:var(--sans);font-size:16px;line-height:1.8;min-height:100vh;overflow-x:hidden}
   #starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .chart-form-back{position:fixed;top:max(12px,env(safe-area-inset-top));left:max(16px,env(safe-area-inset-left));z-index:3;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border:1px solid rgba(201,168,92,.35);border-radius:8px;background:var(--ink);color:var(--moon);font:14px/1.5 var(--sans);cursor:pointer}
+  .chart-form-back:hover{color:var(--gold);border-color:var(--gold)}
+  .chart-form-back:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  body:not([data-view-state="new"]) .chart-form-back{display:none}
+  body[data-view-state="new"][data-new-mode="form"] .wrap{padding-top:80px}
   .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:0 22px 60px}
   @media(min-width:900px){.wrap{max-width:560px} body{font-size:17px}}
 
@@ -276,6 +281,9 @@
   .report-excerpt{color:var(--moon);font-size:1.0625rem;line-height:2;quotes:none;text-wrap:pretty}
   .report-preview-stage{margin-top:20px;color:#e2c581;font-size:1rem;font-weight:650;line-height:1.7}
   .report-excerpt strong{color:#f7e2ae;font-weight:650;text-decoration:underline;text-decoration-color:rgba(226,197,129,.5);text-decoration-thickness:1px;text-underline-offset:.24em}
+  .report-excerpt.is-annual .report-excerpt-context{display:block;margin-bottom:14px}
+  .report-excerpt.is-annual .report-excerpt-emphasis{font-size:1.125rem;line-height:1.85}
+  @media(max-width:600px){.report-excerpt.is-annual .report-excerpt-context{display:none}.report-excerpt.is-annual .report-excerpt-emphasis{font-size:1.0625rem}}
   .report-preview-source{margin-top:16px;color:var(--mist);font-size:.8125rem;line-height:1.7}
   .report-offer{margin-top:28px;padding:26px 20px;border:1px solid rgba(201,168,92,.35);border-radius:8px;background:rgba(201,168,92,.045)}
   .report-offer h4{font-family:var(--serif);font-size:1.25rem;color:var(--moon)}
@@ -344,6 +352,7 @@
   #consent .consent-check input{width:18px;height:18px;margin-top:2px;accent-color:var(--gold);flex:0 0 auto}
   #consent .actions{display:grid;grid-template-columns:1fr;gap:10px}
 
+
   footer{margin-top:56px;text-align:center;color:var(--mist);font-size:11px;line-height:2}
   .filing-link{display:inline-flex;align-items:center;min-height:32px;color:inherit;text-decoration:underline;text-underline-offset:3px}
   .filing-link:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
@@ -365,6 +374,24 @@
   body[data-view-state="result"] #introSection,
   body[data-view-state="result"] #resumePanel,
   body[data-view-state="result"] #formCard{display:none!important}
+  body[data-view-state="choosing"] header,
+  body[data-view-state="choosing"] #introSection,
+  body[data-view-state="choosing"] #resumePanel,
+  body[data-view-state="choosing"] #formCard,
+  body[data-view-state="choosing"] #ritual,
+  body[data-view-state="choosing"] #result{display:none!important}
+  #chartChooser[hidden]{display:none!important}
+  #chartChooser{margin-top:24px}
+  .home-chart-intro{color:#adb6c6;font-size:13px;line-height:1.8;margin:12px 0 24px}
+  .home-chart-list{display:grid;gap:12px;margin:18px 0}
+  .home-chart-entry{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 18px;text-align:left;background:#151e2f;border:1px solid #c9a85c45;border-radius:12px;color:var(--moon);font:inherit;cursor:pointer}
+  .home-chart-entry strong,.home-chart-entry small{display:block;overflow-wrap:anywhere}
+  .home-chart-entry strong{font-size:18px;font-weight:500}
+  .home-chart-entry small{font-size:12px;color:#adb6c6;line-height:1.7;margin-top:6px}
+  .home-chart-entry>span:last-child{color:var(--gold);white-space:nowrap;font-size:13px}
+  .home-chart-entry:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
+  .home-chart-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+  .home-chart-actions .btn{min-height:44px;font-size:13px;padding:12px 16px}
   /* 放在所有组件规则之后，避免后定义的动画覆盖减少动态偏好。 */
   @media(prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
@@ -373,13 +400,15 @@
 </style>
 <link rel="stylesheet" href="./chart-ritual.css?v=d5226c2c3f2e">
 <link rel="stylesheet" href="./birth-location-picker.css?v=544f244a033d">
+<link rel="stylesheet" href="./synastry-entry.css?v=0989e4f9c19f">
 </head>
-<body data-view-state="new" data-new-mode="landing">
+<body class="synastry-approved-layout" data-view-state="new" data-new-mode="landing">
 <a class="skip-link" href="#mainContent">跳到主要内容</a>
 <canvas id="starfield"></canvas>
 <div class="share-notice" id="shareNotice" role="status" hidden><span id="shareNoticeText"></span><button id="shareNoticeClose" type="button" aria-label="关闭提示">×</button></div>
 
 <div class="wrap">
+  <button class="chart-form-back" id="cancelChartForm" type="button" hidden><span aria-hidden="true">←</span> 返回上一页</button>
   <header id="heroSection" tabindex="-1">
     <!-- 静态星空(局部,向下渐隐) -->
     <svg class="stars" viewBox="0 0 375 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -483,6 +512,15 @@
   </header>
 
   <main id="mainContent">
+  
+  <section id="chartChooser" class="card" aria-labelledby="chartChooserTitle" hidden>
+    <p class="resume-kicker">我 的 图 谱</p>
+    <h2 id="chartChooserTitle" tabindex="-1">今天，想看看哪张盘</h2>
+    <p class="home-chart-intro">基础图谱在本机保留 2 张，直到你主动删除。已购深度报告按账号单独保存。</p>
+    <div id="homeChartList" class="home-chart-list"></div>
+    <p id="homeChartStatus" class="home-chart-intro" role="status" aria-live="polite"></p>
+    <div class="home-chart-actions"><a class="btn ghost" href="./profile.html" id="homeChartsProfile">我的资料</a></div>
+  </section>
   <section id="resumePanel" class="card resume-panel" aria-labelledby="resumeTitle" hidden>
     <p class="resume-kicker">继续上次图谱</p>
     <h2 id="resumeTitle">你的出生资料还在本机</h2>
@@ -491,6 +529,7 @@
     <div class="resume-actions">
       <button class="cta" id="resumeContinueBtn" type="button">继续上次图谱</button>
       <button class="btn ghost" id="resumeEditBtn" type="button">重新填写</button>
+      <a class="btn ghost" href="./profile.html" id="resumeProfileLink">我的资料</a>
     </div>
   </section>
 
@@ -624,6 +663,12 @@
           <ul class="report-chapters" aria-label="报告五章"><li>壹 · 总览</li><li>贰 · 盘面</li><li>叁 · 关系</li><li>肆 · 行动</li><li>伍 · 时间</li></ul>
         </details>
       </div>
+      <section class="syn-entry syn-entry-home" id="synastry-entry" aria-labelledby="synEntryTitle">
+        <div class="syn-entry-top"><div><span class="syn-entry-label">知星 · 合盘</span><h2 id="synEntryTitle">谁与你<br>更合拍？</h2></div><img src="./media/synastry/pair-orbit.webp" width="1536" height="1024" alt="两枚沿轨道靠近的星体"></div>
+        <p class="syn-entry-copy">你容易被谁吸引，<br>又会在哪里互相拉扯？</p>
+        <div class="syn-entry-actions"><a id="homeRankSynastry" class="syn-entry-primary" href="./synastry.html#rank">查看合拍类型 <span aria-hidden="true">→</span></a><a id="homeInviteSynastry" class="syn-entry-secondary" href="./synastry.html#invite">邀请 TA 合盘 <span aria-hidden="true">↗</span></a></div>
+        <p class="syn-entry-note">双方深度报告交付并同意后，合盘免费解锁。</p>
+      </section>
     </section>
 
     <div class="share-gate" id="shareGate" aria-live="polite">
@@ -635,11 +680,13 @@
       <div class="share-gate-status" id="shareGateStatus"></div>
     </div>
     
-    <button class="again" id="againBtn" type="button">重新生成一次</button>
+    <button class="again" id="switchChartBtn" type="button" hidden>切换图谱</button>
     <div class="divider">观 星 台</div>
   </section>
 
   </main>
+
+
 
   <footer>
     本页面基于传统文化框架生成基础盘面，仅供自我探索与个人发展参考。<br>
@@ -653,10 +700,10 @@
 
 <div id="consent"><div class="box" role="dialog" aria-modal="true" aria-labelledby="consentTitle" aria-describedby="consentSummary">
   <h3 id="consentTitle">开始前，先确认资料如何使用</h3>
-  <p id="consentSummary">你填写的出生日期、出生时间、出生城市和性别，会用于生成个人文化图谱、基础内容和深度发展报告。未主动保存到账号报告库且未开启个人图谱云端同步时，资料只保存在当前浏览器，用于返回继续查看。</p>
+  <p id="consentSummary">你填写的出生日期、出生时间、出生地点、排盘性别和称呼，用于生成基础图谱。本机最多保存 2 张基础图谱，保留到你主动删除，可在“我的资料”逐张删除，或在“隐私选择”撤回本机处理同意并全部删除。清理浏览器数据也会移除图谱；已购深度报告按账号单独保存，不占这 2 个名额。录入他人资料前，请先取得对方同意。</p>
   <p>本次确认只用于生成基础图谱和报告预览，不会自动发送给第三方大模型，也不会自动购买。首次问星前会另行说明发送范围并取得 AI 处理同意。</p>
   <p class="privacy-link">提交前请阅读<a href="./privacy.html" target="_blank" rel="noopener">《隐私政策》</a>，了解运营主体、处理范围、保存期限和你的资料权利。</p>
-  <label class="consent-check"><input type="checkbox" id="consentCheck"><span id="consentCheckText">我已阅读上述说明，同意在当前浏览器处理并保存出生资料，用于生成个人文化图谱和返回查看。</span></label>
+  <label class="consent-check"><input type="checkbox" id="consentCheck"><span id="consentCheckText">我已阅读上述说明，同意在本机处理并保存出生资料和称呼，基础图谱保留到主动删除。</span></label>
   <p>产品改进统计默认关闭。你可随时通过页尾“隐私选择”撤回问星处理同意，或清除页面可删除的本机知星存储资料。</p>
   <div class="actions">
     <button class="cta" style="margin-top:0" id="consentOk" disabled>同意并继续</button>
@@ -675,16 +722,18 @@
 <script src="./vendor/qrcode-generator.js?v=79ec86f82856"></script>
 <script src="./share-qr.js?v=107fa109a833"></script>
 <script src="./public-config.js?v=313b0498352d"></script>
-<script src="./privacy-consent.js?v=baf0b66bced5"></script>
+<script src="./privacy-consent.js?v=e9d931611689"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
-<script src="./member.js?v=de756a177add"></script>
-<script src="./display-profile.js?v=832d6efea439"></script>
-<script src="./paid-reports.js?v=9cd3ef52544f"></script>
+<script src="./member.js?v=25e49ea8a24c"></script>
+<script src="./chart-vault.js?v=f535f1fbeefa"></script>
+<script src="./display-profile.js?v=642992651d04"></script>
+<script src="./paid-reports.js?v=64df71d0ad76"></script>
+<script src="./profile-purchase.js?v=f109ff9f9e79"></script>
 <script src="./bazi-engine.js?v=2f507cc27577"></script>
 <script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
-<script src="./home-decade-preview.js?v=964f74f5a801"></script>
+<script src="./home-decade-preview.js?v=48311f4d9963"></script>
 
 
 
@@ -825,10 +874,11 @@ $('shareNoticeClose').onclick=()=>$('shareNotice').hidden=true;
 
 let chartRitualRun=null;
 function setViewState(state,{formOnly=false}={}){
-  if(!['new','returning','result'].includes(state))throw new Error('invalid view state');
+  if(!['new','returning','result','choosing'].includes(state))throw new Error('invalid view state');
   document.body.dataset.viewState=state;
   document.body.dataset.newMode=formOnly?'form':'landing';
   $('resumePanel').hidden=state!=='returning';
+  $('chartChooser').hidden=state!=='choosing';
   $('formCard').hidden=state!=='new';
   if(state!=='result'){
     if(chartRitualRun){chartRitualRun.cancel();chartRitualRun=null;}
@@ -1095,6 +1145,8 @@ function prunePrivateDrafts(){
     try{const value=JSON.parse(storage.getItem(key)||'null');if(value&&!privateDraftFresh(value.createdAt))storage.removeItem(key);}catch(_){try{storage.removeItem(key);}catch(_){} }
   }
   try{sessionStorage.removeItem('zx_report_handoff_v1');}catch(_){}
+  // Temporary handoffs still expire; a separately saved chart is not a draft.
+  if(CUR&&(CUR.libraryId&&window.ZxChartVault&&ZxChartVault.get(CUR.libraryId)||CUR.ownedReport))return false;
   if(!privateDraftWrittenAt||privateDraftFresh(privateDraftWrittenAt))return false;
   privateDraftWrittenAt=0;privateHomeRevision++;privatePreviewConsent=false;preparedHomeReport=null;CUR=null;
   for(const id of ['bDate','bTime','bCity','bGender'])if($(id))$(id).value='';
@@ -1133,6 +1185,7 @@ function validateBirthDate(){
 }
 $('bDate').addEventListener('input',()=>{if($('bDate').value)validateBirthDate()});
 let consentReturnFocus=null;
+let consentRevision=0;
 let consentPreviousOverflow='';
 const modalBackground=[document.querySelector('.skip-link'),$('starfield'),$('shareNotice'),document.querySelector('.wrap')].filter(Boolean);
 function setModalBackgroundInert(inert){
@@ -1155,9 +1208,10 @@ function consentFocusable(){
     .filter(element=>!element.hidden&&element.offsetParent!==null);
 }
 function openConsent(){
+  consentRevision++;
   if(privateReportMode()){
-    $('consentSummary').textContent='你填写的出生日期、时间、城市和性别，会在当前浏览器生成基础图谱，在本机最多保存 24 小时；同一组资料会发送到知星服务器，用于生成这张盘的十年解读节选。节选请求不会把资料保存到账号。';
-    $('consentCheckText').textContent='我已阅读上述说明，同意在本机处理并保存出生资料最多 24 小时，并将这些资料发送到知星服务器生成报告节选。';
+    $('consentSummary').textContent='出生日期、时间、地点、排盘性别和称呼用于生成基础图谱。本机最多保存 2 张，保留到你主动删除，可在“我的资料”逐张删除或在“隐私选择”撤回本机处理同意并全部删除。清理浏览器数据也会移除图谱；已购报告按账号单独保存，不占这 2 个名额。录入他人资料前请先取得对方同意。日期、时间、地点和性别也会发送到知星服务器生成报告节选；节选请求不会把资料保存到账号。';
+    $('consentCheckText').textContent='我已阅读上述说明，同意在本机处理并保存出生资料和称呼直到主动删除，并将所述出生资料发送到知星服务器生成报告节选。';
   }
   $('consentCheck').checked=false;
   $('consentOk').disabled=true;
@@ -1171,6 +1225,7 @@ function openConsent(){
   requestAnimationFrame(()=>$('consentCheck').focus());
 }
 function closeConsent(restoreFocus=true){
+  consentRevision++;
   $('consent').style.display='none';
   document.body.style.overflow=consentPreviousOverflow;
   setModalBackgroundInert(false);
@@ -1199,14 +1254,14 @@ $('consent').addEventListener('keydown',event=>{
   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus()}
 });
-function startGenerationFromForm(precomputedChart){
+function startGenerationFromForm(precomputedChart,options={}){
   const input=currentConfirmedInput();
   if(!HOME_CONTENT||!window.BaziEngine)throw new Error('content runtime unavailable');
   const chart=precomputedChart||chartForCurrentForm();
   if(!chart)return false;
-  if(privateReportMode())privateDraftWrittenAt=Date.now();
+  if(privateReportMode())privateDraftWrittenAt=options.selection?0:Date.now();
   privateHomeRevision++;
-  preparedHomeReport=null;
+  preparedHomeReport=options.report||null;
   $('reportPreparePanel').hidden=true;
   $('reportLoginLink').hidden=true;
   const day=chart.pillars.day;
@@ -1217,12 +1272,15 @@ function startGenerationFromForm(precomputedChart){
     input,
     reportInput:{d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:$('bGender')?$('bGender').value:''},
     chart,
+    libraryId:options.selection&&options.selection.kind==='local'?options.selection.id:null,
+    ownedReport:options.report||null,
     home:HOME_CONTENT.buildHome(chart),
     dualShare:HOME_CONTENT.buildShare(chart)
   };
-  try{sessionStorage.setItem('zx_active_input_v1',JSON.stringify(currentTabInputRecord(chart.input)))}catch(_){}
+  if(!options.report)try{sessionStorage.setItem('zx_active_input_v1',JSON.stringify(currentTabInputRecord(chart.input)))}catch(_){}
   if(chartRitualRun){chartRitualRun.cancel();chartRitualRun=null;}
   if(document.fonts)document.fonts.load('32px "Zhixing Idiom Brush"',CUR.dualShare.title).catch(()=>{});
+  if(options.restore){showResult();return true;}
   setViewState('result');
   $('result').hidden=true;
   $('result').style.display='none';
@@ -1241,7 +1299,7 @@ function startGenerationFromForm(precomputedChart){
   }else showResult();
   return true;
 }
-$('consentOk').onclick=()=>{
+$('consentOk').onclick=async()=>{
   if(!validateBirthDate()){closeConsent(false);return}
   if(!$('consentCheck').checked)return;
   if(!window.ZxPrivacyConsent){
@@ -1255,47 +1313,39 @@ $('consentOk').onclick=()=>{
   }
   const chart=chartForCurrentForm();
   if(!chart){closeConsent(false);return}
+  const revision=privateHomeRevision,confirmation=consentRevision,input=currentChartPayload();
+  $('consentOk').disabled=true;
+  $('consentOk').textContent='正在保存图谱';
   trackEvent('birth_consent_granted',{outcome:'granted'});
+  let entry;
   try{
-    localStorage.setItem('zx_input',JSON.stringify({d:$('bDate').value,t:$('bTime').value,c:$('bCity').value,g:($('bGender')?$('bGender').value:''),
-      ...(privateReportMode()?{createdAt:Date.now()}: {})}));
-  }catch(_){
-    $('consentOk').textContent='本机资料暂时无法保存';
+    if(!window.ZxChartVault)throw new Error('chart library unavailable');
+    const draft={input,name:$('bDisplayName')?$('bDisplayName').value:''};
+    const editingId=window.ZxHomeCharts&&ZxHomeCharts.editingId();
+    entry=editingId?await ZxChartVault.updateInput(editingId,draft):await ZxChartVault.save(draft);
+    if(revision!==privateHomeRevision||confirmation!==consentRevision||!ZxPrivacyConsent.has('birth_local'))return;
+    ZxChartVault.select({kind:'local',id:entry.id});
+  }catch(error){
+    $('consentOk').disabled=false;
+    $('consentOk').textContent=error&&error.code==='CHART_LIMIT'?'本机已保存 2 张，请先在我的资料删除一张':error&&error.message||'本机资料暂时无法保存，请重试';
     return;
   }
   closeConsent(false);
   privatePreviewConsent=privateReportMode();
-  startGenerationFromForm(chart);
+  if(window.ZxHomeCharts)ZxHomeCharts.saved(entry);
+  startGenerationFromForm(chart,{selection:{kind:'local',id:entry.id}});
 };
 
 /* 返回用户:带出上次填写的盘,一键继续,不用重填(设备级;跨设备/会员待账号系统) */
-(function resumeLast(){
-  prunePrivateDrafts();
-  if(!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){setViewState('new');return}
-  let last=currentTabSavedInput();
-  if(!last)try{last=JSON.parse(localStorage.getItem('zx_input')||'null');if(privateReportMode()&&last)privateDraftWrittenAt=last.createdAt;}catch(_){}
-  if(!last||!last.d){setViewState('new');return}
-  const age=ZxMinimumAge.evaluateMinimumAge(last.d);
-  if(!age.valid||!age.allowed){try{localStorage.removeItem('zx_input')}catch(_){}setViewState('new');return}
-  if($('bDate')) $('bDate').value=last.d;
-  if($('bTime')) $('bTime').value=last.t||'';
-  if($('bCity')) $('bCity').value=last.c||'';
-  if($('bGender')) try{$('bGender').value=last.g||''}catch(_){}
-  $('resumeSummary').textContent=last.d+(last.t?' · '+last.t:'')+(last.c?' · '+last.c:'');
-  setViewState('returning');
-})();
+// home-charts.js restores an explicitly chosen library entry. Legacy single
+// drafts are offered for a fresh retention confirmation before being saved.
 
 $('resumeContinueBtn').onclick=()=>{
-  if(prunePrivateDrafts())return;
   if(!validateBirthDate()){showFormDirect();return}
-  if(privateReportMode()||!window.ZxPrivacyConsent||!ZxPrivacyConsent.has('birth_local')){
-    setViewState('new',{formOnly:true});
-    openConsent();
-    return;
-  }
-  startGenerationFromForm();
+  setViewState('new',{formOnly:true});
+  openConsent();
 };
-$('resumeEditBtn').onclick=showFormDirect;
+$('resumeEditBtn').onclick=()=>window.ZxHomeCharts?ZxHomeCharts.add():showFormDirect();
 
 function replaceTextList(id,items){
   const target=$(id);
@@ -1395,20 +1445,37 @@ function renderContentHome(){
 
 function renderHomeReportExcerpt(excerpt){
   $('reportPreview').hidden=!excerpt;
-  $('reportPreviewStage').textContent=excerpt ? excerpt.stage : '';
+  $('reportPreviewStage').textContent=excerpt ? (excerpt.label || excerpt.stage || '') : '';
   $('reportPreviewTitle').textContent=excerpt ? excerpt.title : '';
-  $('reportPreviewBody').replaceChildren();
+  const paragraph=$('reportPreviewBody');
+  paragraph.replaceChildren();
+  paragraph.classList.remove('is-annual');
   $('reportPreviewSource').textContent='';
   if(excerpt){
-    const paragraph=$('reportPreviewBody');
-    const emphasis=typeof excerpt.bold==='string' ? excerpt.bold : '';
-    const position=emphasis ? excerpt.body.indexOf(emphasis) : -1;
-    if(position<0) paragraph.textContent=excerpt.body;
-    else{
+    const annual=excerpt.kind==='annual' && typeof excerpt.emphasis==='string' && excerpt.emphasis.trim();
+    if(annual){
+      paragraph.classList.add('is-annual');
+      if(typeof excerpt.context==='string' && excerpt.context.trim()){
+        const context=document.createElement('span');
+        context.className='report-excerpt-context';
+        context.textContent=excerpt.context.replace(/([。！？])(?:\s*\1)+$/u,'$1');
+        paragraph.append(context);
+      }
       const strong=document.createElement('strong');
-      strong.textContent=emphasis;
-      paragraph.append(document.createTextNode(excerpt.body.slice(0,position)),strong,
-        document.createTextNode(excerpt.body.slice(position+emphasis.length)));
+      strong.className='report-excerpt-emphasis';
+      strong.textContent=excerpt.emphasis;
+      paragraph.append(strong);
+    }else{
+      const body=String(excerpt.body || '');
+      const emphasis=typeof excerpt.bold==='string' ? excerpt.bold : '';
+      const position=emphasis ? body.indexOf(emphasis) : -1;
+      if(position<0) paragraph.textContent=body;
+      else{
+        const strong=document.createElement('strong');
+        strong.textContent=emphasis;
+        paragraph.append(document.createTextNode(body.slice(0,position)),strong,
+          document.createTextNode(body.slice(position+emphasis.length)));
+      }
     }
     $('reportPreviewSource').textContent='节选自「'+excerpt.chapter+'」｜'+excerpt.source;
   }
@@ -1416,26 +1483,42 @@ function renderHomeReportExcerpt(excerpt){
 
 async function loadPrivateHomePreview(){
   if(!privateReportMode()||!CUR)return;
+  if(CUR.ownedReport){
+    const excerpt=CUR.ownedReport.snapshot&&CUR.ownedReport.snapshot.preview&&CUR.ownedReport.snapshot.preview.excerpt;
+    renderHomeReportExcerpt(excerpt||null);
+    $('reportPurchaseBtn').disabled=false;
+    $('reportPurchaseBtn').textContent='阅读已购深度报告';
+    $('reportOfferStatus').textContent='这份报告已购买，可继续阅读。';
+    return;
+  }
   const target=CUR, revision=++privateHomeRevision;
   renderHomeReportExcerpt(null);
   $('reportPreview').hidden=false;
-  $('reportPreviewTitle').textContent='正在读取这张盘的十年解读';
+  $('reportPreviewTitle').textContent='正在读取这张盘的年度解读';
   $('reportOfferStatus').textContent='报告节选读取中，请稍候。';
   $('reportPurchaseBtn').disabled=true;
   $('reportPurchaseBtn').textContent='查看购买信息';
   $('reportPreviewRetry').hidden=true;
   try{
-    if(!privatePreviewConsent||!window.ZxPaidReports)throw new Error('REPORT_PREVIEW_CONSENT_REQUIRED');
+    if(!privatePreviewConsent){
+      const excerpt=window.ZhixingHomeDecadePreview&&ZhixingHomeDecadePreview.buildTeaser(target.chart);
+      if(excerpt){
+        renderHomeReportExcerpt(excerpt);$('reportPurchaseBtn').disabled=false;$('reportPurchaseBtn').textContent='了解并购买深度报告';
+        $('reportOfferStatus').textContent='查看当前图谱的完整报告内容、价格与购买说明。';return;
+      }
+      throw new Error('REPORT_PREVIEW_INPUT_INCOMPLETE');
+    }
+    if(!window.ZxPaidReports)throw new Error('REPORT_PREVIEW_UNAVAILABLE');
     const preview=await ZxPaidReports.preview(target.reportInput,{transferConfirmed:true});
     if(CUR!==target||revision!==privateHomeRevision)return;
     const excerpt=preview&&preview.excerpt;
     if(!excerpt){
-      $('reportPreviewTitle').textContent='补充资料后查看十年解读';
+      $('reportPreviewTitle').textContent='补充资料后查看年度解读';
       const missing=preview&&preview.missingCriticalInput||[];
       $('reportPreviewBody').textContent=missing.includes('birth_time')&&missing.includes('gender')
         ?'请补充出生时间与性别，才能生成对应的时间解读。'
         :missing.includes('birth_time')?'请补充出生时间，才能生成对应的时间解读。'
-        :missing.includes('gender')?'请补充性别，才能生成对应的时间解读。':'这组资料暂时没有可用的十年节选，请核对资料后重试。';
+        :missing.includes('gender')?'请补充性别，才能生成对应的时间解读。':'这组资料暂时没有可用的年度节选，请核对资料后重试。';
       $('reportOfferStatus').textContent='请返回资料表单补充后再继续。';
       return;
     }
@@ -1446,22 +1529,26 @@ async function loadPrivateHomePreview(){
   }catch(error){
     if(CUR!==target||revision!==privateHomeRevision)return;
     // The free excerpt remains readable when the paid report service is closed.
-    // This module contains only the public next-decade paragraph, never a full report.
+    // This module contains only the public annual excerpt, never a full report.
     let excerpt=null;
     try{excerpt=window.ZhixingHomeDecadePreview&&ZhixingHomeDecadePreview.buildTeaser(target.chart)}catch(_){}
     if(excerpt){
       renderHomeReportExcerpt(excerpt);
-      $('reportPreviewRetry').hidden=!!(error&&error.code==='REPORT_SERVICE_UNAVAILABLE');
+      $('reportPreviewRetry').hidden=!privatePreviewConsent||!!(error&&error.code==='REPORT_SERVICE_UNAVAILABLE');
       $('reportPreviewRetry').textContent='重新查看购买信息';
     }else{
       const missingTime=!target.reportInput.t,missingGender=!target.reportInput.g;
-      $('reportPreviewTitle').textContent=missingTime||missingGender?'补充资料后查看十年解读':'这张盘暂时没有可用的十年节选';
+      $('reportPreviewTitle').textContent=missingTime||missingGender?'补充资料后查看年度解读':'这张盘暂时没有可用的年度节选';
       $('reportPreviewBody').textContent=missingTime&&missingGender?'请补充出生时间与性别，才能生成对应的时间解读。'
         :missingTime?'请补充出生时间，才能生成对应的时间解读。'
         :missingGender?'请补充性别，才能生成对应的时间解读。':'请核对出生资料后重新生成。';
       $('reportPreviewRetry').hidden=missingTime||missingGender;
     }
-    $('reportOfferStatus').textContent='购买暂未开放，不会发起扣款。';
+    $('reportPurchaseBtn').disabled=false;
+    $('reportPurchaseBtn').textContent='了解并购买深度报告';
+    $('reportOfferStatus').textContent=error&&error.code==='REPORT_SERVICE_UNAVAILABLE'
+      ?'购买暂未开放；可以查看资料确认说明，不会发起扣款。'
+      :'基础图谱与节选可继续查看；购买时再单独确认账号保存与资料传输。';
   }
 }
 
@@ -1491,10 +1578,22 @@ $('reportPurchaseBtn').onclick=()=>{
     else ZxPaidReports.checkoutReport(preparedHomeReport.report_id);
     return;
   }
-  resetReportPrepare();
-  $('reportPrepareSummary').textContent=[CUR.reportInput.d,CUR.reportInput.t,CUR.reportInput.c,CUR.reportInput.g].filter(Boolean).join(' · ');
-  $('reportPreparePanel').hidden=false;
-  document.querySelector('input[name="reportSubject"]').focus();
+  const current=CUR,entry=current.libraryId&&window.ZxChartVault&&ZxChartVault.get(current.libraryId);
+  if(entry&&window.ZxProfilePurchase){
+    const opening=window.zxMember?.snapshot?.()||{},account=opening.authenticated===true&&opening.identityKind==='wechat'&&/^[a-f0-9]{64}$/.test(opening.accountRef||'')&&ZxPrivacyConsent.has('device_account')?opening.accountRef:'';
+    const copy={...entry,input:{...entry.input}};
+    if(copy.accountRef!==account){delete copy.reportId;delete copy.accountRef;}
+    ZxProfilePurchase.open({entry:copy,returnLabel:'返回日主页',onPrepared:async reportId=>{
+      const state=window.zxMember?.snapshot?.()||{};
+      if(!account||state.authenticated!==true||state.identityKind!=='wechat'||state.accountRef!==account||!ZxPrivacyConsent.has('device_account'))throw new Error('ACCOUNT_CHANGED');
+      if(CUR!==current)throw new Error('CHART_CHANGED');
+      await ZxChartVault.bindReport(entry.id,reportId,account,copy.input);
+    },onChanged:()=>window.ZxHomeCharts?.refresh()});
+    return;
+  }
+  const destination=new URL(window.ZxHomeCharts?ZxHomeCharts.route('profile'):ZxPaidReports.profileUrl(),location.href);
+  if(current.libraryId)destination.searchParams.set('chart',current.libraryId);
+  location.href=destination.href;
 };
 $('reportPrepareCancel').onclick=()=>{
   $('reportPreparePanel').hidden=true;
@@ -1506,7 +1605,7 @@ $('reportPrepareConfirm').onclick=async()=>{
   const selected=document.querySelector('input[name="reportSubject"]:checked');
   if(prepareInFlight||!privateReportMode()||!CUR||!selected||!$('reportStorageConsent').checked
     ||(selected.value==='other'&&!$('reportPermission').checked))return;
-  const current=CUR,revision=privateHomeRevision;
+  const current=CUR,revision=privateHomeRevision,localId=CUR.libraryId;
   prepareInFlight=true;
   syncReportPrepare();
   try{
@@ -1519,10 +1618,16 @@ $('reportPrepareConfirm').onclick=async()=>{
       $('reportLoginLink').hidden=false;
       return;
     }
+    const purchaseOwner=zxMember.snapshot().accountRef;
+    if(!/^[a-f0-9]{64}$/.test(purchaseOwner||''))throw new Error('ACCOUNT_IDENTITY_REQUIRED');
     const result=await ZxPaidReports.prepare(current.reportInput,{transferConfirmed:true,storageConfirmed:true,
       subjectIsSelf:selected.value==='self',permissionConfirmed:selected.value==='other'&&$('reportPermission').checked});
-    if(CUR!==current||revision!==privateHomeRevision)return;
+    if(CUR!==current||revision!==privateHomeRevision||zxMember.snapshot().accountRef!==purchaseOwner)return;
     if(!result||!/^[a-f0-9]{48}$/.test(result.report_id||''))throw new Error('REPORT_PREPARATION_INVALID');
+    if(localId&&window.ZxChartVault&&ZxChartVault.get(localId)){
+      await ZxChartVault.bindReport(localId,result.report_id,purchaseOwner,current.reportInput);
+      if(CUR!==current||revision!==privateHomeRevision||zxMember.snapshot().accountRef!==purchaseOwner)return;
+    }
     preparedHomeReport=result;
     if(result.preview&&result.preview.excerpt)renderHomeReportExcerpt(result.preview.excerpt);
     $('reportPreparePanel').hidden=true;
@@ -1577,7 +1682,7 @@ function showResult(){
   $('confirmedHome').hidden=false;
   renderResultPrecision();
   renderContentHome();
-  $('resultStatus').textContent='双盘日主页已生成。';
+  $('resultStatus').textContent='日主页已就绪。';
   setViewState('result');
   $('result').hidden=false;
   $('result').style.display='block';
@@ -1589,13 +1694,7 @@ function showResult(){
   });
 }
 
-$('againBtn').onclick=()=>{
-  privateHomeRevision++;
-  privatePreviewConsent=false;
-  preparedHomeReport=null;
-  CUR=null;
-  showFormDirect();
-};
+$('switchChartBtn').onclick=()=>{if(window.ZxHomeCharts)ZxHomeCharts.choose();};
 
 /* ============ 本机审核入口：不是购买权益，也不作为公开付费校验 ============ */
 
@@ -1706,7 +1805,34 @@ function drawDayMasterPosterAsset(img){
   c.setAttribute('aria-label',`知星日主身份卡：${identity.label}，${identity.image}`);
   $('posterEquivalent').textContent=`日主 ${identity.label}，${identity.image}。卡片右下角为知星官网入口二维码。`;
 }
+window.ZxHomeChartBridge={
+  setForm(input){for(const [id,key] of [['bDate','d'],['bTime','t'],['bCity','c'],['bGender','g']])$(id).value=input[key]||'';},
+  reset(){
+    privateHomeRevision++;privatePreviewConsent=false;preparedHomeReport=null;privateDraftWrittenAt=0;CUR=null;
+    if($('consent').style.display==='flex')closeConsent(false);
+    if(window.ZxProfilePurchase)ZxProfilePurchase.close();
+    if(chartRitualRun){chartRitualRun.cancel();chartRitualRun=null;}
+    $('reportPreparePanel').hidden=true;resetReportPrepare();
+    for(const id of ['bDate','bTime','bCity','bGender'])$(id).value='';
+    $('resumeSummary').textContent='';
+    for(const id of ['ageError','timeError']){$(id).hidden=true;$(id).textContent='';}
+    for(const id of ['bDate','bTime'])$(id).removeAttribute('aria-invalid');
+  },
+  openInput(input,options={}){this.reset();this.setForm(input);const chart=chartForCurrentForm();return chart?startGenerationFromForm(chart,options):false;},
+  showChooser(){setViewState('choosing');},
+  showNew(formOnly=true){setViewState('new',{formOnly});},
+  requestSaveLast(input,confirmNow=false){
+    this.reset();this.setForm(input);$('resumeSummary').textContent=[input.d,input.t,input.c].filter(Boolean).join(' · ');
+    $('resumeTitle').textContent='保存上次图谱，之后随时回来';
+    $('resumeContinueBtn').textContent='保存上次图谱';
+    document.querySelector('.resume-note').textContent='确认新的保存方式后，加入本机图谱库；已有图谱不会被覆盖。';
+    setViewState('returning');if(confirmNow)openConsent();
+  },
+  getCurrent(){return CUR;},
+  privateMode:privateReportMode
+};
 </script>
+<script src="./home-charts.js?v=7d1b18692ea7"></script>
 
 </body>
 </html>

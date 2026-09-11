@@ -5,6 +5,9 @@
   'use strict';
 
   var NOTICE_VERSION = 'privacy-2026.09.09-report-v1';
+  // The device chart library has its own notice. Updating local retention does
+  // not revoke the separate account/AI choices or revise existing purchase terms.
+  var BIRTH_LOCAL_NOTICE_VERSION = 'birth-local-2026.09.11-library-v1';
   var CHOICES_KEY = 'zx_privacy_choices_v1';
   var SUPPORT_EMAIL = 'wyh767745207@qq.com';
   var DOCK_SUPPRESSED = false;
@@ -12,8 +15,12 @@
     'zx_input',
     'zx_saved_reports_v1',
     'zx_profile_name_v1',
+    'zx_chart_library_v1',
     CHOICES_KEY
   ];
+  var BIRTH_DATA_KEYS = ['zx_chart_library_v1', 'zx_chart_selection_v1', 'zx_input',
+    'zx_active_input_v1', 'zx_report_handoff_v1', 'zx_display_profile_v1',
+    'zx_saved_reports_v1', 'zx_profile_name_v1'];
   var SCOPES = ['birth_local', 'device_account', 'ai_processing', 'product_analytics'];
 
   function readJson(key) {
@@ -38,7 +45,9 @@
   }
 
   function has(scope) {
-    return SCOPES.indexOf(scope) >= 0 && !!readChoices().scopes[scope];
+    if (SCOPES.indexOf(scope) < 0) return false;
+    var choice = readChoices().scopes[scope];
+    return !!choice && (scope !== 'birth_local' || choice.noticeVersion === BIRTH_LOCAL_NOTICE_VERSION);
   }
 
   function grant(scopes) {
@@ -46,7 +55,10 @@
     var saved = readChoices();
     var now = new Date().toISOString();
     list.forEach(function (scope) {
-      if (SCOPES.indexOf(scope) >= 0) saved.scopes[scope] = { grantedAt: now };
+      if (SCOPES.indexOf(scope) >= 0) {
+        saved.scopes[scope] = { grantedAt: now };
+        if (scope === 'birth_local') saved.scopes[scope].noticeVersion = BIRTH_LOCAL_NOTICE_VERSION;
+      }
     });
     saved.updatedAt = now;
     if (!writeChoices(saved)) throw new Error('privacy choice unavailable');
@@ -59,14 +71,48 @@
     else saved.scopes = {};
     saved.updatedAt = new Date().toISOString();
     if (!writeChoices(saved)) throw new Error('privacy choice unavailable');
+    if (!scope || scope === 'birth_local') {
+      try { clearBirthLocalData(); } finally { notify('zx-birth-local-cleared'); }
+    }
+    if (!scope || scope === 'device_account') notify('zx-account-consent-revoked');
     return saved;
   }
+
+  function notify(type) {
+    try { window.dispatchEvent(new CustomEvent(type)); } catch (_) {}
+  }
+
+  function clearBirthLocalData() {
+    [localStorage, typeof sessionStorage !== 'undefined' ? sessionStorage : null].forEach(function (storage) {
+      if (!storage) return;
+      BIRTH_DATA_KEYS.forEach(function (key) {
+        storage.removeItem(key);
+        if (storage.getItem(key) !== null) throw new Error('local data clear incomplete');
+      });
+    });
+  }
+
+  // A different tab cannot remove this tab's sessionStorage. Propagate a
+  // withdrawal so that its temporary birth handoffs and visible chart are cleared.
+  if (typeof window.addEventListener === 'function') window.addEventListener('storage', function (event) {
+    if (event.key !== CHOICES_KEY && event.key !== null) return;
+    var previous;
+    try { previous = JSON.parse(event.oldValue || 'null'); } catch (_) {}
+    var cleared = event.key === null || event.newValue === null;
+    var current = readChoices();
+    if (!has('birth_local') && (cleared || previous && previous.scopes && previous.scopes.birth_local &&
+        (!current.scopes.birth_local || previous.scopes.birth_local.noticeVersion === BIRTH_LOCAL_NOTICE_VERSION))) {
+      try { clearBirthLocalData(); } finally { notify('zx-birth-local-cleared'); }
+    }
+    if (!has('device_account') && (cleared || previous && previous.scopes && previous.scopes.device_account)) notify('zx-account-consent-revoked');
+  });
 
   function exportLocalData() {
     var data = {
       product: '知星',
       exportedAt: new Date().toISOString(),
       noticeVersion: NOTICE_VERSION,
+      birthLocalNoticeVersion: BIRTH_LOCAL_NOTICE_VERSION,
       data: {}
     };
     EXPORT_KEYS.forEach(function (key) {
@@ -95,6 +141,7 @@
   function clearAllLocalData() {
     var cleared = clearZxStorage(localStorage);
     if (typeof sessionStorage !== 'undefined') cleared = cleared.concat(clearZxStorage(sessionStorage));
+    notify('zx-local-data-cleared');
     return cleared;
   }
 
@@ -158,7 +205,9 @@
       '<div class="zx-privacy-heading"><h2 id="zxPrivacyCenterTitle">隐私选择与本机资料</h2><button id="zxPrivacyClose" type="button">关闭</button></div>' +
       '<p class="zx-privacy-state" id="zxPrivacyChoiceState"></p>' +
       '<p>本期不收集产品使用统计。启用账号功能需要你确认；把盘面摘要、问题和必要的近期对话发送给 DeepSeek 前，也会单独征求同意。</p>' +
+      '<p>基础图谱最多在本机保存 2 张，保留到你主动删除。可在“我的资料”逐张删除，或在这里撤回本机处理同意并清除全部本机图谱。已购报告按账号单独保存，不占这 2 个名额；清理本机不会删除服务端已购报告。</p>' +
       '<div class="zx-privacy-actions">' +
+        '<button class="zx-privacy-danger" id="zxPrivacyRevokeBirth" type="button">撤回本机处理同意并删除图谱</button>' +
         '<button class="zx-privacy-primary" id="zxPrivacyRevoke" type="button">撤回问星处理与统计同意</button>' +
         '<button class="zx-privacy-danger" id="zxPrivacyClear" type="button">清除本机知星资料</button>' +
         '<a class="zx-privacy-link" href="' + complaintHref + '">提交投诉或举报</a>' +
@@ -182,7 +231,7 @@
     var previousOverflow = '';
 
     function renderChoices() {
-      choiceState.textContent = '问星处理（微信账号服务 + DeepSeek）：' + currentChoiceText('ai_processing') + '；产品统计：' + currentChoiceText('product_analytics') + '。';
+      choiceState.textContent = '本机图谱：' + currentChoiceText('birth_local') + '；问星处理（微信账号服务 + DeepSeek）：' + currentChoiceText('ai_processing') + '；产品统计：' + currentChoiceText('product_analytics') + '。';
     }
 
     function openCenter() {
@@ -229,6 +278,19 @@
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     });
 
+    document.getElementById('zxPrivacyRevokeBirth').addEventListener('click', function () {
+      if (!window.confirm('撤回后将删除当前浏览器保存的基础图谱、称呼和临时出生资料，无法恢复。已购报告仍按账号保存，不会因此删除。是否继续？')) return;
+      try {
+        revoke('birth_local');
+        renderChoices();
+        status.textContent = '已撤回本机处理同意并删除本机图谱，页面即将刷新。已购报告仍可登录原账号查看。';
+        window.setTimeout(function () { window.location.reload(); }, 900);
+      } catch (_) {
+        renderChoices();
+        status.textContent = '本机资料未能完整清除，请检查浏览器站点存储设置后重试。';
+      }
+    });
+
     document.getElementById('zxPrivacyRevoke').addEventListener('click', function () {
       try {
         revoke('ai_processing');
@@ -258,6 +320,7 @@
 
   window.ZxPrivacyConsent = {
     noticeVersion: NOTICE_VERSION,
+    birthLocalNoticeVersion: BIRTH_LOCAL_NOTICE_VERSION,
     choicesKey: CHOICES_KEY,
     has: has,
     grant: grant,

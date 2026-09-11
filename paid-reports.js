@@ -6,6 +6,9 @@
   var REPORT_RE = /^[a-f0-9]{48}$/;
   var ORDER_RE = /^[a-f0-9]{32}$/;
   var RESUME_KEY = 'zx_private_report_resume_id';
+  var RETURN_KEY = 'zx_private_profile_return_v1';
+  var RETURN_TTL = 30 * 60 * 1000;
+  var SYN_PAGES = ['home','rank','invite','invite-external','invite-internal','gift','connections'];
   // Formal policy plus the server's per-account offer authorize purchase.
   var pendingPurchaseKeys = new Map();
   var submittedOrders = new Map(),checkoutRefreshTimer = null;
@@ -39,6 +42,7 @@
     });
   }
   function route(file, id, hash) {
+    if (file === 'account') file = 'profile';
     var source = /\/(web|v1)\/[^/]*$/.test(location.pathname);
     var path = source ? (file === 'report' ? '../v1/report.html' : '../web/' + (file === 'home' ? 'index' : file) + '.html') : './' + (file === 'home' ? 'app' : file) + '.html';
     var url = new URL(path, location.href);
@@ -59,8 +63,53 @@
     return url.href;
   }
   function reportUrl(id) { return route('report', checkedId(id)); }
-  function loginUrl(id) { return route('account', id, 'account-status'); }
-  function homeUrl() { return route('home'); }
+  function synastryReturn() {
+    try {
+      var value = JSON.parse(sessionStorage.getItem(RETURN_KEY) || 'null'), now = Date.now();
+      if (!value || value.returnTo !== 'synastry' || !Number.isSafeInteger(value.createdAt) || value.createdAt > now || now - value.createdAt >= RETURN_TTL ||
+          (value.inviteToken && !/^[a-f0-9]{64}$/.test(value.inviteToken)) || (value.chart && !/^[a-f0-9]{32}$/.test(value.chart)) ||
+          (value.reportId && !REPORT_RE.test(value.reportId)) || (value.chart && value.reportId) || (value.page && !SYN_PAGES.includes(value.page))) { sessionStorage.removeItem(RETURN_KEY); return null; }
+      return value;
+    } catch (_) { return null; }
+  }
+  function rememberSynastryReturn(inviteToken, options) {
+    options=options || {};
+    if ((options.chart && !/^[a-f0-9]{32}$/.test(options.chart)) || (options.reportId && !REPORT_RE.test(options.reportId)) || (options.chart && options.reportId) || (options.page && !SYN_PAGES.includes(options.page))) throw error('RETURN_PATH_INVALID');
+    if (inviteToken !== undefined && inviteToken !== '' && !/^[a-f0-9]{64}$/.test(inviteToken)) throw error('SYN_REQUEST_INVALID');
+    var value = {returnTo:'synastry',createdAt:Date.now()};
+    if (inviteToken) value.inviteToken = inviteToken;
+    ['chart','reportId','page'].forEach(function(key){if(options[key])value[key]=options[key];});
+    try { sessionStorage.setItem(RETURN_KEY,JSON.stringify(value)); } catch (_) { throw error('LOCAL_STORAGE_UNAVAILABLE'); }
+  }
+  function consumeSynastryReturn() {
+    var value=synastryReturn(); try { sessionStorage.removeItem(RETURN_KEY); } catch (_) {}
+    return value ? Object.assign({},value,{inviteToken:value.inviteToken || ''}) : null;
+  }
+  function synastryUrl() {
+    var value=synastryReturn() || {}, query=new URLSearchParams(location.search), url=new URL(route('synastry'));
+    if(query.getAll('return').length===1 && query.get('return')==='synastry') {
+      var chart=query.getAll('chart'),report=query.getAll('report'),page=query.getAll('synastry-page');
+      if(chart.length===1 && /^[a-f0-9]{32}$/.test(chart[0]) && report.length===0){value.chart=chart[0];delete value.reportId;}
+      if(report.length===1 && REPORT_RE.test(report[0]) && chart.length===0){value.reportId=report[0];delete value.chart;}
+      if(page.length===1 && SYN_PAGES.includes(page[0]))value.page=page[0];
+    }
+    if(value.reportId)url.searchParams.set('report',value.reportId);else if(value.chart)url.searchParams.set('chart',value.chart);
+    url.hash=value.page || 'home';return url.href;
+  }
+  function loginUrl(id, options) {
+    var url = new URL(route('profile', id, 'account-status'));
+    if(options&&options.chartId)options=Object.assign({},options,{chart:options.chart || options.chartId});
+    if (options && options.returnTo !== undefined) {
+      if (options.returnTo !== 'synastry') throw error('RETURN_PATH_INVALID');
+      if ((options.chart && (!/^[a-f0-9]{32}$/.test(options.chart) || id)) || (options.page && !SYN_PAGES.includes(options.page))) throw error('RETURN_PATH_INVALID');
+      if (options.inviteToken) rememberSynastryReturn(options.inviteToken,{chart:options.chart,reportId:id,page:options.page});
+      url.searchParams.set('return','synastry');
+      if(options.chart)url.searchParams.set('chart',options.chart);
+      if(options.page)url.searchParams.set('synastry-page',options.page);
+    }
+    return url.href;
+  }
+  function homeUrl(id) { return route('home', id === undefined ? undefined : checkedId(id)); }
   function checkoutReport(id) { window.location.assign(route('account', checkedId(id), 'report-purchase')); }
   function checkoutUrl(orderNo, id) {
     if (!ORDER_RE.test(orderNo)) throw error('PAYMENT_ORDER_NOT_FOUND');
@@ -86,6 +135,13 @@
     if(!existing)host.prepend(panel);
   }
   function purchaseReady() { return !!(window.zxMember && member().paidReportPurchaseReady && member().paidReportPurchaseReady()); }
+  function checkoutProduct(order) {
+    var products = {deep_report_v1:{amount:1990,credits:1,title:'完整深度报告',note:'赠送1次问星'},
+      ask_single_v1:{amount:290,credits:1,title:'单次问星',note:'增加1次问星'},ask_pack_3_v1:{amount:600,credits:3,title:'三次问星包',note:'增加3次问星'}};
+    if (!order || !Object.prototype.hasOwnProperty.call(products, order.product_code)) return null;
+    var product = products[order.product_code];
+    return order.currency === 'CNY' && order.amount_fen === product.amount ? product : null;
+  }
   function consent() { return !!(window.ZxPrivacyConsent && window.ZxPrivacyConsent.has('device_account')); }
   function ownedCall(method, args) {
     return Promise.resolve().then(function () {
@@ -123,9 +179,10 @@
   }
   function privacyReset() {
     generation += 1;
+    try{sessionStorage.removeItem(RETURN_KEY);}catch(_){}
     pendingPurchaseKeys.clear();submittedOrders.clear();
     if(checkoutRefreshTimer){clearTimeout(checkoutRefreshTimer);checkoutRefreshTimer=null;}
-    ['reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
+    ['accountActions','reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
     hide('delete-account'); text('deleteLive','');
     text('reportCount', '—'); text('reportLive', '请重新登录后查看报告。');
     text('orderBadge', '需登录'); text('orderStateTitle', '登录后查看订单'); hide('orderStateTitle', false); text('orderStateBody', '登录后可查询支付与交付状态。');
@@ -133,6 +190,7 @@
     text('privatePurchaseBody', '请登录后查看这份报告的状态。');
     ['checkoutProduct','checkoutAmount','checkoutOrderNo','checkoutCreatedAt','checkoutExpiresAt','checkoutCredits'].forEach(function (id) { text(id, ''); });
     hide('checkoutDetails'); text('checkoutTitle', '请登录原微信账号'); text('checkoutBody', '订单详情已从当前页面清除。'); text('checkoutNotice', '登录后可继续查询订单。');
+    if($('profile-account')&&window.zxMember&&member().serviceConfigured())renderLogin();
   }
   window.addEventListener('zx-private-session-cleared', privacyReset);
   function authenticated() { var state = member().snapshot(); return state.authenticated === true && state.identityKind === 'wechat' && /^[a-f0-9]{64}$/.test(state.accountRef || ''); }
@@ -152,20 +210,33 @@
           !Number.isFinite(Number(data.expires_at)) || Number(data.expires_at) <= Date.now()) throw new Error('invalid');
     } catch (_) { throw error('WECHAT_OAUTH_RESPONSE_INVALID'); }
     try { if (id) sessionStorage.setItem(RESUME_KEY, checkedId(id)); else sessionStorage.removeItem(RESUME_KEY); } catch (_) {}
+    var returning = new URLSearchParams(location.search).getAll('return');
+    if (returning.length === 1 && returning[0] === 'synastry') {
+      var context=synastryReturn(), returnUrl=new URL(synastryUrl());
+      rememberSynastryReturn(context && context.inviteToken || '',{chart:returnUrl.searchParams.get('chart') || undefined,reportId:returnUrl.searchParams.get('report') || undefined,page:returnUrl.hash.slice(1)});
+    } else { try { sessionStorage.removeItem(RETURN_KEY); } catch (_) {} }
     window.location.assign(target.href);
   }
   function restoreLoginReport() {
-    if (reportId() || new URLSearchParams(location.search).get('wechat_bind') !== 'success') return;
+    var callbacks=new URLSearchParams(location.search).getAll('wechat_bind');
+    if(callbacks.length!==1 || !['success','failed'].includes(callbacks[0]))return;
     try {
-      var id = sessionStorage.getItem(RESUME_KEY); sessionStorage.removeItem(RESUME_KEY);
-      if (REPORT_RE.test(id || '')) {
-        var url = new URL(location.href); url.searchParams.set('report', id); window.history.replaceState(null, '', url.href);
+      var url=new URL(location.href),context=synastryReturn();
+      if(context){
+        url.searchParams.set('return','synastry');
+        if(context.page)url.searchParams.set('synastry-page',context.page);
+        if(context.chart&&!url.searchParams.has('report'))url.searchParams.set('chart',context.chart);
       }
+      if(callbacks[0]==='success' && !reportId()) {
+        var id=sessionStorage.getItem(RESUME_KEY);sessionStorage.removeItem(RESUME_KEY);
+        if(REPORT_RE.test(id || '')&&!url.searchParams.has('chart'))url.searchParams.set('report',id);
+      }
+      if(url.href!==location.href)window.history.replaceState(null,'',url.href);
     } catch (_) {}
   }
   function renderLogin() {
     text('accountBadge', '未登录'); text('accountTitle', '登录原微信账号');
-    text('accountBody', '登录后可找回已购报告。返回首页时，请重新确认需要保存的盘面。');
+    text('accountBody', '登录原微信账号，可在这里恢复已购报告、问星次数、合盘和订单；本机基础图谱无需登录。');
     var actions = empty('accountActions'); if (!actions) return;
     var check;
     if (!consent()) {
@@ -183,15 +254,16 @@
     });
     login.disabled = !!check;
     if (check) check.addEventListener('change', function () { login.disabled = !check.checked; });
-    actions.append(login, link('返回首页', homeUrl()));
+    actions.append(login);
+    if (!$('profile-account')) actions.append(link('返回日主页', homeUrl()));
   }
   function purchasePanel() {
-    if (!$('profile-summary')) return;
+    var host=$('profile-account') || $('profile-summary'); if (!host) return;
     if (!$('report-purchase')) {
       var panel = node('section', '', 'panel panel-wide'); panel.id = 'report-purchase';
       var title = node('h2', '完整深度报告'); var body = node('p', '', 'state-body'); body.id = 'privatePurchaseBody';
       var actions = node('div', '', 'actions'); actions.id = 'privatePurchaseActions'; panel.append(title, body, actions);
-      $('profile-summary').after(panel);
+      host.after(panel);
     }
     hide('report-purchase', !reportId());
     text('privatePurchaseBody', '登录后可查看这份报告。'); empty('privatePurchaseActions');
@@ -337,25 +409,41 @@
     }
   }
   function mountAccount() {
-    if (!isPrivate() || !$('profile-summary')) return Promise.resolve();
+    var integrated=!!$('profile-account');
+    if (!isPrivate() || (!integrated && !$('profile-summary'))) return Promise.resolve();
     if (accountPending) return accountPending;
     var epoch = ++generation;
     accountPending = (async function () {
       restoreLoginReport();
-      ['membership-status','member-upgrade','cloud-sync','daily-qian','qa-archive','local-data','delete-account','saveReportDialog','renameDialog'].forEach(function (id) { hide(id); });
-      var identity = document.querySelector('.profile-identity'); if (identity) identity.hidden = true;
-      var reportHeading = document.querySelector('#profile-summary .panel-title'); if (reportHeading) reportHeading.textContent = '我的报告';
-      hide('reportLibraryTitle'); text('reportLibraryTitle', '我的报告'); text('profileBadge', '账号报告'); text('reportCount', '—'); empty('reportList');
-      var back = $('reportLink'); if (back) { back.href = reportId() ? reportUrl(reportId()) : homeUrl(); back.textContent = reportId() ? '返回当前报告' : '返回首页'; }
-      if ($('newReportLink')) $('newReportLink').href = homeUrl(); purchasePanel();
-      if (!window.zxMember || !member().serviceConfigured()) { text('reportLive', '报告服务尚未开放。'); renderLogin(); return; }
+      if (!integrated) {
+        ['membership-status','member-upgrade','cloud-sync','daily-qian','qa-archive','local-data','delete-account','saveReportDialog','renameDialog'].forEach(function (id) { hide(id); });
+        var identity = document.querySelector('.profile-identity'); if (identity) identity.hidden = true;
+        var reportHeading = document.querySelector('#profile-summary .panel-title'); if (reportHeading) reportHeading.textContent = '我的报告';
+        hide('reportLibraryTitle'); text('profileBadge', '账号报告'); text('reportCount', '—'); empty('reportList');
+        if ($('newReportLink')) $('newReportLink').href = homeUrl();
+      }
+      if($('accountProfileLink'))$('accountProfileLink').href=route('profile',reportId());
+      var back = $('reportLink'); if (back) { back.href = reportId() ? reportUrl(reportId()) : homeUrl(); back.textContent = reportId() ? '返回当前报告' : '返回日主页'; }
+      purchasePanel();
+      empty('orderList'); hide('delete-account'); empty('deleteActions');
+      text('orderBadge','待登录');text('orderStateTitle','登录后查看订单');hide('orderStateTitle',false);text('orderStateBody','支付、交付与退款进度都会保留在原微信账号。');
+      if (!window.zxMember || !member().serviceConfigured()) {
+        text('accountBadge','暂未开放');text('accountTitle','账号服务暂未开放');text('accountBody','本机图谱、昵称和日主页可以继续使用。账号服务开放后，可在此登录并恢复已购记录。');
+        empty('accountActions');text('orderBadge','暂未开放');text('orderStateTitle','订单服务暂未开放');text('orderStateBody','当前没有可完成的付款流程，请勿通过其他入口付款。');text('reportLive','报告服务尚未开放。');text('privatePurchaseBody','报告服务尚未开放，可保留当前图谱，稍后再查看。');return;
+      }
       if (!consent()) { text('reportLive', '登录后查看报告。'); renderLogin(); return; }
-      try { await member().whenReady(); } catch (_) {}
+      try { await member().start(); } catch (_) {}
       if (epoch !== generation) return;
       if (!authenticated()) { text('reportLive', '登录后查看报告。'); renderLogin(); return; }
-      text('accountBadge', '已登录'); text('accountTitle', '微信账号已确认'); text('accountBody', '报告与问星归属当前微信账号。返回首页可继续确认本机盘面。');
-      var actions = empty('accountActions'); if (actions) actions.append(link('返回首页', homeUrl()), button('退出登录', async function () { await member().logout(); await mountAccount(); }));
-      await Promise.all([renderReportPage(epoch).catch(function (e) { if (epoch === generation) text('reportLive', message(e)); }), renderPurchase(epoch), renderOrders(epoch),renderClosure(epoch)]);
+      text('accountBadge', '已登录'); text('accountTitle', '微信账号已确认'); text('accountBody', '已购报告、问星、合盘和订单归属当前微信账号。本机基础图谱继续保留在当前浏览器。');
+      var actions = empty('accountActions'); if (actions) actions.append(button('刷新账号记录',mountAccount), button('退出登录', async function () {
+        try { await member().logout(); await mountAccount(); }
+        catch (_) { text('accountBody','退出结果暂未确认，请刷新账号状态后重试。'); }
+      }));
+      if (new URLSearchParams(location.search).get('wechat_bind') === 'success' && synastryReturn()) {
+        window.location.replace(synastryUrl());return;
+      }
+      await Promise.all([integrated ? Promise.resolve() : renderReportPage(epoch).catch(function (e) { if (epoch === generation) text('reportLive', message(e)); }), renderPurchase(epoch), renderOrders(epoch),renderClosure(epoch)]);
     })().finally(function () { accountPending = null; });
     return accountPending;
   }
@@ -374,10 +462,11 @@
       var result = await ownedCall('paymentOrder', [orderNo]); if (epoch !== generation) return;
       var order = result.order || result;
       if (order.order_no !== orderNo) throw error('ORDER_RESPONSE_INVALID');
+      var product = checkoutProduct(order);
       var id = REPORT_RE.test(order.paid_report_id || '') ? order.paid_report_id : '';
       var paid = order.provider_trade_state === 'SUCCESS' && Number(order.paid_at) > 0;
       var done = paid && order.status === 'completed';
-      text('checkoutProduct', order.product_code === 'deep_report_v1' ? '完整深度报告' : '本盘问星次数');
+      text('checkoutProduct', product ? product.title : '订单商品');
       text('checkoutAmount', priceLabel(order) || '—');
       text('checkoutOrderNo', order.order_no); text('checkoutCreatedAt', order.created_at ? new Date(Number(order.created_at)).toLocaleString('zh-CN') : '—'); text('checkoutExpiresAt', order.expires_at ? new Date(Number(order.expires_at)).toLocaleString('zh-CN') : '—');
       text('checkoutCredits', order.status === 'refunded' ? '本单退款已完成' : done ? '以对应报告内可用次数为准' : '等待服务端交付'); hide('checkoutDetails', false);
@@ -392,17 +481,26 @@
         text('checkoutBadge','核对中');text('checkoutTitle','正在核对支付结果');
         text('checkoutBody','已收到微信支付返回结果，请勿重复付款。正在向服务端确认收款与报告交付，也可点击下方刷新订单状态。');
         if(Date.now()-submittedOrders.get(orderNo)<60000)checkoutRefreshTimer=setTimeout(function(){if(epoch===generation)mountCheckout();},11000);
-      } else if (!paid && id && order.status === 'created' && order.product_code === 'deep_report_v1' &&
-          order.amount_fen === 1990 && order.currency === 'CNY' && Number(order.expires_at)>Date.now() && purchaseReady() &&
+      } else if (!paid && id && order.status === 'created' && product &&
+          Number(order.expires_at)>Date.now() && purchaseReady() &&
           window.ZxPaidAsk && window.ZxPaidAsk.validateJsapiCheckout(result)) {
-        text('checkoutBadge','待支付');text('checkoutTitle','确认微信支付');text('checkoutBody','完整深度报告 ¥19.90，赠送1次问星。请在微信支付页核对商户和金额。');
-        var pay=button('微信支付 ¥19.90',async function(){
+        text('checkoutBadge','待支付');text('checkoutTitle','确认微信支付');text('checkoutBody',product.title+' '+priceLabel(order)+'，'+product.note+'。请在微信支付页核对商户和金额。');
+        var pay=button('微信支付 '+priceLabel(order),async function(){
           if(epoch!==generation)return;pay.disabled=true;
           try{
             var owner=member().snapshot().accountRef,fresh=await ownedCall('paymentOrder',[orderNo]);
             if(epoch!==generation||member().snapshot().accountRef!==owner)return;
             var current=fresh.order;
-            if(!current||current.order_no!==orderNo||current.paid_report_id!==id||current.product_code!=='deep_report_v1'||current.amount_fen!==1990||current.currency!=='CNY'||current.status!=='created'||Number(current.expires_at)<=Date.now())throw error('ORDER_RESPONSE_INVALID');
+            if(!current||current.order_no!==orderNo||current.paid_report_id!==id||current.product_code!==order.product_code||!checkoutProduct(current)||current.status!=='created'||Number(current.expires_at)<=Date.now())throw error('ORDER_RESPONSE_INVALID');
+            if(current.product_code!=='deep_report_v1'){
+              var report=await api.status(id),catalog=await api.products(id,'ask');
+              if(epoch!==generation||member().snapshot().accountRef!==owner)return;
+              var matches=(catalog.products||[]).filter(function(item){return item.product_code===current.product_code;});
+              var offer=matches.length===1?matches[0]:null,expiry=report.storage_expires_at||report.expires_at;
+              if(report.report_id!==id||report.readable!==true||report.entitlement_status!=='active'||report.delivery_status!=='ready'||report.unavailable_reason||
+                  !Number.isSafeInteger(expiry)||expiry<=Date.now()||catalog.payment_available!==true||
+                  !offer||offer.payment_available!==true||offer.purchase_eligible!==true||!checkoutProduct(offer)||offer.question_credits!==product.credits)throw error('ASK_PURCHASE_UNAVAILABLE');
+            }
             var outcome=await window.ZxPaidAsk.invokeReportJsapi(fresh);
             if(epoch!==generation)return;
             if(outcome.outcome==='submitted')submittedOrders.set(orderNo,Date.now());
@@ -424,7 +522,7 @@
     }
   }
   var api = Object.freeze({
-    isPrivate:isPrivate, reportId:reportId, reportUrl:reportUrl, loginUrl:loginUrl, homeUrl:homeUrl, checkoutReport:checkoutReport, checkoutUrl:checkoutUrl,
+    isPrivate:isPrivate, reportId:reportId, reportUrl:reportUrl, profileUrl:function(){return route('profile',reportId());}, loginUrl:loginUrl, homeUrl:homeUrl, checkoutReport:checkoutReport, checkoutUrl:checkoutUrl,
     preview:function (input, confirmation) { return call('paidReportPreview', [input,confirmation]); },
     prepare:function (input, confirmation) { return call('paidReportPrepare', [input,confirmation]); },
     list:function (options) { return call('paidReportList', [options]); },
@@ -435,7 +533,7 @@
     correct:function (id,input,confirmation,key) { return call('paidReportCorrect',[id,input,confirmation,key]); },
     balance:function (id) { return call('paidReportBalance', [id]); },
     products:function (id,kind) { return call('paidReportProducts', [id,kind || 'report']); },
-    priceLabel:priceLabel, salesNotice:salesNotice, pruneLocalDrafts:pruneLocalDrafts, purchaseReady:purchaseReady, startLogin:startLogin, mountAccount:mountAccount, mountCheckout:mountCheckout
+    priceLabel:priceLabel, salesNotice:salesNotice, pruneLocalDrafts:pruneLocalDrafts, purchaseReady:purchaseReady, startLogin:startLogin, restoreLoginReport:restoreLoginReport, synastryUrl:synastryUrl, rememberSynastryReturn:rememberSynastryReturn, consumeSynastryReturn:consumeSynastryReturn, mountAccount:mountAccount, mountCheckout:mountCheckout
   });
   window.ZxPaidReports = api;
   pruneLocalDrafts();
@@ -443,6 +541,6 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderSalesNotice,{once:true});else renderSalesNotice();
   window.addEventListener('pageshow', function (event) {
     pruneLocalDrafts();
-    if (event.persisted && isPrivate()) { privacyReset(); if ($('paidCheckoutPage')) mountCheckout(); else if ($('profile-summary')) mountAccount(); }
+    if (event.persisted && isPrivate()) { privacyReset(); if ($('paidCheckoutPage')) mountCheckout(); else if ($('profile-summary') || $('profile-account')) mountAccount(); }
   });
 })();

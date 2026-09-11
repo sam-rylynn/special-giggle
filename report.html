@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-1pgyoYDqxbjzM2lXQG0sFqtmwa8ikixPmweVFWZLRiY='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-iGMyLD5YZWWV3v7a9iJv30mKtz1K3g9xO8W8kY+A/VE='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -52,6 +52,7 @@
   .report-precision{max-width:660px;margin:14px auto 0;padding:11px 13px;border:1px solid rgba(201,168,92,.35);border-left:3px solid var(--gold);border-radius:8px;background:rgba(201,168,92,.075);color:#d7dde7;font-size:12.5px;line-height:1.75;text-align:left}
   .report-precision.is-blocking{border-color:rgba(181,71,47,.5);border-left-color:var(--cinnabar);background:rgba(181,71,47,.12);color:#efc0b6}
   .report-hero-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:18px}
+  .report-hero-nav[hidden],.report-precision[hidden],.endviz[hidden]{display:none}
   .report-hero-link{display:flex;align-items:center;justify-content:center;min-height:44px;padding:7px 4px;border:1px solid rgba(201,168,92,.24);border-radius:8px;background:rgba(201,168,92,.045);color:#d8deE7;font-family:var(--serif);font-size:12.5px;line-height:1.3;cursor:pointer}
   .report-hero-link.active{border-color:var(--gold);background:rgba(201,168,92,.14);color:#f6e8bc}
   .report-hero-link:focus-visible{outline:2px solid #f0d695;outline-offset:3px}
@@ -255,7 +256,20 @@
   .time-focus-decade{padding:22px 0;border-block:1px solid rgba(201,168,92,.24)}
   .time-focus .time-period-label{margin:0 0 6px;color:#e2c581;font-size:14px;font-weight:600}
   .time-focus-decade h4{margin:0 0 10px;font-size:20px;line-height:1.7;color:#e8d3a2}
-  .time-focus-decade > p:not(.time-period-label){margin:0;color:#ccd0d7}
+  .time-focus-decade > p:not(.time-period-label){margin:0 0 13px;color:#ccd0d7}
+  .time-focus-decade > p:last-child{margin-bottom:0}
+  .time-turning-years{margin:0 0 28px;padding-top:4px}
+  .time-turning-years>h4{margin:0 0 14px;color:#f0dcaf;font-size:20px}
+  .time-turning-years>ol{margin:0;padding:0;list-style:none}
+  .time-turning-years li{display:grid;grid-template-columns:68px minmax(0,1fr);gap:18px;margin:0;padding:20px 0;border-top:1px solid rgba(201,168,92,.3)}
+  .time-turning-year{color:#f5d999;font:700 26px/1.35 var(--serif);text-shadow:0 0 12px rgba(223,184,98,.2)}
+  .time-turning-years .time-turning-kind{margin:0 0 3px;color:#c2ae7e;font-size:12px;letter-spacing:.06em}
+  .time-turning-years h5{margin:0 0 10px;color:#f0dcaf;font:650 18px/1.6 var(--serif)}
+  .time-turning-years .time-turning-basis{margin:0 0 9px;color:#adb6c4;font-size:13px;line-height:1.8}
+  .time-turning-years .time-turning-body{margin:0;color:#d5d9e1;font-size:15px}
+  .time-focus-astro{margin-top:24px;padding:18px 0 0;border-top:1px dashed rgba(201,168,92,.24)}
+  .time-focus-astro h5{margin:0 0 9px;color:#e2c581;font:600 16px/1.7 var(--serif)}
+  .time-focus-astro p:last-child{margin-bottom:0}
   .time-focus-year{padding:36px 0 26px}
   .time-focus-year + .time-focus-year{border-top:1px solid rgba(201,168,92,.24)}
   .time-year-heading{display:flex;gap:22px;align-items:flex-start;margin-bottom:24px}
@@ -263,7 +277,7 @@
   .time-year-number small{display:block;margin-top:5px;color:#b4b7be;font:500 13px/1.5 var(--sans);text-shadow:none}
   .time-year-heading h4{margin:0;color:#f0dcaf;font-size:24px;line-height:1.65;text-wrap:balance}
   .time-focus .time-reading-label{margin:23px 0 8px;color:#e2c581;font:600 14px/1.7 var(--sans)}
-  .time-focus .time-year-why{margin:0}
+  .time-focus .time-year-why{margin:0 0 13px}
   .time-key-phrase{font-weight:650;color:#f7e2ae;text-decoration:underline;text-decoration-color:rgba(226,197,129,.5);text-decoration-thickness:1px;text-underline-offset:.24em}
   .time-focus .time-year-actions{margin:12px 0 0;padding-left:24px}
   .time-year-actions li{margin:0 0 22px;padding-left:8px}
@@ -279,7 +293,7 @@
   .time-focus-basis p,.time-focus-basis li{color:#bfc5cf;font-size:14px}
   .time-focus-basis a{color:#e2c581;text-underline-offset:.25em;overflow-wrap:anywhere}
   .time-focus-basis a:focus-visible{outline:2px solid #f3d99c;outline-offset:4px}
-  @media(max-width:600px){.time-year-heading{gap:16px}.time-year-number{font-size:28px}.time-year-heading h4{font-size:22px}.time-focus-year{padding-top:30px}.time-focus .time-year-actions{padding-left:20px}.time-year-actions li{padding-left:4px}}
+  @media(max-width:600px){.time-turning-years li{grid-template-columns:58px minmax(0,1fr);gap:12px}.time-turning-year{font-size:24px}.time-year-heading{gap:16px}.time-year-number{font-size:28px}.time-year-heading h4{font-size:22px}.time-focus-year{padding-top:30px}.time-focus .time-year-actions{padding-left:20px}.time-year-actions li{padding-left:4px}}
   @media(max-width:350px){.time-year-heading{display:block}.time-year-number{display:block;margin-bottom:12px}.time-year-number small{display:inline;margin-left:12px}}
   .chart-details{margin-top:22px;border:1px solid rgba(201,168,92,.18);border-radius:9px;background:rgba(16,24,42,.56)}
   .chart-details summary{display:flex;align-items:center;min-height:48px;padding:0 13px;color:var(--gold);font-family:var(--serif);cursor:pointer}
@@ -517,12 +531,13 @@
   #reportLifecycleStatus:empty{display:none}
 </style>
 <link rel="stylesheet" href="./birth-location-picker.css?v=544f244a033d">
+<link rel="stylesheet" href="./synastry-entry.css?v=0989e4f9c19f">
 </head>
-<body>
+<body class="synastry-approved-layout">
 <a class="skip-link" href="#reportMain">跳到报告正文</a>
 <nav class="report-topbar" aria-label="报告快捷导航">
   <button id="reportBack" type="button">‹ 返回日主页</button>
-  <span class="report-my-link" aria-label="当前报告预览">报告预览</span>
+  <a class="report-my-link" href="./profile.html">我的资料</a>
 </nav>
 <main class="wrap" id="reportMain">
   <header class="report-hero" aria-labelledby="reportTitle">
@@ -531,12 +546,13 @@
     <p class="report-identity" id="reportIdentity">正在生成组合身份</p>
     <p class="report-judgement" id="reportJudgement">正在整理这张盘最值得先看的核心判断。</p>
     <div class="report-precision" id="reportPrecision" role="alert" hidden></div>
-    <nav class="report-hero-nav" aria-label="报告五章">
+    <nav class="report-hero-nav synastry-nav" aria-label="报告章节与合盘入口">
       <button class="report-hero-link" type="button" data-nav-target="sec-overview">总览</button>
       <button class="report-hero-link" type="button" data-nav-target="sec-chart">盘面</button>
       <button class="report-hero-link" type="button" data-nav-target="sec-relation">关系</button>
       <button class="report-hero-link" type="button" data-nav-target="sec-action">行动</button>
       <button class="report-hero-link" type="button" data-nav-target="sec-phase">时间</button>
+      <a class="report-hero-link synastry-nav-link" id="reportSynastryLink" href="./synastry.html#invite">合盘</a>
     </nav>
   </header>
 
@@ -626,9 +642,9 @@
   <div class="age-gate-card">
     <span class="badge">资 料 处 理 确 认</span>
     <h2 id="reportPrivacyGateTitle">确认后再生成报告</h2>
-    <p class="gate-detail">出生日期、时间、城市和性别会在当前浏览器中用于生成个人文化图谱并支持返回查看。本次确认不自动开启账号、云端同步或第三方大模型处理。</p>
+    <p class="gate-detail">出生日期、时间、城市、排盘性别和称呼用于生成个人文化图谱。本机最多保存 2 张基础图谱，保留到你主动删除；可在“我的资料”删除，或在隐私中心撤回本机处理同意。清理浏览器数据也会移除本机图谱。已购深度报告按账号另行保存，不占这 2 个名额。本次确认不自动开启账号、云端同步或第三方大模型处理。</p>
     <p class="gate-policy"><a id="reportPrivacyPolicyLink" href="./privacy.html">查看隐私政策</a></p>
-    <label class="gate-check"><input type="checkbox" id="reportPrivacyCheck">我已阅读并同意上述处理。该选择会记录在当前浏览器中，之后可通过“我的”页面清除。</label>
+    <label class="gate-check"><input type="checkbox" id="reportPrivacyCheck">我已阅读并同意本机处理与保存，基础图谱保留到我主动删除；之后可在隐私中心撤回。</label>
     <p class="gate-error" id="reportPrivacyError" role="alert" aria-live="assertive" hidden></p>
     <div class="gate-actions">
       <button id="reportPrivacyOk" type="button" disabled>同意并生成</button>
@@ -655,11 +671,11 @@
 <script src="./share-qr.js?v=107fa109a833"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
 <script src="./public-config.js?v=313b0498352d"></script>
-<script src="./privacy-consent.js?v=baf0b66bced5"></script>
+<script src="./privacy-consent.js?v=e9d931611689"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
-<script src="./member.js?v=de756a177add"></script>
+<script src="./member.js?v=25e49ea8a24c"></script>
 <script src="./paid-h5.js?v=8c1eee5dff3c"></script>
-<script src="./paid-reports.js?v=9cd3ef52544f"></script>
+<script src="./paid-reports.js?v=64df71d0ad76"></script>
 <script src="./report-download.js?v=5e9d071a3ee9"></script>
 <script src="./bazi-engine.js?v=2f507cc27577"></script>
 <script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
@@ -887,13 +903,24 @@ function timeFocusHighlight(text, phrase){
   return esc(value.slice(0,index)) + `<strong class="time-key-phrase">${esc(emphasis)}</strong>` + esc(value.slice(index+emphasis.length));
 }
 
-function timeFocusDecade(period){
+function timeFocusParagraphs(paragraphs, fallbackBody, fallbackBold, className=''){
+  const items=Array.isArray(paragraphs)
+    ? paragraphs.filter(item => typeof item==='string' ? item.trim() : item && typeof item.body==='string' && item.body.trim())
+    : [];
+  const values=items.length ? items : (fallbackBody ? [{body:fallbackBody,bold:fallbackBold}] : []);
+  return values.map(item=>{
+    const value=typeof item==='string' ? {body:item} : item;
+    return `<p${className ? ` class="${esc(className)}"` : ''}>${timeFocusHighlight(value.body,value.bold)}</p>`;
+  }).join('');
+}
+
+function timeFocusDecade(period, showKeyChange=true){
   if (!period) return '';
   const id = `time-focus-${period.id}`;
-  const change = period.keyChange;
+  const change = showKeyChange && period.keyChange;
   return `<section class="time-focus-decade" id="${esc(id)}" aria-labelledby="${esc(id)}-title">
     <p class="time-period-label">${esc(period.years)} · ${esc(period.pillar)}大运</p>
-    <h4 id="${esc(id)}-title">${esc(period.tagline)}</h4><p>${timeFocusHighlight(period.body,period.bold)}</p>
+    <h4 id="${esc(id)}-title">${esc(period.tagline)}</h4>${timeFocusParagraphs(period.paragraphs,period.body,period.bold)}
     ${change ? `<div class="time-key-change"><h5>${esc(change.label)}</h5><p>${timeFocusHighlight(change.body,change.bold)}</p></div>` : ''}
   </section>`;
 }
@@ -901,15 +928,18 @@ function timeFocusDecade(period){
 function timeFocusBlock(data){
   if (!data) return '';
   const years = Array.isArray(data.focusYears) ? data.focusYears : [];
+  const turningYears = Array.isArray(data.turningYears) ? data.turningYears.filter(item=>item && item.year && item.title) : [];
   const basis = data.basis || {};
+  const turning = turningYears.length ? `<section class="time-turning-years" aria-labelledby="time-turning-title"><h4 id="time-turning-title">转折与重点年份</h4><ol>${turningYears.map(item=>`<li><span class="time-turning-year">${esc(item.year)}</span><div>${item.kind ? `<p class="time-turning-kind">${esc(item.kind)}</p>` : ''}<h5>${esc(item.title)}</h5>${item.basis ? `<p class="time-turning-basis">${esc(item.basis)}</p>` : ''}<p class="time-turning-body">${timeFocusHighlight(item.body,item.bold)}</p></div></li>`).join('')}</ol></section>` : '';
   const focus = years.map(item => `<section class="time-focus-year" data-year="${esc(item.year)}" aria-labelledby="time-year-${esc(item.year)}-title">
     <header class="time-year-heading"><span class="time-year-number">${esc(item.year)}<small>${esc(item.pillar)}</small></span><h4 id="time-year-${esc(item.year)}-title">${esc(item.tagline)}</h4></header>
-    <h5 class="time-reading-label">为什么这样看</h5><p class="time-year-why">${timeFocusHighlight(item.why,item.bold)}</p>
-    <h5 class="time-reading-label">可以怎样做</h5><ol class="time-year-actions">${(item.actions || []).map(action => `<li><h6>${esc(action.title)}</h6><p>${timeFocusHighlight(action.body,action.bold)}</p></li>`).join('')}</ol>
+    <h5 class="time-reading-label">为什么这样看</h5>${timeFocusParagraphs(item.paragraphs,item.why,item.bold,'time-year-why')}
+    ${(item.actions || []).length ? `<h5 class="time-reading-label">可以怎样做</h5><ol class="time-year-actions">${item.actions.map(action => `<li><h6>${esc(action.title)}</h6><p>${timeFocusHighlight(action.body,action.bold)}</p></li>`).join('')}</ol>` : ''}
+    ${item.astro && item.astro.body ? `<aside class="time-focus-astro"><h5>${esc(item.astro.title || '星盘辅证')}</h5><p>${timeFocusHighlight(item.astro.body,item.astro.bold)}</p></aside>` : ''}
   </section>`).join('');
   const sources = (basis.sources || []).filter(source => /^https:\/\//.test(source.url || ''));
   return `<div class="time-focus"><h3 class="time-focus-title">${esc(data.title)}</h3><p class="time-focus-lead">${esc(data.lead)}</p>
-    ${timeFocusDecade(data.currentPeriod)}${focus}${timeFocusDecade(data.nextPeriod)}
+    ${turning}${timeFocusDecade(data.currentPeriod)}${focus}${timeFocusDecade(data.nextPeriod,!turningYears.length)}
     <details class="chart-details time-focus-basis">${disclosureSummary(basis.title || '查看时间依据')}<div class="chart-details-body">
       ${(basis.items || []).map(item => `<section><h4>${esc(item.title)}</h4><p>${esc(item.body)}</p></section>`).join('')}
       ${sources.length ? `<h4>原典参考</h4><ul>${sources.map(source => `<li><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title)}</a></li>`).join('')}</ul>` : ''}
@@ -1042,8 +1072,25 @@ function deepMemberBox(){
 
 const REPORT_SOURCE_TREE = /\/v1\/report\.html$/.test(location.pathname);
 const ACCOUNT_PAGE_AVAILABLE = true;
-const ACCOUNT_PAGE_HREF = REPORT_SOURCE_TREE ? './account.html' : './account.html';
-const HOME_PAGE_HREF = withLocalDeepEndpoint(REPORT_SOURCE_TREE ? './app.html' : './app.html');
+const ACCOUNT_PAGE_HREF = REPORT_SOURCE_TREE ? './profile.html' : './profile.html';
+const HOME_PAGE_HREF = PRIVATE_REPORT_MODE&&window.ZxPaidReports
+  ? ZxPaidReports.homeUrl()
+  : withLocalDeepEndpoint(REPORT_SOURCE_TREE ? './app.html' : './app.html');
+function currentHomeHref(){
+  const state=window.zxMember?.snapshot?.();
+  return PRIVATE_REPORT_MODE&&PRIVATE_SNAPSHOT&&PRIVATE_REPORT_ID&&PRIVATE_OWNER&&
+    state?.authenticated&&state.identityKind==='wechat'&&state.accountRef===PRIVATE_OWNER
+    ? ZxPaidReports.homeUrl(PRIVATE_REPORT_ID) : HOME_PAGE_HREF;
+}
+function synastryPageHref(){
+  const url=new URL(currentHomeHref(),location.href);
+  url.pathname=new URL(REPORT_SOURCE_TREE?'./synastry.html':'./synastry.html',location.href).pathname;
+  url.hash='invite';return url.href;
+}
+$('reportSynastryLink').href=synastryPageHref();
+const profilePageLink=new URL(REPORT_SOURCE_TREE ? './profile.html' : './profile.html',location.href);
+if(PRIVATE_REPORT_MODE&&window.ZxPaidReports){const accountRoute=new URL(ZxPaidReports.loginUrl(ZxPaidReports.reportId()||undefined));profilePageLink.search=accountRoute.search;}
+document.querySelector('.report-my-link').href=profilePageLink.href;
 const PRIVACY_PAGE_HREF = REPORT_SOURCE_TREE ? './privacy.html' : './privacy.html';
 const AI_DISCLOSURE_PAGE_HREF = REPORT_SOURCE_TREE ? './ai-disclosure.html' : './ai-disclosure.html';
 const MODEL_PROCESSING_NOTICE = PRIVATE_REPORT_MODE
@@ -1131,8 +1178,7 @@ $('ageGateBack').href = HOME_PAGE_HREF;
 $('reportPrivacyPolicyLink').href = PRIVACY_PAGE_HREF;
 $('aiPrivacyPolicyLink').href = PRIVACY_PAGE_HREF;
 $('reportBack').onclick = () => {
-  // 重新加载首页，让其接续本标签当前盘；不恢复历史缓存中较早的 CUR。
-  location.href = HOME_PAGE_HREF;
+  location.href = currentHomeHref();
 };
 
 function memberSnapshot(){
@@ -1210,7 +1256,7 @@ function renderMemberStatus(){
     pill = '待授权';
     copy = '首次问星会直接进入服务号 OAuth；次数、订单和完整答复只归属后端确认的微信账号。';
   }
-  const account = `<a href="${ACCOUNT_PAGE_HREF}#member-upgrade">${s.authenticated&&s.accountRef?'查看次数与购买':'微信授权并查看商品'}</a>`;
+  const account = `<a href="${ACCOUNT_PAGE_HREF}#ask-section">${s.authenticated&&s.accountRef?'查看次数与购买':'微信授权并查看商品'}</a>`;
   box.innerHTML = `<div class="member-row"><div class="member-title">${esc(title)}</div><div class="member-pill">${esc(pill)}</div></div>
     <div class="member-copy">${esc(copy)}</div>
     <div class="member-actions">${account}</div>`;
@@ -1452,6 +1498,7 @@ function reportChapterMarkup(chart, sections){
 
 function render(chart, sections){
   CHART = chart;
+  document.querySelector('.endviz').hidden=false;
   const editDock = $('reportEditDock');
   if (editDock && $('out').contains(editDock)) $('out').after(editDock);
   const byId = Object.fromEntries(sections.map(section => [section.id,section]));
@@ -1474,6 +1521,7 @@ function render(chart, sections){
 }
 
 function updateReportHero(chart, overview){
+  $('reportSynastryLink').href=synastryPageHref();
   const homeContent = window.ZhixingHomeContentV1;
   const home = !PRIVATE_REPORT_MODE && homeContent && typeof homeContent.buildHome === 'function'
     ? homeContent.buildHome(chart)
@@ -1524,7 +1572,7 @@ let REPORT_LAST_READING_ID = 'sec-overview';
 let REPORT_LAST_TRACKED_SECTION = '';
 const REPORT_CHAPTER_KEY_PREFIX = 'zx_report_last_chapter_v2:';
 // 与报告内容候选一起升级；旧的全局 v1 阅读进度不再迁入任意新盘。
-const REPORT_READING_CONTENT_VERSION = 'report-all-chart-ren-template-2026-09-08';
+const REPORT_READING_CONTENT_VERSION = 'report-time-annual-approved-2026-09-11';
 let REPORT_CHAPTER_STORAGE_KEY = '';
 let REPORT_GENERATION_REVISION = 0;
 const REPORT_SECTION_ANALYTICS = {
@@ -1738,7 +1786,21 @@ function buildReportReader(){
     reader.querySelector('.reader-main').appendChild(editDock);
   }
   activateReportChapter('sec-overview', false, false, false, false);
+  mountSynastryShortcut();
 }
+
+function mountSynastryShortcut(){
+  const status=document.querySelector('#reportReader .nav-status');if(!status)return;
+  let shortcut=$('synastry-reader-shortcut');
+  if(!shortcut){
+    shortcut=document.createElement('div');shortcut.id='synastry-reader-shortcut';shortcut.className='syn-reader-shortcut';
+    shortcut.innerHTML='<span>从了解自己，到了解彼此</span><a aria-label="邀请 TA 合盘"><span class="syn-shortcut-full">邀请 TA 合盘</span><span class="syn-shortcut-short">合盘</span><span aria-hidden="true">↗</span></a>';
+  }
+  shortcut.querySelector('a').href=synastryPageHref();
+  const mobile=matchMedia('(max-width:760px)').matches;
+  if(mobile)status.querySelector('.nav-position').append(shortcut);else status.after(shortcut);
+}
+matchMedia('(max-width:760px)').addEventListener('change',mountSynastryShortcut);
 
 function openInitialReportTarget(){
   let id = '';
@@ -2007,7 +2069,7 @@ function deepPaywall(reason){
     :(loginRequired?'问星次数、订单和已保存答复只归属后端已确认的微信账号。'
     :CREDITS_REQUIRED.body);
   const action=loginRequired?'微信授权并查看商品':'选择问星次数';
-  return `<div class="deep-echo"><b style="color:var(--gold)">${esc(title)}</b><br>${esc(body)}<div class="member-actions"><a href="${ACCOUNT_PAGE_HREF}#member-upgrade">${esc(action)}</a></div></div>`;
+  return `<div class="deep-echo"><b style="color:var(--gold)">${esc(title)}</b><br>${esc(body)}<div class="member-actions"><a href="${ACCOUNT_PAGE_HREF}#ask-section">${esc(action)}</a></div></div>`;
 }
 
 function renderDeep(ans, q){
@@ -2344,6 +2406,7 @@ document.addEventListener('pointerdown', e => {
 
 /* Private reading uses the owner's immutable server snapshot; no birth input fallback. */
 function privateReportAccountUrl(){
+  if(window.ZxPaidReports)return ZxPaidReports.loginUrl(PRIVATE_REPORT_ID||undefined);
   const url=new URL(ACCOUNT_PAGE_HREF,location.href);
   if(PRIVATE_REPORT_ID)url.searchParams.set('report',PRIVATE_REPORT_ID);
   if(LOCAL_DEBUG_PAGE)url.searchParams.set('private-report','1');
@@ -2359,6 +2422,7 @@ function privateStatus(kind,code=''){
   $('reportDownloadStatus').textContent='';
   if(window.ZxReportDownload)ZxReportDownload.clear();
   CHART=null;PRIVATE_SNAPSHOT=null;PRIVATE_ASK_IDS=[];PRIVATE_OWNER='';
+  document.querySelector('.endviz').hidden=true;
   PAID_ASK_STATE={loaded:false,remaining:null,allowed:false};
   if(PRIVATE_OWNER_TIMER){clearInterval(PRIVATE_OWNER_TIMER);PRIVATE_OWNER_TIMER=null;}
   const out=$('out'),dock=$('reportEditDock');if(dock&&out.contains(dock))out.after(dock);
@@ -2424,7 +2488,7 @@ async function loadPrivateReport(){
   const revision=++PRIVATE_READ_REVISION;
   PRIVATE_REPORT_ID=window.ZxPaidReports?ZxPaidReports.reportId():'';
   privateStatus('loading');
-  document.querySelector('.report-my-link').textContent='我的已购报告';
+  document.querySelector('.report-my-link').textContent='我的资料';
   if(!PRIVATE_REPORT_ID){privateStatus('missing');return;}
   if(!window.ZxPaidReports){privateStatus('unavailable');return;}
   try{
@@ -2609,7 +2673,7 @@ $('reportCorrectionForm').onsubmit=async event=>{
     if(PRIVATE_OWNER===owner&&PRIVATE_REPORT_ID===id&&PRIVATE_SNAPSHOT)$('reportLifecycleStatus').textContent='出生资料已更正，正在阅读替换后的报告。原保存到期日和问星次数保持不变。';
   }catch(error){if(current())await recoverReportMutation(error,owner,id,attempt);}
 };
-function privateQianCard(){return `<div class="card" id="sec-qian"><div class="pad"><h2>日主身份卡</h2><p>日主身份卡可在首页查看、保存与分享。</p><div class="member-actions"><a class="ghost" href="${HOME_PAGE_HREF}">返回日主页</a></div></div></div>`;}
+function privateQianCard(){return `<div class="card" id="sec-qian"><div class="pad"><h2>日主身份卡</h2><p>日主身份卡可在首页查看、保存与分享。</p><div class="member-actions"><a class="ghost" href="${currentHomeHref()}">返回日主页</a></div></div></div>`;}
 function privateDeepCard(){
   return `<div class="card" id="sec-deep"><div class="pad"><h2>问星</h2><p class="deep-intro">根据这份已购报告提问，首问和每次追问各消耗 1 次。优先使用本报告赠送的次数，再使用已购买次数。</p>
     ${deepMemberBox()}<div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy"><a href="${AI_DISCLOSURE_PAGE_HREF}">AI 服务说明</a></div></div>
