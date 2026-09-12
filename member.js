@@ -645,10 +645,55 @@
   }
 
   window.zxMember = {
+    giftReportServiceAvailable: function () { return privateReportServiceAvailable() && injectedPublicConfig.giftReportServiceAvailable === true; },
+    giftPaymentVersions: function () { return Object.assign({}, REPORT_PAYMENT_VERSIONS); },
+    giftCall: function (path, body, options) {
+      options = options || {};
+      if (typeof path !== 'string' || path.length > 1200 || path.includes('#') ||
+          Object.keys(options).some(function (key) { return key !== 'anonymous'; }) || options.anonymous !== undefined && typeof options.anonymous !== 'boolean') return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+      var pathname = path.split('?')[0];
+      if (!/^\/synastry\/(?:gifts(?:\/(?:orders|inspect|[a-f0-9]{64}(?:\/(?:order|share|retry|refund))?))?|gift-claims(?:\/prepare)?)$/.test(pathname)) return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+      if (path.includes('?')) {
+        if (pathname !== '/synastry/gifts' || body !== undefined) return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+        var params = new URLSearchParams(path.slice(path.indexOf('?')+1)), seen = new Set(), invalid = false;
+        params.forEach(function(value,key) {
+          if (seen.has(key)) invalid = true;
+          seen.add(key);
+          if (key === 'limit') { if (!/^[1-9][0-9]?$/.test(value) || Number(value)>50) invalid = true; }
+          else if (key === 'cursor') { if (value.length>512 || !/^[A-Za-z0-9_-]+\.[a-f0-9]{64}$/.test(value)) invalid = true; }
+          else invalid = true;
+        });
+        if (invalid || !seen.size) return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+      }
+      if (!privateReportServiceAvailable() || injectedPublicConfig.giftReportServiceAvailable !== true) return Promise.reject(reportClientError('GIFT_SERVICE_UNAVAILABLE'));
+      var read = pathname === '/synastry/gifts' || /^\/synastry\/gifts\/[a-f0-9]{64}(?:\/order)?$/.test(pathname);
+      if (read && body !== undefined || !read && (!body || typeof body !== 'object' || Array.isArray(body))) return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+      if (options.anonymous === true) {
+        if (path !== '/synastry/gifts/inspect' || Object.keys(body).some(function (key) { return key !== 'token'; }) || !/^[a-f0-9]{64}$/.test(body.token || '')) return Promise.reject(reportClientError('GIFT_REQUEST_INVALID'));
+        return api(path, {method:'POST',anonymous:true,noSessionRetry:true,body:{token:body.token}});
+      }
+      if (path === '/synastry/gifts/orders' && !paidReportPurchaseReady()) return Promise.reject(reportClientError('REPORT_SALES_NOT_APPROVED'));
+      return privateReportMutation(path, read ? {method:'GET'} : {method:'POST',body:body});
+    },
     synastryCall: function (path, body) {
       var allowed = /^\/synastry\/(?:profile|records|lookup|invitations|invitations\/inspect|invitations\/accept|invitations\/[a-f0-9]{64}\/revoke|pairs\/[a-f0-9]{64}(?:\/(?:retry|unlink|support|report))?|managed-pairs(?:\/[a-f0-9]{64}(?:\/remove)?)?)$/;
-      if (typeof path !== 'string' || !allowed.test(path)) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
-      var read = path === '/synastry/profile' || path === '/synastry/records' || (path === '/synastry/managed-pairs' && body === undefined) || /^\/synastry\/(?:pairs|managed-pairs)\/[a-f0-9]{64}$/.test(path);
+      if (typeof path !== 'string' || path.length > 1200 || path.includes('#')) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+      var pathname = path.split('?')[0];
+      if (!allowed.test(pathname)) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+      if (path.includes('?')) {
+        if (!['/synastry/records','/synastry/managed-pairs'].includes(pathname) || body !== undefined) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+        var params = new URLSearchParams(path.slice(path.indexOf('?')+1)), seen = new Set(), invalid = false;
+        params.forEach(function(value,key) {
+          if (seen.has(key)) invalid = true;
+          seen.add(key);
+          if (key === 'kind') { if (pathname !== '/synastry/records' || !['all','invitations','pairs','gifts'].includes(value)) invalid = true; }
+          else if (key === 'limit') { if (!/^[1-9][0-9]?$/.test(value) || Number(value)>50) invalid = true; }
+          else if (key === 'cursor') { if (!/^[A-Za-z0-9_.-]{1,512}$/.test(value)) invalid = true; }
+          else invalid = true;
+        });
+        if (invalid || !seen.size) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+      }
+      var read = pathname === '/synastry/profile' || pathname === '/synastry/records' || (pathname === '/synastry/managed-pairs' && body === undefined) || /^\/synastry\/(?:pairs|managed-pairs)\/[a-f0-9]{64}$/.test(pathname);
       // Reuse account consent, current-owner guard, token refresh and no cross-account mutation replay.
       return privateReportMutation(path, read ? {method:'GET'} : {method:'POST',body:body || {}});
     },

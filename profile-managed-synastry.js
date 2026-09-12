@@ -7,7 +7,7 @@
     REPORT_ACCOUNT_CHANGED:'账号已切换，请重新打开自己的合盘。',PRIVACY_CONSENT_REQUIRED:'请先到账号页确认账号资料用途。',
     AUTH_REQUIRED:'账号会话已失效，请重新登录。',REPORT_UNAVAILABLE:'所选报告尚未交付、已经到期或当前不可用，请刷新资料后重新选择。',
     MANAGED_DISTINCT_REPORTS_REQUIRED:'请选择两张出生资料不同的有效深度报告。',MANAGED_PERMISSION_REQUIRED:'请确认你有权使用两张资料开展本次合盘。',
-    PAIR_RECONFIRM_REQUIRED:'来源报告已更正，请重新选盘并确认。旧的合盘已停止阅读。',PAIR_UNAVAILABLE:'此份合盘已移除或来源报告已失效。',
+    CURSOR_INVALID:'记录已更新，请刷新重试。',PAIR_RECONFIRM_REQUIRED:'来源报告已更正，请重新选盘并确认。旧的合盘已停止阅读。',PAIR_UNAVAILABLE:'此份合盘已移除或来源报告已失效。',
     PARTICIPANT_INELIGIBLE:'两张资料的主体均需已满 18 周岁。',RATE_LIMITED:'操作较频繁，请稍后重试。',NOT_FOUND:'没有找到当前账号可查看的这份合盘。'};
   let active=null,revision=0;
   const PICK_KEY='zx_managed_synastry_selection_v1';
@@ -116,11 +116,28 @@
     if(result?.status!=='ready'||!PAIR_ID.test(result.id||'')||!Array.isArray(result.report?.chapters)||result.report.chapters.length!==4)throw error('PAIR_UNAVAILABLE');
     start(ctx,'本账号的合盘');
     const ids=result.reportIds||[],names=ids.map((id,i)=>name(ctx.reports.find(r=>r.report_id===id)||{title:i?'第二张图谱':'第一张图谱'}));
-    ctx.body.append(node('h3',names.join(' × ')),node('p','此份合盘仅当前账号可看。','managed-note'));
+    const opening=window.ZxSynastryOpening?.create(result.report.opening,{names});
+    if(opening)ctx.body.append(opening);
+    else ctx.body.append(node('h3',names.join(' × ')));
+    ctx.body.append(node('p','此份合盘仅当前账号可看。','managed-note'));
+    if(typeof result.report.precisionNotice==='string'&&result.report.precisionNotice.trim())ctx.body.append(node('p',result.report.precisionNotice,'managed-note'));
     const sourceNames={'day-stems':'八字 · 日干关系','day-branches':'八字 · 日支关系','day-elements':'八字 · 日主五行','astro-sun':'星盘 · 太阳夹角','astro-moon':'星盘 · 月亮夹角','astro-asc':'星盘 · 上升夹角'};
     for(const chapter of result.report.chapters){
-      const section=node('section',undefined,'managed-chapter');section.append(node('h3',chapter.title),node('p',chapter.scene,'managed-note'),node('p',chapter.shared));
-      ['person-a','person-b'].forEach((id,i)=>{const detail=node('details'),summary=node('summary',names[i]+'的相处提示');detail.append(summary,node('p',chapter.views?.[id]?.advice),node('p',chapter.views?.[id]?.reminder,'managed-note'));section.append(detail);});
+      const section=node('section',undefined,'managed-chapter');section.append(node('h3',chapter.title),node('p',chapter.scene),node('p',chapter.shared));
+      ['person-a','person-b'].forEach((id,i)=>{
+        const detail=node('details'),summary=node('summary',names[i]+'的相处提示'),view=chapter.views?.[id];detail.append(summary);
+        if(typeof view?.headline==='string'&&view.headline.trim())detail.append(node('h4',view.headline,'managed-reading-headline'));
+        detail.append(node('p',view?.advice));
+        if(view?.actions&&typeof view.actions==='object'){
+          const actions=node('div',undefined,'managed-reading-actions');
+          [['own','你可以做什么'],['other','对方可以做什么'],['together','一起试一次']].forEach(([key,title])=>{
+            const text=view.actions[key];if(typeof text!=='string'||!text.trim())return;
+            const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',text));actions.append(item);
+          });detail.append(actions);
+        }
+        if(typeof view?.reminder==='string'&&view.reminder.trim())detail.append(node('p',view.reminder,'managed-note'));
+        section.append(detail);
+      });
       section.append(node('p',(chapter.sourceIds||[]).map(id=>sourceNames[id]).filter(Boolean).join(' · '),'managed-note'));ctx.body.append(section);
     }
     ctx.body.append(node('p',result.report.disclaimer,'managed-note'));
@@ -128,11 +145,16 @@
     ctx.body.append(act(ctx,button('返回合盘记录'),()=>records(ctx)));
   }
   async function records(ctx){
-    const response=await call(ctx,'/synastry/managed-pairs');if(!Array.isArray(response?.items))throw error('PAIR_UNAVAILABLE');start(ctx,'本账号的合盘记录');
-    ctx.body.append(button('选择两张图谱合盘',()=>{if(!ctx.busy)pick(ctx);},'button primary'));
-    if(!response.items.length)ctx.body.append(node('p','还没有本账号的合盘。选择两张已解锁的图谱，即可建立。','managed-note'));
-    for(const item of response.items){
-      if(!PAIR_ID.test(item.id||''))continue;
+    start(ctx,'本账号的合盘记录');
+    const seen=new Set(),cursors=new Set(),cards=node('div'),empty=node('p','还没有本账号的合盘。','managed-note');
+    let cursor=null;
+    empty.hidden=true;
+    const more=act(ctx,button('加载更多'),()=>load(cursor));more.hidden=true;
+    ctx.body.append(button('选择两张图谱合盘',()=>{if(!ctx.busy)pick(ctx);},'button primary'),
+      act(ctx,button('刷新'),()=>records(ctx)),cards,empty,more);
+    function append(item){
+      if(!PAIR_ID.test(item?.id||'')||seen.has(item.id))return;
+      seen.add(item.id);
       const card=node('article',undefined,'managed-chapter'),names=(item.reportIds||[]).map((id,i)=>name(ctx.reports.find(r=>r.report_id===id)||{title:i?'第二张图谱':'第一张图谱'}));
       card.append(node('h3',names.join(' × ')),act(ctx,button('阅读合盘'),async()=>reading(ctx,await call(ctx,'/synastry/managed-pairs/'+item.id))));
       const remove=button('移除此份合盘',()=>{
@@ -140,11 +162,24 @@
         area.append(node('p','只删除此份合盘，保留两张个人图谱和深度报告。','managed-note'),act(ctx,button('确认移除'),async()=>{
           await call(ctx,'/synastry/managed-pairs/'+item.id+'/remove',{confirmed:true});await records(ctx);if(typeof ctx.onChanged==='function')ctx.onChanged();
         }),button('保留',()=>{area.remove();remove.disabled=false;}));card.append(area);remove.disabled=true;
-      });card.append(remove);ctx.body.append(card);
+      });card.append(remove);cards.append(card);
     }
+    async function load(after){
+      const response=await call(ctx,'/synastry/managed-pairs'+(after?'?limit=20&cursor='+encodeURIComponent(after):''));
+      if(!cards.isConnected)throw error('VIEW_CLOSED');
+      if(!Array.isArray(response?.items))throw error('PAIR_UNAVAILABLE');
+      const next=response.nextCursor??null;
+      if(next!==null&&(typeof next!=='string'||next.length>512||!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/.test(next)||cursors.has(next)))throw error('CURSOR_INVALID');
+      if(response.hasMore!==undefined&&(typeof response.hasMore!=='boolean'||response.hasMore!==!!next))throw error('CURSOR_INVALID');
+      response.items.forEach(append);cursor=next;if(next)cursors.add(next);
+      more.hidden=!cursor;empty.hidden=seen.size>0||!!cursor;message(ctx,'');
+    }
+    const busy=ctx.busy;ctx.busy=true;
+    try{await load();}finally{ctx.busy=busy;}
   }
   async function open(options={}){
     close();const dialog=node('dialog',undefined,'managed-synastry-dialog'),wrap=node('div',undefined,'dialog-body'),header=node('div',undefined,'section-heading'),title=node('h2','选择两张图谱合盘');
+    dialog.setAttribute('style','background-color:#1a2233');
     title.id='managed-synastry-title';dialog.setAttribute('aria-labelledby',title.id);const exit=button('×',close,'close-button');exit.setAttribute('aria-label','关闭合盘');header.append(title,exit);
     const body=node('div');wrap.append(header,body);dialog.append(wrap);document.body.append(dialog);
     const ctx={dialog,title,body,revision:++revision,owner:'',reports:[],suppliedReports:Array.isArray(options.reports)?options.reports.slice():[],entries:Array.isArray(options.entries)?options.entries.slice():[],enabled:false,busy:false,

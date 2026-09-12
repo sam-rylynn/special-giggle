@@ -7,6 +7,7 @@
   var ORDER_RE = /^[a-f0-9]{32}$/;
   var RESUME_KEY = 'zx_private_report_resume_id';
   var RETURN_KEY = 'zx_private_profile_return_v1';
+  var GIFT_RETURN_KEY = 'zx_private_gift_return_v1';
   var RETURN_TTL = 30 * 60 * 1000;
   var SYN_PAGES = ['home','rank','invite','invite-external','invite-internal','gift','connections'];
   // Formal policy plus the server's per-account offer authorize purchase.
@@ -63,6 +64,32 @@
     return url.href;
   }
   function reportUrl(id) { return route('report', checkedId(id)); }
+  function giftReturn() {
+    try {
+      var value=JSON.parse(sessionStorage.getItem(GIFT_RETURN_KEY)||'null'),now=Date.now();
+      if (!value || value.v!==1 || !Number.isSafeInteger(value.createdAt) || value.createdAt>now || now-value.createdAt>=RETURN_TTL ||
+          !['purchase','incoming','gift','records'].includes(value.mode) || value.owner && !/^[a-f0-9]{64}$/.test(value.owner) ||
+          value.mode==='incoming' && !/^[a-f0-9]{64}$/.test(value.token||'') || value.mode==='gift' && !/^[a-f0-9]{64}$/.test(value.giftId||'') ||
+          value.senderReportId && !REPORT_RE.test(value.senderReportId) || value.senderName!==undefined && (typeof value.senderName!=='string'||value.senderName.length>100)) {
+        sessionStorage.removeItem(GIFT_RETURN_KEY);return null;
+      }
+      return value;
+    }catch(_){try{sessionStorage.removeItem(GIFT_RETURN_KEY);}catch(_){}return null;}
+  }
+  function consumeGiftReturn() {
+    var value=giftReturn();try{sessionStorage.removeItem(GIFT_RETURN_KEY);}catch(_){}
+    var state=member().snapshot();
+    return value && state.authenticated && state.identityKind==='wechat' && /^[a-f0-9]{64}$/.test(state.accountRef||'') && (!value.owner||value.owner===state.accountRef) ? value : null;
+  }
+  async function startGiftLogin(context, assertCurrent) {
+    if (!context || !['purchase','incoming','gift','records'].includes(context.mode) ||
+        context.mode==='incoming' && !/^[a-f0-9]{64}$/.test(context.token||'') || context.mode==='gift' && !/^[a-f0-9]{64}$/.test(context.giftId||'') ||
+        context.senderReportId && !REPORT_RE.test(context.senderReportId) || context.senderName!==undefined && (typeof context.senderName!=='string'||context.senderName.length>100)) throw error('RETURN_PATH_INVALID');
+    var state=member().snapshot(),value={v:1,mode:context.mode,createdAt:Date.now(),owner:state.authenticated?state.accountRef:''};
+    ['token','giftId','senderReportId','senderName'].forEach(function(key){if(context[key])value[key]=context[key];});
+    try{sessionStorage.setItem(GIFT_RETURN_KEY,JSON.stringify(value));}catch(_){throw error('LOCAL_STORAGE_UNAVAILABLE');}
+    try{return await startLogin(undefined,{gift:true,assertCurrent:assertCurrent});}catch(e){try{sessionStorage.removeItem(GIFT_RETURN_KEY);}catch(_){}throw e;}
+  }
   function synastryReturn() {
     try {
       var value = JSON.parse(sessionStorage.getItem(RETURN_KEY) || 'null'), now = Date.now();
@@ -179,7 +206,7 @@
   }
   function privacyReset() {
     generation += 1;
-    try{sessionStorage.removeItem(RETURN_KEY);}catch(_){}
+    try{sessionStorage.removeItem(RETURN_KEY);sessionStorage.removeItem(GIFT_RETURN_KEY);}catch(_){}
     pendingPurchaseKeys.clear();submittedOrders.clear();
     if(checkoutRefreshTimer){clearTimeout(checkoutRefreshTimer);checkoutRefreshTimer=null;}
     ['accountActions','reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
@@ -194,7 +221,7 @@
   }
   window.addEventListener('zx-private-session-cleared', privacyReset);
   function authenticated() { var state = member().snapshot(); return state.authenticated === true && state.identityKind === 'wechat' && /^[a-f0-9]{64}$/.test(state.accountRef || ''); }
-  async function startLogin(id) {
+  async function startLogin(id, giftOptions) {
     if (!consent()) throw error('PRIVACY_CONSENT_REQUIRED');
     if (!/MicroMessenger/i.test(navigator.userAgent || '')) throw error('WECHAT_BROWSER_REQUIRED');
     var config = window.ZX_PUBLIC_CONFIG || {};
@@ -209,9 +236,10 @@
           base.protocol !== 'https:' || !/(^|\.)zhixng\.cn$/.test(base.hostname) || redirect.origin !== base.origin || redirect.pathname !== '/auth/wechat/oauth/callback' || redirect.search || redirect.hash || redirect.username || redirect.password ||
           !Number.isFinite(Number(data.expires_at)) || Number(data.expires_at) <= Date.now()) throw new Error('invalid');
     } catch (_) { throw error('WECHAT_OAUTH_RESPONSE_INVALID'); }
+    if(giftOptions?.gift && typeof giftOptions.assertCurrent==='function')giftOptions.assertCurrent();
     try { if (id) sessionStorage.setItem(RESUME_KEY, checkedId(id)); else sessionStorage.removeItem(RESUME_KEY); } catch (_) {}
     var returning = new URLSearchParams(location.search).getAll('return');
-    if (returning.length === 1 && returning[0] === 'synastry') {
+    if (!giftOptions?.gift && returning.length === 1 && returning[0] === 'synastry') {
       var context=synastryReturn(), returnUrl=new URL(synastryUrl());
       rememberSynastryReturn(context && context.inviteToken || '',{chart:returnUrl.searchParams.get('chart') || undefined,reportId:returnUrl.searchParams.get('report') || undefined,page:returnUrl.hash.slice(1)});
     } else { try { sessionStorage.removeItem(RETURN_KEY); } catch (_) {} }
@@ -354,7 +382,7 @@
       orders.forEach(function (order) {
         if (!list || !ORDER_RE.test(order.order_no || '')) return;
         var row = node('article', '', 'order-item');
-        row.append(node('span', (order.product_code === 'deep_report_v1' ? '完整深度报告' : '问星次数') + ' · ' + String(order.order_no)), link('查看订单', checkoutUrl(order.order_no, REPORT_RE.test(order.paid_report_id || '') ? order.paid_report_id : undefined))); list.append(row);
+        row.append(node('span', (order.product_code === 'deep_report_v1' ? '完整深度报告' : order.product_code === 'gift_report_v1' ? '赠送深度报告' : '问星次数') + ' · ' + String(order.order_no)), link('查看订单', checkoutUrl(order.order_no, REPORT_RE.test(order.paid_report_id || '') ? order.paid_report_id : undefined))); list.append(row);
       });
       text('orderBadge', String(orders.length) + ' 笔'); hide('orderStateTitle', orders.length > 0); text('orderStateTitle', orders.length ? '' : '暂无订单'); text('orderStateBody', '支付与交付状态以订单查询结果为准。');
     } catch (e) { if (epoch === generation) text('orderStateBody', message(e)); }
@@ -462,6 +490,16 @@
       var result = await ownedCall('paymentOrder', [orderNo]); if (epoch !== generation) return;
       var order = result.order || result;
       if (order.order_no !== orderNo) throw error('ORDER_RESPONSE_INVALID');
+      if(order.product_code==='gift_report_v1'){
+        if(order.amount_fen!==1990||order.currency!=='CNY'||order.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');
+        text('checkoutBadge','赠送订单');text('checkoutTitle','送出的一份了解');text('checkoutBody','查看付款、发送礼物与领取状态。');
+        text('checkoutProduct','赠送深度报告');text('checkoutAmount',priceLabel(order));text('checkoutOrderNo',order.order_no);
+        text('checkoutNotice','');hide('checkoutRecoveryNote');
+        if(window.ZxProfileGift&&member().giftReportServiceAvailable?.())append('checkoutActions',button('查看赠送详情',function(){window.ZxProfileGift.openOrder(orderNo);}));
+        else text('checkoutNotice','赠送服务暂未开放。');
+        append('checkoutActions',link('返回我的订单',route('account',undefined,'order-center')));
+        return;
+      }
       var product = checkoutProduct(order);
       var id = REPORT_RE.test(order.paid_report_id || '') ? order.paid_report_id : '';
       var paid = order.provider_trade_state === 'SUCCESS' && Number(order.paid_at) > 0;
@@ -522,6 +560,7 @@
     }
   }
   var api = Object.freeze({
+    startGiftLogin:startGiftLogin,consumeGiftReturn:consumeGiftReturn,hasGiftReturn:function(){return !!giftReturn();},
     isPrivate:isPrivate, reportId:reportId, reportUrl:reportUrl, profileUrl:function(){return route('profile',reportId());}, loginUrl:loginUrl, homeUrl:homeUrl, checkoutReport:checkoutReport, checkoutUrl:checkoutUrl,
     preview:function (input, confirmation) { return call('paidReportPreview', [input,confirmation]); },
     prepare:function (input, confirmation) { return call('paidReportPrepare', [input,confirmation]); },

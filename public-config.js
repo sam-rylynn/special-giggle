@@ -5,6 +5,7 @@
   window.ZX_PUBLIC_CONFIG = Object.freeze({
     launchMode: 'paid-ask',
     paidAskEnabled: false,
+    giftReportServiceAvailable: false,
     accountApiBase: 'https://api.zhixng.cn',
     analyticsEnabled: false,
     analyticsEndpoint: '',

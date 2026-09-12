@@ -122,7 +122,6 @@ body[data-route=rank] .toast { bottom: 136px; }
   .rank-intro h1 { font-size: 38px; margin: 8px 0 5px; line-height: 1.25; letter-spacing: 0; }
   .rank-subtitle { font-size: 17px; line-height: 1.7; }
   .rank-disclosure { font-size: 11px; line-height: 1.8; margin-top: 6px; max-width: 100%; }
-  .rank-disclosure::after { content: ' · 原型示例'; }
   .rank-about { font-size: 13px; line-height: 1.5; min-height: 36px; margin-top: 0; gap: 12px; }
   .type-toggle { grid-template-columns: 25px 44px minmax(0, 1fr) 41px; gap: 10px; padding: 10px 7px; min-height: 89px; }
   .type-name { font-size: 20px; line-height: 1.4; white-space: nowrap; }
@@ -2264,3 +2263,22 @@ body[data-route='invite'] #app .invitation-atmosphere .invitation-gift > .fine {
 
 /* Runtime state surfaces retain the approved type and space system. */
 .synastry-state{padding:20px 0;color:var(--muted);font-size:14px;line-height:1.9}.synastry-state .text-link{display:block;margin-top:8px}.synastry-account-name{overflow-wrap:anywhere}.type-about{font-size:14px;line-height:1.9}.type-about p+p{margin-top:14px}.synastry-status-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}.gift-service-note{margin:18px 0;color:var(--gold-light);font-size:13px}.social-dialog .dialog-top h2{margin:0}.social-dialog .dialog-top{position:sticky;top:-28px;background:#182132;padding:8px 0;z-index:2}.social-dialog{width:min(100% - 28px,680px)}
+
+/* Five recommendations share equal visual weight; codes express their different relationship patterns. */
+.type-list--codenames .type-row{border:1px solid var(--line);border-radius:10px;margin:16px 0;background:linear-gradient(120deg,#1a2233c7,#121a29aa);overflow:hidden}
+.type-list--codenames .type-toggle{grid-template-columns:54px minmax(0,1fr) 72px;padding:22px;gap:20px}
+.type-list--codenames .type-detail{margin:0;padding:0 28px 22px}
+.type-list--codenames .type-headline{color:#c8b890;font-family:var(--serif);font-size:16px;margin-top:7px}
+.rank-basis{margin:26px 0 10px;border-top:1px solid var(--line);padding-top:6px}
+.rank-basis summary{padding:12px 0;min-height:44px;cursor:pointer;color:#c5b78f}
+.rank-basis p{margin:7px 0 12px}
+@media(max-width:620px){
+  .type-list--codenames .type-toggle{grid-template-columns:43px minmax(0,1fr) 47px;gap:12px;padding:20px 14px}
+  .type-list--codenames .stem-seal{width:41px;height:48px;font-size:28px}
+  .type-list--codenames .type-name{font-size:21px}
+  .type-list--codenames .type-name small{font-size:12px;margin-left:3px}
+  .type-list--codenames .type-headline{font-size:14px}
+  .type-list--codenames .type-affordance{gap:5px;font-size:12px}
+  .type-list--codenames .type-detail{padding:0 18px 18px}
+}
+@media(max-width:359px){.type-list--codenames .type-toggle{grid-template-columns:38px minmax(0,1fr) 40px;padding-inline:11px;gap:9px}.type-list--codenames .stem-seal{width:37px;height:43px;font-size:25px}.type-list--codenames .type-name{font-size:19px}.type-list--codenames .type-name small{font-size:11px}.type-list--codenames .type-detail{padding-inline:13px}}

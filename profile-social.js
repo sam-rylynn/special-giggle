@@ -13,6 +13,7 @@
     REPORT_ACCOUNT_CHANGED:'账号已切换，原账号的合盘信息已清除，请重新打开。',
     SYN_UNAVAILABLE:'暂时无法连接合盘服务，请稍后刷新。',
     RATE_LIMITED:'操作较频繁，请稍后再试。',
+    CURSOR_INVALID:'记录分页已失效，请刷新记录后继续查看。',
     PAIR_RECONFIRM_REQUIRED:'报告资料已变化，请双方重新确认并建立合盘。',
     REPORT_UNAVAILABLE:'所选报告当前不可用于合盘，请核对报告是否已交付并仍然有效。',
     REPORT_REQUIRED:'请先选择自己已交付且有效的报告。',
@@ -23,8 +24,10 @@
     INVITE_UNAVAILABLE:'这份邀请当前不可接受，可能已撤回、过期或已由其他人接受。',
     NOT_FOUND:'未找到当前账号可查看的邀请或合盘。',
     PAIR_UNAVAILABLE:'这份共同解读当前不可阅读。',
+    SUPPORT_REQUIRED:'本次生成已多次失败，请联系客服处理。',
     USE_PAIR_UNLINK:'邀请已经接受，请到合盘记录管理共同阅读。',
     IDEMPOTENCY_CONFLICT:'本次邀请的资料已变化，请重新选择报告并确认。',
+    DISPLAY_NAME_INVALID:'邀请署名有误，请到我的资料修改昵称。',
     POLICY_UNAVAILABLE:'合盘说明暂未载入，请刷新页面后重试。'
   });
   let active = null;
@@ -69,6 +72,7 @@
     const style = el('style');
     style.id = 'zx-social-style';
     style.textContent = '.social-note{color:#aab0bd;font-size:13px;line-height:1.8;white-space:pre-line}.social-notice{line-height:1.8;font-size:14px;overflow-wrap:anywhere}.social-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.social-button,.social-account-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 14px;border:1px solid #c9a85c66;border-radius:9px;background:#1a2233;color:#e8e4d8;font:inherit;font-size:14px;text-decoration:none;box-sizing:border-box}.social-button{cursor:pointer}.social-button:disabled{opacity:.5;cursor:default}.social-button:focus-visible,.social-account-link:focus-visible{outline:2px solid #f0d695;outline-offset:3px}.social-record{padding:18px 0;border-bottom:1px solid #c9a85c33}.social-record h3,.social-reading h3{font-size:18px;line-height:1.5;color:#d8bf80;margin:0 0 8px}.social-record p,.social-reading p{line-height:1.9;font-size:14px;overflow-wrap:anywhere}.social-form{margin:20px 0}.social-field{display:block;line-height:1.8;margin:14px 0;font-size:14px}.social-field select,.social-field input:not([type=checkbox]),.social-link-output{display:block;box-sizing:border-box;width:100%;min-height:44px;padding:10px;margin-top:7px;border:1px solid #c9a85c66;border-radius:8px;background:#141b2b;color:#e8e4d8;font:inherit}.social-check{display:flex;align-items:flex-start;gap:10px;line-height:1.8;font-size:14px;margin:16px 0}.social-check input{flex:none;width:20px;height:20px;margin:3px 0 0;accent-color:#c9a85c}.social-reading{padding:16px 0}.social-link-output{overflow-wrap:anywhere;word-break:break-all}.social-confirm{padding:14px;border:1px solid #c9a85c66;border-radius:9px;margin:12px 0}.social-tag{font-size:12px;color:#d8bf80}.social-code{overflow-wrap:anywhere}.social-heading{font-size:18px;margin-top:22px;color:#d8bf80}';
+    style.textContent += '#social-detail{background-color:#1a2233}.social-reading p{color:#d2d7e0}.social-reading h4{font-size:16px;line-height:1.8;color:#d8bf80;margin:18px 0 8px}.social-reading .social-note{font-size:13px;color:#aab0bd}';
     document.head.append(style);
   }
   function isCurrent(ctx, view) {
@@ -157,7 +161,24 @@
     } while (before);
     return items.filter(usableReport);
   }
-  function approvalForm(ctx, parent, requireReport = false) {
+  function details(parent, summary, text) {
+    const node=el('details',undefined,'social-note');
+    node.append(el('summary',summary),el('p',text));parent.append(node);return node;
+  }
+  function signature(ctx, reportId) {
+    try {
+      const vault=window.ZxChartVault, selected=vault?.selected?.();
+      let name='';
+      if (reportId) name=vault?.paidName?.(reportId,ctx.owner)||'';
+      else if(ctx.senderName) name=ctx.senderName;
+      else if(selected?.kind==='local') name=vault?.get?.(selected.id)?.name||'';
+      else if(selected?.kind==='report'&&selected.accountRef===ctx.owner) name=vault?.paidName?.(selected.id,ctx.owner)||'';
+      const cleaned=String(name).normalize('NFC').trim();
+      if(cleaned&&!/[<>{}\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u.test(cleaned)&&Array.from(cleaned).length<=80)return cleaned;
+    }catch(_){}
+    return ctx.profile.name;
+  }
+  function approvalForm(ctx, parent, requireReport = false, withSignature = false) {
     const wrap = el('div',undefined,'social-form');
     const label = el('label','选择自己的报告','social-field');
     const reports = el('select');
@@ -174,18 +195,22 @@
     label.append(reports);
     const consentLabel = el('label',undefined,'social-check');
     const consent = el('input'); consent.type = 'checkbox';
-    const consentText = el('span','我同意建立合盘邀请；如已选择自己的有效报告，同意将它用于双方共同解读。');
+    const consentText = el('span',withSignature?'我同意以此署名发起合盘邀请。':'我同意参与合盘。');
     consentLabel.append(consent,consentText);
-    const detail = el('p','只共享共同解读，不开放各自的出生资料、个人报告和私人问星。双方分别决定是否参与；赠送报告不代表合盘同意。报告未备齐时只建立邀请，选定报告时需再次确认。','social-note');
+    const signatureLine=withSignature?el('p','','social-tag'):null;
+    const updateSignature=()=>{if(signatureLine)signatureLine.textContent='邀请署名：'+signature(ctx,reports.value);};
+    updateSignature();
     const aiLabel = el('label',undefined,'social-check');
     const ai = el('input'); ai.type = 'checkbox';
-    aiLabel.append(ai,el('span','我另行同意：双方都勾选时，由 DeepSeek 根据最少量的盘面事实提供相处建议。（选填）'));
-    const aiDetail = el('p','只发送日主、日干、日支组合及可用的星盘夹角，不发送姓名、知星号、出生日期、地点或个人报告全文。不勾选也可阅读程序生成的基础解读。解除共同阅读后停止后续生成，并删除此处保存的共同解读。','social-note');
-    wrap.append(label,consentLabel,detail,aiLabel,aiDetail);
+    aiLabel.append(ai,el('span','同意 DeepSeek 提供相处建议（选填）'));
+    wrap.append(label);if(signatureLine)wrap.append(signatureLine);
+    wrap.append(consentLabel,aiLabel);
+    details(wrap,'合盘与隐私说明','邀请署名会显示给对方；所选报告仅用于共同解读，不开放各自的出生资料、个人报告和私人问星。报告未备齐可先邀请，补选报告时再次确认。共同阅读截至双方报告较早到期日，任一方解除后停止共同阅读。');
+    details(wrap,'AI 建议说明','双方都同意时，仅向 DeepSeek 发送日主、日干、日支组合及可用星盘夹角，不发送姓名、知星号、出生日期、地点或报告全文。不勾选也可阅读基础解读。解除后停止后续生成并删除共同解读。');
     parent.append(wrap);
     const listeners = [];
     const changed = () => { ctx.requestKey = ''; listeners.forEach(fn=>fn()); };
-    reports.addEventListener('change',() => { consent.checked=false; ai.checked=false; changed(); });
+    reports.addEventListener('change',() => { consent.checked=false; ai.checked=false; updateSignature(); changed(); });
     consent.addEventListener('change',changed);
     ai.addEventListener('change',changed);
     return {
@@ -198,7 +223,7 @@
         const reportId = reports.value;
         if (requireReport && !reportId) throw Object.assign(new Error(),{code:'REPORT_REQUIRED'});
         if (reportId && !ctx.reports.some(report => usableReport(report) && report.report_id === reportId)) throw Object.assign(new Error(),{code:'REPORT_UNAVAILABLE'});
-        return {reportId:reportId || null,consent:{confirmed:true,version:window.SynastryPolicy.VERSION,aiConfirmed:ai.checked,aiVersion:ai.checked ? window.SynastryPolicy.AI_CONSENT_VERSION : null}};
+        return {reportId:reportId || null,...(withSignature?{senderName:signature(ctx,reportId)}:{}),consent:{confirmed:true,version:window.SynastryPolicy.VERSION,aiConfirmed:ai.checked,aiVersion:ai.checked ? window.SynastryPolicy.AI_CONSENT_VERSION : null}};
       }
     };
   }
@@ -234,8 +259,7 @@
   function createInvitation(ctx) {
     const internal=ctx.channel==='internal',external=ctx.channel==='external';
     startView(ctx,internal?'站内邀请':external?'微信邀请':'发起合盘邀请');
-    ctx.body.append(el('p','报告还没备齐也可以先邀请。双方选定各自有效的深度报告并同意后，共同解读免费解锁。','social-note'));
-    const form = approvalForm(ctx,ctx.body);
+    const form = approvalForm(ctx,ctx.body,false,true);
     const targetLabel = el('label',internal?'对方的知星号':'对方的知星号（选填）','social-field');
     const target = el('input'); target.maxLength=18; target.autocomplete='off'; target.placeholder=internal?'请输入对方的完整知星号':'不填则使用链接邀请';
     targetLabel.append(target);
@@ -263,6 +287,8 @@
       ctx.creating=true; form.disable(true); target.disabled=true; lookup.disabled=true; back.disabled=true;
       try {
         const result=await call(ctx,'/synastry/invitations',{...body,key:ctx.requestKey,...(code ? {targetCode:code} : {})},view);
+        if(result?.senderName&&result.senderName!==body.senderName)throw Object.assign(new Error(),{code:'IDEMPOTENCY_CONFLICT'});
+        if(typeof ctx.onInvitationCreated==='function'&&result?.status==='active')ctx.onInvitationCreated({senderName:body.senderName,owner:ctx.owner,reportId:body.reportId});
         if (internal) {
           output.replaceChildren();
           notice(ctx,result?.status==='active'&&ID.test(result.id || '')&&ID.test(result.token || '')
@@ -313,18 +339,33 @@
   }
   async function showRecords(ctx, kind) {
     const view=startView(ctx,kind==='records' ? '合盘记录' : '我的邀请');
-    try {
-    notice(ctx,'正在读取当前账号的记录…');
-    const rows=await call(ctx,'/synastry/records',undefined,view);
-    if (!rows || !Array.isArray(rows.pairs) || !Array.isArray(rows.invitations)) throw new Error('Invalid record list');
     const toolbar=el('div',undefined,'social-toolbar');
     toolbar.append(action(ctx,button('刷新记录'),()=>showRecords(ctx,kind)),action(ctx,button('发起邀请'),()=>createInvitation(ctx)));
     toolbar.append(action(ctx,button(kind==='records' ? '我的邀请' : '合盘记录'),()=>showRecords(ctx,kind==='records' ? 'invitations' : 'records')));
-    ctx.body.append(toolbar);
-    notice(ctx,'共同解读需要双方各自的有效报告与单独同意。');
-    const list=kind==='records' ? rows.pairs : rows.invitations;
-    if (!list.length) { ctx.body.append(el('p',kind==='records' ? '还没有合盘记录。可以先发邀请，等双方报告备齐后再共同阅读。' : '还没有发出或收到的邀请。','social-note')); return; }
+    const listBody=el('div'),pager=el('div',undefined,'social-toolbar');
+    ctx.body.append(toolbar,listBody,pager);
+    const category=kind==='records' ? 'pairs' : 'invitations';
+    let cursor=null,loaded=false;
+    const seenItems=new Set(),seenCursors=new Set();
+    const more=action(ctx,button('加载更多'),async currentView=>loadPage(currentView));
+    async function loadPage(currentView) {
+      notice(ctx,'正在读取当前账号的记录…');
+      const params=new URLSearchParams({kind:category,limit:'20'});
+      if(cursor)params.set('cursor',cursor);
+      const rows=await call(ctx,'/synastry/records?'+params.toString(),undefined,currentView);
+      if (!rows || !Array.isArray(rows.pairs) || !Array.isArray(rows.invitations)) throw new Error('Invalid record list');
+      const next=rows.nextCursor ?? null;
+      if(next!==null && (typeof next!=='string' || !/^[A-Za-z0-9_.-]{1,512}$/.test(next) || seenCursors.has(next))) throw new Error('Invalid record cursor');
+      if(rows.hasMore!==undefined && rows.hasMore!==Boolean(next)) throw new Error('Invalid record pagination');
+      const list=category==='pairs' ? rows.pairs : rows.invitations;
+      if(list.length>20)throw new Error('Invalid record page size');
+      list.forEach(item => {
+        if(!item || typeof item!=='object')throw new Error('Invalid record');
+      });
+      if(!loaded && !list.length && !next)listBody.append(el('p',kind==='records' ? '还没有合盘记录。可以先发邀请，等双方报告备齐后再共同阅读。' : '还没有发出或收到的邀请。','social-note'));
     list.forEach(item => {
+      if(item.id && seenItems.has(item.id))return;
+      if(item.id)seenItems.add(item.id);
       const article=el('article',undefined,'social-record');
       article.append(el('h3',kind==='records' ? '共同解读' : (item.direction==='sent' ? '我发出的邀请' : '收到 '+String(item.senderName || '知星用户')+' 的邀请')));
       article.append(el('p',status(item.status)+(date(item.expiresAt) ? ' · '+date(item.expiresAt)+'到期' : ''),'social-tag'));
@@ -337,10 +378,18 @@
         const revoke=action(ctx,button('撤回邀请'),async currentView => { await call(ctx,'/synastry/invitations/'+item.id+'/revoke',{},currentView); await showRecords(ctx,kind); notice(ctx,'邀请已撤回，原链接不能再接受。'); });
         actions.append(revoke);
       }
-      article.append(actions); ctx.body.append(article);
+      article.append(actions); listBody.append(article);
     });
-    } catch (error) { handleError(ctx,error,view); }
+      loaded=true;cursor=next;
+      if(next)seenCursors.add(next);
+      pager.replaceChildren();
+      if(next)pager.append(more);
+      notice(ctx,'共同解读需要双方各自的有效报告与单独同意。');
+    }
+    try {await loadPage(view);}
+    catch (error) {handleError(ctx,error,view);}
   }
+
   async function readPair(ctx, id) {
     if (!ID.test(id || '')) throw Object.assign(new Error(),{code:'NOT_FOUND'});
     const view=startView(ctx,'共同解读');
@@ -352,9 +401,25 @@
     ctx.body.append(toolbar);
     notice(ctx,status(result.status)+(date(result.expiresAt) ? ' · '+date(result.expiresAt)+'到期' : ''));
     if (result.status==='ready' && result.report && Array.isArray(result.report.chapters)) {
+      const opening=window.ZxSynastryOpening?.create(result.report.opening);
+      if(opening)ctx.body.append(opening);
+      if (typeof result.report.precisionNotice==='string' && result.report.precisionNotice.trim()) ctx.body.append(el('p',result.report.precisionNotice,'social-note'));
       result.report.chapters.forEach(chapter=> {
         const section=el('section',undefined,'social-reading');
-        section.append(el('h3',chapter.title),el('p',chapter.scene,'social-note'),el('p',chapter.shared),el('p',chapter.view?.advice),el('p',chapter.view?.reminder,'social-note'));
+        section.append(el('h3',chapter.title));
+        if (typeof chapter.view?.headline==='string' && chapter.view.headline.trim()) section.append(el('h4',chapter.view.headline,'social-reading-headline'));
+        section.append(el('p',chapter.scene),el('p',chapter.shared),el('p',chapter.view?.advice));
+        if (chapter.view?.actions && typeof chapter.view.actions==='object') {
+          const actions=el('div',undefined,'social-reading-actions');
+          [['own','你可以做什么'],['other','对方可以做什么'],['together','一起试一次']].forEach(([key,title])=> {
+            const text=chapter.view.actions[key];
+            if (typeof text!=='string' || !text.trim()) return;
+            const item=el('div',undefined,'social-reading-action');
+            item.append(el('h4',title),el('p',text)); actions.append(item);
+          });
+          section.append(actions);
+        }
+        if (typeof chapter.view?.reminder==='string' && chapter.view.reminder.trim()) section.append(el('p',chapter.view.reminder,'social-note'));
         const sources={ 'day-stems':'八字 · 日干关系','day-branches':'八字 · 日支关系','day-elements':'八字 · 日主五行','astro-sun':'星盘 · 太阳夹角','astro-moon':'星盘 · 月亮夹角','astro-asc':'星盘 · 上升夹角' };
         const sourceNames=Array.isArray(chapter.sourceIds) ? chapter.sourceIds.map(key=>sources[key]).filter(Boolean) : [];
         if (sourceNames.length) section.append(el('p',sourceNames.join(' · '),'social-note'));
@@ -371,8 +436,32 @@
       });
       ctx.body.append(select);
     } else {
-      const states={queued:'共同解读正在等待生成，可稍后刷新。',running:'共同解读正在生成，可稍后刷新。',failed:'本次生成尚未完成，请稍后查看处理结果。',unavailable:'报告可能已到期、变更或停止共享。请核对自己的报告状态。',removed:'共同阅读已解除。'};
+      const states={queued:'共同解读正在等待生成，可稍后刷新。',running:'共同解读正在生成，可稍后刷新。',failed:'本次生成未完成。',unavailable:'报告可能已到期、变更或停止共享。请核对自己的报告状态。',removed:'共同阅读已解除。'};
       ctx.body.append(el('p',states[result.status] || '当前没有可阅读的共同解读。','social-note'));
+      if (result.status==='failed') {
+        const recovery=el('div',undefined,'social-toolbar');
+        if (Number.isSafeInteger(result.attempts) && result.attempts>=3) notice(ctx,MESSAGES.SUPPORT_REQUIRED);
+        else {
+          const retry=button('重新生成共同解读');
+          recovery.append(action(ctx,retry,async currentView=> {
+            try { await call(ctx,'/synastry/pairs/'+id+'/retry',{},currentView); }
+            catch (error) {
+              if ((error?.code || error?.error)==='SUPPORT_REQUIRED' && isCurrent(ctx,currentView)) {
+                retry.remove(); notice(ctx,MESSAGES.SUPPORT_REQUIRED); return;
+              }
+              throw error;
+            }
+            await readPair(ctx,id);
+          }));
+        }
+        recovery.append(action(ctx,button('提交客服处理'),async currentView=>{
+          const ticket=await call(ctx,'/synastry/pairs/'+id+'/support',{},currentView);
+          notice(ctx,ticket.status==='resolved'?'客服已处理，请刷新查看。':ticket.status==='in_progress'?'客服处理中。':ticket.notification==='sent'?'已提交客服通知。':ticket.notification==='queued'?'已提交，正在通知客服。':'问题已记录，可通过下方邮箱联系客服。');
+        }));
+        const contact=el('a','联系客服','social-account-link');
+        contact.href='mailto:wyh767745207@qq.com?subject='+encodeURIComponent('知星合盘生成问题');
+        recovery.append(contact); ctx.body.append(recovery);
+      }
     }
     if (!['removed','unavailable'].includes(result.status)) {
       const unlink=action(ctx,button('解除共同阅读'),()=> {
@@ -391,7 +480,7 @@
     if (!dialog || !title || !body) return;
     if (active) clearSensitive(active);
     injectStyle();
-    const ctx={dialog,title,body,generation:++generation,view:0,owner:'',profile:{},reports:[],reportId:REPORT_ID.test(options.reportId || '') ? options.reportId : '',token:'',requestKey:'',incomingToken:ID.test(options.token || '')?options.token:'',creating:false,lookupCode:/^ZX[A-F0-9]{16}$/.test(options.lookupCode || '')?options.lookupCode:'',channel:['internal','external'].includes(options.channel)?options.channel:''};
+    const ctx={dialog,title,body,generation:++generation,view:0,owner:'',profile:{},senderName:typeof options.senderName==='string'?options.senderName:'',senderOwner:options.senderOwner||'',onInvitationCreated:options.onInvitationCreated,reports:[],reportId:REPORT_ID.test(options.reportId || '') ? options.reportId : '',token:'',requestKey:'',incomingToken:ID.test(options.token || '')?options.token:'',creating:false,lookupCode:/^ZX[A-F0-9]{16}$/.test(options.lookupCode || '')?options.lookupCode:'',channel:['internal','external'].includes(options.channel)?options.channel:''};
     active=ctx;
     title.textContent=options.token ? '收到合盘邀请' : options.kind==='records' ? '合盘记录' : '我的邀请';
     body.replaceChildren();
@@ -409,6 +498,7 @@
       const results=await Promise.all([call(ctx,'/synastry/profile'),allReports(ctx,ctx.view)]);
       check(ctx);
       ctx.profile={name:String(results[0]?.name || '知星用户'),code:String(results[0]?.code || '')}; ctx.reports=results[1];
+      if(ctx.senderOwner&&ctx.senderOwner!==ctx.owner)ctx.senderName='';
       if (options.token) await incoming(ctx,options.token);
       else if(options.compose) createInvitation(ctx);
       else await showRecords(ctx,options.kind==='records' ? 'records' : 'invitations');

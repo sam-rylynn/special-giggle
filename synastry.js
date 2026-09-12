@@ -35,7 +35,9 @@
   if(typeof module==='object')module.exports=helpers;
   if(typeof document==='undefined')return;
   const $=id=>document.getElementById(id),app=$('app'),member=()=>root.zxMember,vault=()=>root.ZxChartVault,snapshot=()=>member()?.snapshot?.()||{};
-  let active=null,chart=null,displayName='',failure='',busy=true,epoch=0,openedRank='',readyReport=false,owner='',reportExpires=0,privateReturn=null;
+  let active=null,chart=null,displayName='',failure='',busy=true,epoch=0,openedRank='',readyReport=false,owner='',reportExpires=0,privateReturn=null,confirmedInvitation=null;
+  let incomingGift=/^#gift=([a-f0-9]{64})$/.exec(location.hash)?.[1]||'';
+  if(incomingGift){const url=new URL(location.href);url.hash='gift';history.replaceState(history.state,'',url.href);}
   const route=()=>PAGES.includes(location.hash.slice(1))?location.hash.slice(1):location.hash==='#result'?'connections':'home';
   const back=(page,text)=>`<a class="back-link" href="#${page}"><span aria-hidden="true">←</span>${text}</a>`;
   const asset=name=>'./media/synastry/'+name;
@@ -67,22 +69,33 @@
   function rank() {
     const ranking=root.SynastryEngine.rank(chart);
     return `<section class="rank-intro">
-      <p class="rank-context">${esc(displayName||'你的图谱')} · ${esc(chart.dayMaster.stem+chart.dayMaster.element)} × 太阳${esc(chart.astro.sun.sign.replace('座',''))}</p><p class="fine">使用当前图谱 · 按日主关系与太阳星座探索。</p>
+      <p class="rank-context">${esc(displayName||'你的图谱')} · ${esc(chart.dayMaster.stem+chart.dayMaster.element)} × 太阳${esc(chart.astro.sun.sign.replace('座',''))}</p>
       <h1>谁更容易懂你</h1>
       <p class="rank-subtitle">五种类型，五种相处的可能</p>
-      <p class="rank-disclosure">类型探索，不是真实用户匹配或关系成功率。</p><details class="fine"><summary>查看本次排序依据</summary><p>${esc(ranking.rules)}</p><p>${esc(ranking.tieBreak)}</p></details>
-      <button class="rank-about" id="rank-about" aria-haspopup="dialog">怎么看这份类型榜 <span aria-hidden="true">›</span></button>
+      <p class="rank-disclosure">从日主与太阳星座，看看相处的可能。</p>
+      <button class="rank-about" id="rank-about" aria-haspopup="dialog">怎么看这五种推荐 <span aria-hidden="true">›</span></button>
     </section>
-    <ol class="type-list">${ranking.rows.map((r,index)=>`<li class="type-row ${index===0?'featured-type':''}">
+    <ul class="type-list type-list--codenames" aria-label="五种合拍类型推荐">${ranking.rows.map(r=>`<li class="type-row">
       <button class="type-toggle" data-rank="${esc(r.id)}" aria-expanded="${openedRank === r.id}" aria-controls="detail-${esc(r.id)}">
-        <span class="rank-number">${String(index+1).padStart(2,'0')}</span>
-        <span class="stem-seal ${r.stem.endsWith('木') ? 'wood' : r.stem.endsWith('火') ? 'fire' : r.stem.endsWith('水') ? 'water' : ''}">${esc(r.stem[0])}</span>
-        <span class="type-copy"><span class="type-name">${esc(r.stem)}<small>· 太阳${esc(r.sun)}</small></span><span class="type-headline">${esc(r.headline)}</span></span>
+        <span class="stem-seal ${r.stem.endsWith('木') ? 'wood' : r.stem.endsWith('火') ? 'fire' : r.stem.endsWith('水') ? 'water' : ''}" aria-hidden="true">${esc(r.stem[0])}</span>
+        <span class="type-copy"><span class="type-name">${esc(r.stem)}<small>· 太阳${esc(r.sun)}</small></span><span class="type-headline">${esc(r.opening?.status==='ready'?r.opening.name+' · '+r.opening.title:'资料待补充')}</span></span>
         <span class="type-affordance" aria-hidden="true"><span class="type-action">${openedRank===r.id?'收起':'查看'}</span><span class="type-arrow">›</span></span>
       </button>
-      <div class="type-detail" id="detail-${esc(r.id)}" ${openedRank === r.id ? '' : 'hidden'}><h3>容易合拍的地方</h3>${r.ease.map(t=>`<p>${esc(t)}</p>`).join('')}<p class="fine">依据：${r.sources.map(esc).join(' · ')}</p><div class="friction"><h3>相处时留意</h3><p>${esc(r.friction)}</p></div></div>
-    </li>`).join('')}</ol>
-    <section class="rank-dock" aria-label="邀请一个熟悉的人"><div class="rank-dock-inner"><p>想到某个人了吗？<span>TA 不在榜中，也值得了解。</span></p><a class="primary full" href="#invite" aria-label="邀请 TA 查看合盘">邀请 TA，看看真实的你们 <span aria-hidden="true">→</span></a></div></section>`;
+      <div class="type-detail" id="detail-${esc(r.id)}" data-rank-opening="${esc(r.id)}" ${openedRank === r.id ? '' : 'hidden'}></div>
+    </li>`).join('')}</ul>
+    <details class="rank-basis fine"><summary>类型推荐与解读依据</summary><p>这五种推荐用于探索盘面类型，展示顺序不代表关系的高低。想到一个人时，可以邀请 TA，查看你们的完整合盘。</p><p>以日主关系为主轴、太阳星座为辅证；具体到两个人时，再结合双方的完整资料。</p><p>${esc(ranking.rules)}</p><p>${esc(ranking.tieBreak)}</p></details>
+    <section class="rank-dock" aria-label="邀请一个熟悉的人"><div class="rank-dock-inner"><p>想到某个人了吗？<span>TA 不在其中，也值得了解。</span></p><a class="primary full" href="#invite" aria-label="邀请 TA 查看合盘">邀请 TA，看看真实的你们 <span aria-hidden="true">→</span></a></div></section>`;
+  }
+  function mountRankOpenings(){
+    if(!chart||route()!=='rank')return;
+    const ranking=root.SynastryEngine.rank(chart);
+    for(const row of ranking.rows){
+      const container=document.getElementById('detail-'+row.id);
+      if(!container)continue;
+      const opening=root.ZxSynastryOpening?.create(row.opening,{compact:true});
+      if(opening)container.append(opening);
+      else {const note=document.createElement('p');note.textContent='这组类型的解读暂时无法打开，请刷新后重试。';container.append(note);}
+    }
   }
   const invite=()=>`<section class="invite-channel-page" aria-labelledby="invite-channel-title"><header class="channel-heading"><p class="entry-eyebrow">知星 · 合盘邀请</p><h1 id="invite-channel-title">把这封邀请<br>送到 TA 身边</h1><p>选一种方便你们的方式</p></header><div class="invite-channel-grid"><a class="channel-choice channel-external" href="#invite-external"><span class="channel-mark" aria-hidden="true">↗</span><span class="channel-kicker">站外 · 微信好友</span><h2>微信邀请</h2><p>把邀请链接发给 TA<br>还没用过知星，也能收到</p><span class="channel-choice-action">制作邀请链接 <span aria-hidden="true">→</span></span></a><a class="channel-choice channel-internal" href="#invite-internal"><span class="channel-mark" aria-hidden="true">星</span><span class="channel-kicker">站内 · 已有知星账号</span><h2>站内邀请</h2><p>用知星号找到 TA<br>邀请直接出现在站内消息里</p><span class="channel-choice-action">按知星号邀请 <span aria-hidden="true">→</span></span></a></div><p class="channel-shared-rule">已有知星账号，也可以通过微信链接接受邀请。<br>双方报告交付并同意后，合盘免费解锁。</p></section>`;
   const title=kind=>kind==='gift'?['这份了解','我想送给你']:['如果相遇有伏笔','我想和你一起读'];
@@ -110,18 +123,18 @@
             <div><span class="gift-owner-role">付款人 · ${esc(displayName||'你')}</span><h3>你得到</h3><p>赠送订单与退款记录。</p></div>
             <div><span class="gift-owner-role">收礼人 · 由 TA 本人确认</span><h3>TA 得到</h3><p>自己的报告与 1 次问星。</p></div>
           </div>
-          <p class="gift-privacy-note">TA 可以先领取个人报告，再决定是否同意合盘。付款不会开放 TA 的私人报告、出生资料或问答。</p>
-          <p class="expiry">共同阅读期将在双方报告交付后确认。<br>个人报告从交付日起保存 6 个月。</p>
-          <button class="primary full" type="button" disabled>赠送服务暂未开放</button>
-          <p class="gift-demo-note">赠送通道开放后，可在这里付款，并由 TA 本人领取。当前没有生成订单，也不会扣费。</p>
-          <details class="source-detail gift-rules"><summary>赠送与领取说明<span aria-hidden="true"></span></summary><ul><li>未领取时可撤回，退款原路退给付款人；发起退款与到账分别展示。</li><li>领取期限与退款状态以开放后的实际订单说明为准。</li><li>报告保存期自成功交付起计 6 个月，不从赠送付款时起算。</li><li>报告已交付后，赠送人不能单方面收回，适用原报告售后规则。</li></ul></details>
+          <p class="gift-privacy-note">TA 领取时同意与你合盘，私人报告仍只属于 TA。</p>
+          <p class="expiry">7 天内领取，未领取原路退款。</p>
+          <button class="primary full" type="button" id="purchase-gift" ${member()?.giftReportServiceAvailable?.()===true?'':'disabled'}>${member()?.giftReportServiceAvailable?.()===true?'赠送这份了解 · ¥19.90':'赠送服务暂未开放'}</button>
+          ${member()?.giftReportServiceAvailable?.()===true?'':'<p class="gift-demo-note">开放后即可购买并发送给 TA。</p>'}
+          <details class="source-detail gift-rules"><summary>赠送与领取说明<span aria-hidden="true"></span></summary><ul><li>未领取时可撤回，退款原路退给付款人；发起退款与到账分别展示。</li><li>支付成功后 7 天内领取；到期未领取自动发起原路退款，到账时间以支付渠道为准。</li><li>报告保存期自成功交付起计 6 个月，不从赠送付款时起算。</li><li>领取时明确同意与赠送人合盘；共同阅读截至双方报告较早到期日，解除合盘不会收回个人报告。</li><li>报告已交付后，赠送人不能单方面收回，适用原报告售后规则。</li></ul></details>
         </section>
       </div>
     </div>`;
   }
   function connections(){return `<header class="archive-heading"><div><p class="entry-eyebrow">关系档案</p><h1>我的合盘</h1><p class="archive-reader">当前图谱：${esc(displayName||'未设置昵称')}</p></div><p>那些想读懂的人，<br>也值得一次认真的对话。</p></header><div class="archive-layout"><aside class="archive-index" aria-label="当前合盘状态"><span class="entry-eyebrow">共同解读</span><h2>从这里，继续了解</h2><p class="fine">只共享共同解读，<br>各自的私人内容继续保密。</p></aside><section class="archive-content" aria-label="合盘记录"><article class="archive-record"><div class="archive-record-top"><span class="entry-record-label">共同阅读与邀请</span></div><div class="archive-open-record"><img src="./media/synastry/pair-orbit.webp" width="1536" height="1024" alt="夜空中沿轨道靠近的两枚星体"><div class="archive-state-body"><h2>把一个人的解读，<br>变成两个人的对话。</h2>${serviceNotice()}<div class="synastry-status-actions"><button type="button" class="primary" id="open-connections">查看合盘记录 →</button><button type="button" class="secondary" id="open-invitations">查看邀请记录 →</button></div><a class="text-link" href="#invite">邀请一个人 →</a></div></div></article></section></div>`;}
   function internalInvite(){return `${identity()}<section class="channel-internal-page"><a class="back-link" href="#invite">← 两种邀请方式</a><header class="channel-heading"><p class="entry-eyebrow">站内邀请</p><h1>在知星<br>找到你想邀请的人</h1><p>向 TA 要一个知星号，核对昵称后再邀请</p></header><form class="internal-search" id="internal-search-form"><label for="internal-user-id">对方的知星号</label><div><input id="internal-user-id" name="userId" placeholder="请输入完整知星号" autocomplete="off" spellcheck="false" maxlength="18" pattern="[Zz][Xx][A-Fa-f0-9]{16}" required><button class="primary" type="submit">查找</button></div><p class="fine">仅核对公开昵称与知星号。</p><p class="internal-search-error" id="internal-search-error" role="status"></p></form>${serviceNotice()}<p class="channel-shared-rule">TA 会在「我的合盘 · 收到的邀请」中看到消息。<br>查找时不展示 TA 的盘面、出生资料或购买状态。</p></section>`;}
-  function social(options){return root.ZxProfileSocial?.open({...options,reportId:active?.kind==='report'?active.id:''});}
+  function social(options){return root.ZxProfileSocial?.open({...options,senderName:displayName,senderOwner:snapshot().accountRef,reportId:active?.kind==='report'?active.id:'',onInvitationCreated:value=>{if(snapshot().accountRef===value.owner)confirmedInvitation=value;}});}
   let posterDialog=null;
   function closePoster(){if(!posterDialog)return;const dialog=posterDialog;posterDialog=null;root.ZxSynastryPoster?.release(dialog);if(dialog.open)dialog.close();dialog.remove();}
   function openPoster(){
@@ -131,26 +144,28 @@
     dialog.querySelector('[data-close-dialog]')?.addEventListener('click',closePoster);
     dialog.querySelector('#copy-invite-poster')?.addEventListener('click',()=>root.ZxSynastryPoster.copy(dialog));
     dialog.querySelector('#save-invite-poster')?.addEventListener('click',()=>root.ZxSynastryPoster.save(dialog));
-    dialog.showModal();root.ZxSynastryPoster.prepare(dialog,{senderName:displayName||'你的朋友',kind:'invite'});
+    dialog.showModal();root.ZxSynastryPoster.prepare(dialog,{senderName:confirmedInvitation?.owner===snapshot().accountRef?confirmedInvitation.senderName:displayName||'你的朋友',kind:'invite'});
   }
   function render({scroll=false}={}){
     const page=route();document.body.dataset.route=page==='invite-external'?'invite':page;
     for(const link of document.querySelectorAll('[data-nav]')){const selected=link.dataset.nav===(page.startsWith('invite')||page==='gift'?'invite':page);if(selected)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}
     $('synastry-home-link').href=homeUrl();$('synastry-profile-link').href=profileUrl();
     const views={home,rank,invite,'invite-external':externalInvite,'invite-internal':internalInvite,gift,connections};
-    app.innerHTML=busy||!chart?empty():views[page]();app.setAttribute('aria-busy',String(busy));
+    app.innerHTML=page==='gift'&&incomingGift?gift():busy||!chart?empty():views[page]();app.setAttribute('aria-busy',String(busy));
     document.title='知星 · '+({home:'谁与你更合拍',rank:'五种合拍类型',invite:'邀请 TA','invite-external':'微信邀请','invite-internal':'站内邀请',gift:'送 TA 一份了解',connections:'我的合盘'}[page]);
+    mountRankOpenings();
     $('rank-about')?.addEventListener('click',()=>$('rank-dialog').showModal());
     for(const toggle of app.querySelectorAll('[data-rank]'))toggle.addEventListener('click',()=>{openedRank=openedRank===toggle.dataset.rank?'':toggle.dataset.rank;const focusId=toggle.dataset.rank;render();app.querySelector('[data-rank="'+focusId+'"]')?.focus({preventScroll:true});});
     $('copy-invite-link')?.addEventListener('click',()=>social({compose:true,channel:'external'}));
     $('open-invite-poster')?.addEventListener('click',openPoster);
     $('internal-search-form')?.addEventListener('submit',event=>{event.preventDefault();social({compose:true,channel:'internal',lookupCode:$('internal-user-id').value.trim().toUpperCase()});});
+    $('purchase-gift')?.addEventListener('click',()=>root.ZxProfileGift?.open({senderReportId:readyReport&&active?.kind==='report'?active.id:null,senderName:displayName}));
     $('open-connections')?.addEventListener('click',()=>social({kind:'records'}));
     $('open-invitations')?.addEventListener('click',()=>social({kind:'invitations'}));
     if(scroll){root.scrollTo({top:0,behavior:'instant'});app.focus({preventScroll:true});}
   }
   async function load(){
-    closePoster();const version=++epoch;busy=true;chart=null;displayName='';owner='';reportExpires=0;readyReport=false;failure='';
+    closePoster();confirmedInvitation=null;const version=++epoch;busy=true;chart=null;displayName='';owner='';reportExpires=0;readyReport=false;failure='';
     try{active=selection(location.search,vault()?.selected());}catch(_){active=null;}
     render();
     try{
@@ -182,6 +197,7 @@
       chart=root.BaziEngine.computeChart({y,m,d,hh,mm,city:input.c,gender:input.g});root.SynastryEngine.rank(chart);
     }catch(error){if(version!==epoch)return;chart=null;displayName='';readyReport=false;owner='';failure=error.message||'暂时无法读取图谱，请回到“我的资料”重试。';}
     if(version!==epoch)return;busy=false;render();
+    if(incomingGift){const token=incomingGift;incomingGift='';await root.ZxProfileGift?.showIncoming(token);}
     if(privateReturn?.inviteToken&&TOKEN.test(privateReturn.inviteToken)){const token=privateReturn.inviteToken;privateReturn=null;await root.ZxProfileSocial?.showIncoming(token);}
   }
   $('social-close')?.addEventListener('click',()=>$('social-detail').close());

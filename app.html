@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-9czi0N3fs7F5scVHmbMQHPt+F4Z0AApiQkVSogct7Ck='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-WM3rw53gI7HjuLUiY1jur8ZC6VfPBUx7/jOyqZ/DRzY='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="referrer" content="no-referrer">
@@ -248,8 +248,9 @@
   .idiom-line{display:grid;grid-template-columns:repeat(2,1em);gap:.1em .12em;white-space:nowrap}
   .idiom-char{display:block}
   .idiom-divider{display:flex;justify-content:center;align-self:center;min-width:0;color:var(--gold-dim);font-family:var(--serif);font-size:1em;line-height:1;white-space:normal}
-  .is-inked .idiom-char{animation:idiom-ink .85s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--ink-order)*75ms)}
-  @keyframes idiom-ink{0%{opacity:.35;transform:translateY(7px);filter:blur(2px);text-shadow:0 0 0 transparent}55%{opacity:1;filter:blur(0);text-shadow:0 0 18px rgba(246,218,151,.8)}100%{opacity:1;transform:none;filter:none;text-shadow:0 1px 0 #836b39,0 0 18px rgba(201,168,92,.17)}}
+  .is-inked .idiom-char{animation:idiom-ink 3s cubic-bezier(.16,1,.3,1) infinite both;animation-delay:calc(var(--ink-order)*75ms)}
+  /* Keep the original .85s ink reveal, then hold the readable title until the next 3s cycle. */
+  @keyframes idiom-ink{0%{opacity:.35;transform:translateY(7px);filter:blur(2px);text-shadow:0 0 0 transparent}15.583333%{opacity:1;filter:blur(0);text-shadow:0 0 18px rgba(246,218,151,.8)}28.333333%,100%{opacity:1;transform:none;filter:none;text-shadow:0 1px 0 #836b39,0 0 18px rgba(201,168,92,.17)}}
   .confirmed-copy{width:100%;max-width:27em;margin:0 auto;color:#d8dce4;font-size:1rem;line-height:1.95;text-align:center;text-wrap:pretty}
   .confirmed-section{padding:32px 2px;border-top:1px solid rgba(201,168,92,.2)}
   .confirmed-hero+.confirmed-section{margin-top:18px}
@@ -563,7 +564,7 @@
       <p class="method-reference">方法参考：《三命通会》，万民英；《当代占星研究》，苏·汤普金斯。</p>
     </figure>
     <div class="gets">
-      <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>一句古典物象,一句扎心真话——先照见你是哪块料。</p></div></div>
+      <div class="get"><span class="get-n">壹</span><div><h3>你的日主<em>免费</em></h3><p>从你的日主出发，读懂你的性格底色与独有调性。</p></div></div>
       <div class="get"><span class="get-n">贰</span><div><h3>深度发展报告<em>按盘购买</em></h3><p>总览、盘面、关系、行动、时间，五章展开你的双盘合成判断。先读一段，再决定。</p></div></div>
       <div class="get"><span class="get-n">叁</span><div><h3>赠送1次问星</h3><p>根据你的盘面对知星进行任意提问解读。</p></div></div>
     </div>
@@ -721,14 +722,14 @@
 
 <script src="./vendor/qrcode-generator.js?v=79ec86f82856"></script>
 <script src="./share-qr.js?v=107fa109a833"></script>
-<script src="./public-config.js?v=313b0498352d"></script>
+<script src="./public-config.js?v=668117eb3691"></script>
 <script src="./privacy-consent.js?v=e9d931611689"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
-<script src="./member.js?v=25e49ea8a24c"></script>
+<script src="./member.js?v=337dc203b382"></script>
 <script src="./chart-vault.js?v=f535f1fbeefa"></script>
 <script src="./display-profile.js?v=642992651d04"></script>
-<script src="./paid-reports.js?v=64df71d0ad76"></script>
+<script src="./paid-reports.js?v=886eb262d00b"></script>
 <script src="./profile-purchase.js?v=f109ff9f9e79"></script>
 <script src="./bazi-engine.js?v=2f507cc27577"></script>
 <script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
@@ -1356,17 +1357,25 @@ function replaceTextList(id,items){
   }));
 }
 
-let idiomRevealObserver=null;
+let idiomRevealObserver=null,idiomRevealTitle=null,idiomTitleVisible=false;
+const idiomMotionPreference=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+function updateIdiomPlayback(){
+  if(idiomRevealTitle)idiomRevealTitle.classList.toggle('is-inked',idiomTitleVisible&&document.visibilityState==='visible'&&!idiomMotionPreference?.matches);
+}
+document.addEventListener('visibilitychange',updateIdiomPlayback);
+if(idiomMotionPreference?.addEventListener)idiomMotionPreference.addEventListener('change',updateIdiomPlayback);
+else if(idiomMotionPreference?.addListener)idiomMotionPreference.addListener(updateIdiomPlayback);
 function revealIdiomWhenVisible(){
   const title=$('confirmedJudgement');
   if(idiomRevealObserver)idiomRevealObserver.disconnect();
+  idiomRevealTitle=title;idiomTitleVisible=false;
   title.classList.remove('is-inked');
-  if(reduceMotion||typeof IntersectionObserver!=='function')return;
+  if(typeof IntersectionObserver!=='function')return;
   idiomRevealObserver=new IntersectionObserver(entries=>{
-    if(entries.some(entry=>entry.isIntersecting)){
-      title.classList.add('is-inked');
-      idiomRevealObserver.disconnect();
-    }
+    const entry=entries.find(entry=>entry.target===title);
+    if(!entry)return;
+    idiomTitleVisible=entry.isIntersecting&&entry.intersectionRatio>=.5;
+    updateIdiomPlayback();
   },{threshold:.5});
   idiomRevealObserver.observe(title);
 }

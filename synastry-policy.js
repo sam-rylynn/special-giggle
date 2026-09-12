@@ -1,6 +1,6 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SynastryPolicy=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const VERSION='synastry-policy-candidate-20260910-v1';
+  const VERSION='synastry-policy-20260912-v1';
   const AI_CONSENT_VERSION='synastry-ai-consent-candidate-20260910-v1';
   const DAY=86400000;
   const dateKey=at=>new Date(at+8*3600000).toISOString().slice(0,10);
