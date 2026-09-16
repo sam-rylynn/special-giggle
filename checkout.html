@@ -9,7 +9,7 @@
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
 <meta name="theme-color" content="#0e1220">
-<title>问星订单｜知星</title>
+<title>订单｜知星</title>
 <style>
   :root{--night:#0e1220;--panel:#1a2233;--panel-2:#131a29;--line:rgba(201,168,92,.22);--gold:#c9a85c;--gold-bright:#f0d695;--moon:#e8e4d8;--mist:#98a2b3;--serif:"Songti SC","STSong","Noto Serif CJK SC",serif;--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
   *{box-sizing:border-box}
@@ -63,7 +63,7 @@
 <body id="paidCheckoutPage">
   <div class="shell">
     <header class="topbar">
-      <div class="brand">知星 · 问星订单</div>
+      <div class="brand" id="checkoutBrand">知星 · 订单</div>
       <a class="back" href="./account.html#order-center">返回我的订单</a>
     </header>
 
@@ -71,7 +71,7 @@
       <section class="card" aria-labelledby="checkoutTitle">
         <div class="head">
           <div>
-            <p class="eyebrow">问星订单</p>
+            <p class="eyebrow" id="checkoutCategory">订单</p>
             <h1 id="checkoutTitle">正在读取订单</h1>
             <p class="body-copy" id="checkoutBody">请稍候，我们正在确认订单状态。</p>
           </div>
@@ -79,12 +79,12 @@
         </div>
 
         <dl class="details" id="checkoutDetails" aria-label="订单详情" hidden>
-          <div class="row"><dt>问星商品</dt><dd id="checkoutProduct">—</dd></div>
+          <div class="row"><dt id="checkoutProductLabel">订单商品</dt><dd id="checkoutProduct">—</dd></div>
           <div class="row amount"><dt>应付金额</dt><dd id="checkoutAmount">—</dd></div>
           <div class="row"><dt>订单号</dt><dd id="checkoutOrderNo">—</dd></div>
           <div class="row"><dt>创建时间</dt><dd id="checkoutCreatedAt">—</dd></div>
           <div class="row"><dt>支付有效期</dt><dd id="checkoutExpiresAt">—</dd></div>
-          <div class="row"><dt>问星次数</dt><dd id="checkoutCredits">待确认</dd></div>
+          <div class="row"><dt>交付状态</dt><dd id="checkoutCredits">待确认</dd></div>
           <div class="row"><dt>服务提供者</dt><dd>贵州天云稀泉科技有限公司</dd></div>
           <div class="row"><dt>续费方式</dt><dd>不自动续费</dd></div>
         </dl>
@@ -106,10 +106,10 @@
   <script src="./public-config.js?v=668117eb3691"></script>
   <script src="./privacy-consent.js?v=e9d931611689"></script>
   <script src="./analytics.js?v=2986447e1859"></script>
-  <script src="./member.js?v=337dc203b382"></script>
-  <script src="./paid-reports.js?v=886eb262d00b"></script>
+  <script src="./member.js?v=8eeed3b7c159"></script>
+  <script src="./paid-reports.js?v=a8d0a77a9626"></script>
   <script src="./paid-h5.js?v=8c1eee5dff3c"></script>
   <script src="./synastry-policy.js?v=a56f5400e4ec"></script>
-  <script src="./profile-gift.js?v=0949b4f7c89e"></script>
+  <script src="./profile-gift.js?v=bedffc09dcd9"></script>
 </body>
 </html>
