@@ -241,3 +241,8 @@ input::placeholder { color: #858fa2; }
 .account-security{margin-top:16px}.account-security summary{min-height:44px;padding:12px 0;color:var(--mist);font-size:13px;cursor:pointer}
 .account-security>.quiet{margin-top:12px}#account-status,#order-center,#report-purchase{scroll-margin-top:24px}#report-purchase{margin-top:14px}
 @media(max-width:620px){.account-center .order-item{display:block}.account-center .order-item>.btn{margin-top:8px}}
+
+/* Primary access to shared reading. */
+.shared-reading-panel{margin-bottom:16px;border-color:#c9a85c70}
+.shared-reading-panel .section-heading{margin-bottom:8px}
+.shared-reading-panel .button{margin-top:16px}

@@ -55,7 +55,10 @@
   function route(page, id, hash) {
     if(page==='account')page='profile';
     const file=page==='home'?(source?'./index.html':'./app.html'):page==='report'&&source?'../v1/report.html':'./'+page+'.html';
-    const target=new URL(file,location.href);
+    const reportLink=page==='report'&&REPORT_ID.test(id||'')&&root.ZxPaidReports?.reportUrl?.(id);
+    const target=new URL(reportLink||file,location.href);
+    // Older cached account clients also need to leave the pre-PDF reader URL.
+    if(page==='report'&&!target.searchParams.has('reader'))target.searchParams.set('reader','pdf-file-v2');
     if(id&&REPORT_ID.test(id))target.searchParams.set('report',id);
     if(local&&(privateMode||['account','checkout'].includes(page)))target.searchParams.set('private-report','1');
     if(local&&privateMode)['api','deep'].forEach(key=>{
@@ -155,9 +158,10 @@
   function render() {
     const selected=choice(), entry=selectedEntry(), record=selectedReport(), item=record&&usable(record)?record:null;
     currentId=item?item.report_id:'';
-    if($('report-purchase')&&location.hash!=='#report-purchase')$('report-purchase').hidden=!(selected&&selected.kind==='report'&&selected.id===params.get('report'));
+    if($('report-purchase'))$('report-purchase').hidden=!(selected&&selected.kind==='report'&&selected.id===params.get('report'));
     const localChart=hasChart(), access=localChart||reports.length>0;
     $('profile-gate').hidden=access;$('profile-content').hidden=false;
+    setLink('create-first-chart','去填写资料',homeFor(null,'new-chart'));
     txt('profile-status',entry?'基础图谱':record?'已购图谱':localChart?'尚未保存':'还没有图谱');
     txt('base-chart-label',entry||localChart&&!record?'基础图谱已建立':record?'账号图谱':'基础图谱待建立');
     txt('chart-summary',!entry&&!record&&localChart?'先保存当前图谱。':'');
@@ -296,17 +300,22 @@
   }
   function openRequestedEntry(){
     if(requestedEntryOpened)return;
-    const pair=params.getAll('pair'),resume=root.ZxPaidReports?.pairPurchase?.();
-    if(pair.length===1&&/^[a-f0-9]{64}$/.test(pair[0])&&resume?.pairId===pair[0]){requestedEntryOpened=true;return root.ZxProfileSocial?.open({pairId:pair[0],reportId:resume.reportId});}
     const values=params.getAll('open');
-    if(values.length!==1||!['managed','invitations'].includes(values[0]))return;
+    if(values.length!==1||!['managed','invitations','gift','shared'].includes(values[0]))return;
+    if(values[0]==='shared'){requestedEntryOpened=true;return root.ZxProfileSocial?.open({kind:'records',direct:true,pairId:params.get('pair')});}
+    if(values[0]==='gift'){requestedEntryOpened=true;return openGiftPurchase();}
     if(values[0]==='managed')return openManaged();
     return openInvitations();
+  }
+  function openGiftPurchase(){
+    const report=selectedReport();
+    if(!root.ZxProfileGift){txt('profile-notice','赠送页面暂未加载完成，请刷新后重试。');return;}
+    return root.ZxProfileGift.open({senderReportId:usable(report)?report.report_id:null,senderName:chartName()});
   }
   function mount(){
     if(!$('profile-content'))return;mountStars();openAccountTarget();root.addEventListener('hashchange',openAccountTarget);
     if(root.ZxPaidReports&&root.ZxPaidReports.mountAccount)root.ZxPaidReports.mountAccount().then(()=>{
-      const selected=choice();if($('report-purchase')&&location.hash!=='#report-purchase')$('report-purchase').hidden=!(selected&&selected.kind==='report'&&selected.id===params.get('report'));
+      const selected=choice();if($('report-purchase'))$('report-purchase').hidden=!(selected&&selected.kind==='report'&&selected.id===params.get('report'));
       openAccountTarget();const section=$((location.hash||'').slice(1));if(section&&!section.hidden&&['#account-status','#order-center','#report-purchase'].includes(location.hash)&&section.scrollIntoView)section.scrollIntoView({block:'start'});
     });
     if(params.getAll('return').length===1&&params.get('return')==='synastry'&&root.ZxPaidReports&&root.ZxPaidReports.synastryUrl){
@@ -337,7 +346,8 @@
     $('report-select').addEventListener('change',()=>{const id=$('report-select').value;if(reports.some(item=>item.report_id===id&&usable(item)))select({kind:'report',id,accountRef:owner});});
     $('recharge-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);return;}if(!currentId)return;event.preventDefault();if(root.ZxProfileRecharge)root.ZxProfileRecharge.open({reportId:currentId,onChanged:refresh});});
     $('managed-synastry-action').addEventListener('click',openManaged);
-    $('synastry-action').addEventListener('click',()=>root.ZxProfileSocial&&root.ZxProfileSocial.open({kind:'records',reportId:currentId,reports}));
+    $('gift-purchase-action').addEventListener('click',openGiftPurchase);
+    $('synastry-action').addEventListener('click',()=>root.ZxProfileSocial&&root.ZxProfileSocial.open({kind:'records',direct:true,reportId:currentId,reports}));
     $('invite-action').addEventListener('click',openInvitations);
     $('refresh-profile').addEventListener('click',()=>{if(!loading){refresh();if(root.ZxPaidReports)root.ZxPaidReports.mountAccount();}});
     root.addEventListener('zx-display-profile-changed',updateName);

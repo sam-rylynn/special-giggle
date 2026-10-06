@@ -379,7 +379,9 @@
       method: opts.method || 'GET',
       headers: headers,
       body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: opts.anonymous === true ? 'omit' : 'include',
+      // OAuth starts without a bearer token, but must accept the HttpOnly state
+      // cookie that binds the later WeChat callback to this browser.
+      credentials: opts.anonymous === true && path !== '/auth/wechat/oauth/start' ? 'omit' : 'include',
       cache: 'no-store',
       signal: controller ? controller.signal : undefined
     }).then(function (r) {
@@ -888,7 +890,6 @@
         ai_disclosure_version:REPORT_PAYMENT_VERSIONS.aiDisclosureVersion,purchase_notice_version:REPORT_PAYMENT_VERSIONS.purchaseNoticeVersion
       }});
     },
-    paidReportCatalog: function () { return privateReportApi('/report/products'); },
     paidReportProducts: function (id, kind) {
       if (kind !== undefined && kind !== 'report' && kind !== 'ask') return Promise.reject(reportClientError('REPORT_REQUEST_INVALID'));
       return privateReportApi('/' + (kind === 'ask' ? 'ask' : 'report') + '/products?report_id=' + checkedPaidReportId(id));

@@ -8,10 +8,13 @@
     GIFT_UNAVAILABLE:'这份礼物已过期或当前不可领取。',GIFT_NOT_FOUND:'这份礼物当前不可查看。',GIFT_ALREADY_CLAIMED:'这份礼物已经领取。',GIFT_SELF_CLAIM:'请把礼物发给朋友，不能领取自己送出的报告。',
     GIFT_USE_EXISTING_REPORT:'这张图谱已有报告或订单，请重新确认需要领取的资料。',PARTICIPANT_INELIGIBLE:'领取人须已满 18 周岁。',
     REPORT_ACCOUNT_CHANGED:'账号已切换，请重新打开自己的记录。',AUTH_REQUIRED:'请重新登录后继续。',WECHAT_AUTHENTICATION_REQUIRED:'请先登录微信账号。',
-    PRIVACY_CONSENT_REQUIRED:'请先同意启用账号功能。',WECHAT_BROWSER_REQUIRED:'请在微信中打开后继续。',DISPLAY_NAME_INVALID:'请填写对方看到的署名（1–20字，不含特殊控制字符）。',
+    PRIVACY_CONSENT_REQUIRED:'请先同意启用账号功能。',WECHAT_BROWSER_REQUIRED:'请在微信中打开后继续。',DISPLAY_NAME_INVALID:'请先到我的资料设置昵称。',
     GIFT_REFUND_REQUIRES_REVIEW:'已领取的礼物请通过我的资料联系售后。',GIFT_REFUND_PENDING:'退款正在处理中。',PAYMENT_NOT_VERIFIED:'付款结果尚未确认，请刷新订单。',
     POLICY_UNAVAILABLE:'购买规则暂未载入，请刷新重试。',BIRTH_INPUT_INVALID:'请核对出生日期、时间和出生地点。',BIRTH_LOCATION_REQUIRED:'请从地点建议中确认完整的市州或区县。',
     PAYMENT_CONSENT_REQUIRED:'请确认成年及购买规则。',REPORT_TRANSFER_CONFIRMATION_REQUIRED:'请确认上传并保存本次出生资料。',CONSENT_REQUIRED:'请确认领取报告并同意合盘。',
+    WECHATPAY_PRODUCT_INVALID:'赠送支付暂时无法发起，请稍后重试原订单。',WECHATPAY_API_ERROR:'微信支付暂未返回付款信息，请稍后重试原订单。',WECHATPAY_NETWORK_ERROR:'连接微信支付失败，请稍后重试原订单。',
+    PAYMENT_CHECKOUT_PENDING:'正在准备微信付款，请稍后重试。',PAYMENT_ORDER_EXPIRED:'这笔待付款订单已过期，请到我的资料查看订单。',PAYMENT_SALES_DISABLED:'赠送购买窗口已关闭，已付款的礼物仍可领取。',
+    PAYMENT_ACCEPTANCE_ORDER_LIMIT:'已有一笔赠送订单，请先查看赠送记录。',WECHATPAY_TRANSACTION_INVALID:'付款状态暂未确认，请刷新订单重试。',
     ORDER_RESPONSE_INVALID:'订单信息暂时无法确认，请刷新重试。',LOCAL_STORAGE_UNAVAILABLE:'无法保存本次操作，请开启浏览器存储后重试。'};
   let active=null,revision=0;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=String(text??'');if(cls)n.className=cls;return n;};
@@ -26,10 +29,10 @@
   function drop(key){try{sessionStorage.removeItem(key);}catch(_){}}
   function current(ctx,requireOwner=true){if(active!==ctx||ctx.rev!==revision||!ctx.dialog.open)throw error('VIEW_CLOSED');if(requireOwner&&(!ctx.owner||owner()!==ctx.owner))throw error('REPORT_ACCOUNT_CHANGED');}
   function close(){const old=active;active=null;revision++;if(old){old.token='';old.options={};old.records=null;old.body.replaceChildren();if(old.dialog.open)old.dialog.close();old.dialog.remove();old.focus?.focus?.();}}
-  function notify(ctx,text){if(active===ctx)ctx.notice.textContent=text;}
+  function notify(ctx,text){if(active===ctx){ctx.notice.textContent=text;ctx.body.scrollTop=0;}}
   function handle(ctx,e){if(active!==ctx||e.code==='VIEW_CLOSED')return;if(['REPORT_ACCOUNT_CHANGED','AUTH_REQUIRED','WECHAT_AUTHENTICATION_REQUIRED'].includes(e.code)){ctx.token='';ctx.records=null;ctx.body.replaceChildren(el('p',MESSAGES[e.code]));drop(PENDING);drop(CLAIM);return;}notify(ctx,MESSAGES[e.code]||'结果暂未确认，请重试或刷新记录。');if(e.code==='GIFT_USE_EXISTING_REPORT')existingReport(ctx,e);}
   function button(text,fn,cls='gift-button'){const n=el('button',text,cls);n.type='button';if(fn)n.addEventListener('click',fn);return n;}
-  function action(ctx,text,fn,cls){const n=button(text,undefined,cls);n.addEventListener('click',async()=>{if(n.disabled||ctx.busy)return;ctx.busy=true;n.disabled=true;try{current(ctx,false);await fn();}catch(e){handle(ctx,e);}finally{ctx.busy=false;if(n.isConnected)n.disabled=false;}});return n;}
+  function action(ctx,text,fn,cls){const n=button(text,undefined,cls);n.addEventListener('click',async()=>{if(n.disabled||ctx.busy)return;ctx.busy=true;n.disabled=true;n.textContent='正在处理…';try{current(ctx,false);await fn();}catch(e){handle(ctx,e);}finally{ctx.busy=false;if(n.isConnected){n.disabled=false;n.textContent=text;}}});return n;}
   function start(ctx,title){current(ctx,false);ctx.title.textContent=title;ctx.body.replaceChildren();ctx.body.scrollTop=0;ctx.notice=el('p','','gift-note');ctx.notice.setAttribute('role','status');ctx.body.append(ctx.notice);}
   function check(text){const label=el('label',undefined,'gift-check'),input=el('input');input.type='checkbox';label.append(input,el('span',text));return {label,input};}
   function details(title,text){const n=el('details'),s=el('summary',title);n.append(s,el('p',text,'gift-note'));return n;}
@@ -42,7 +45,7 @@
   function login(ctx){start(ctx,'登录后继续');const c=check('我同意启用账号功能，用于登录和保存我的报告。'),needed=!window.ZxPrivacyConsent?.has?.('device_account');if(needed)ctx.body.append(c.label);
     ctx.body.append(action(ctx,'微信登录',async()=>{if(needed&&!c.input.checked)throw error('PRIVACY_CONSENT_REQUIRED');if(needed)window.ZxPrivacyConsent.grant('device_account');
       if(!window.ZxPaidReports?.startGiftLogin)throw error('GIFT_SERVICE_UNAVAILABLE');await window.ZxPaidReports.startGiftLogin({mode:ctx.mode,...ctx.options},()=>current(ctx,!!ctx.owner));}));}
-  async function identity(ctx){if(!enabled())throw error('GIFT_SERVICE_UNAVAILABLE');if(!window.ZxPrivacyConsent?.has?.('device_account')){login(ctx);return false;}await member().start();current(ctx,!!ctx.owner);ctx.owner=owner();if(!ctx.owner){login(ctx);return false;}return true;}
+  async function identity(ctx){if(!enabled())throw error('GIFT_SERVICE_UNAVAILABLE');if(!window.ZxPrivacyConsent?.has?.('device_account')){login(ctx);return false;}notify(ctx,'正在读取赠送信息…');await member().start();current(ctx,!!ctx.owner);ctx.owner=owner();if(!ctx.owner){login(ctx);return false;}return true;}
   function randomKey(){const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
   function readGift(value,id){if(!value||!ID.test(value.id||'')||id&&value.id!==id||!Object.hasOwn(LABELS,value.status))throw error('ORDER_RESPONSE_INVALID');return value;}
   function checkedOrder(value,id){const g=readGift(value?.gift,id),o=value?.order;if(!o||!ORDER.test(o.order_no||'')||g.orderId!==o.order_no||o.product_code!=='gift_report_v1'||o.amount_fen!==1990||o.currency!=='CNY'||o.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');return {gift:g,order:o,checkout:value.checkout};}
@@ -52,14 +55,15 @@
     else{const url=new URL(giftUrl(''));url.hash='home';url.searchParams.set('report',id);ctx.existingLink=el('a','使用已有报告进入合盘','gift-button');ctx.existingLink.href=url.href;}
     ctx.body.append(ctx.existingLink);
   }
-  async function loadGift(ctx,id,refreshOrder=false){const result=refreshOrder?await call(ctx,'/synastry/gifts/'+id+'/order'):await call(ctx,'/synastry/gifts/'+id);const gift=refreshOrder?checkedOrder(result,id).gift:readGift(result,id);showGift(ctx,gift,refreshOrder?result:null);}
-  function showGift(ctx,value,payment){const gift=readGift(value);ctx.giftId=gift.id;start(ctx,LABELS[gift.status]);
+  async function loadGift(ctx,id,refreshOrder=false){const result=refreshOrder?await call(ctx,'/synastry/gifts/'+id+'/order'):await call(ctx,'/synastry/gifts/'+id);const gift=refreshOrder?checkedOrder(result,id).gift:readGift(result,id);if(!refreshOrder&&gift.status==='created'&&ORDER.test(gift.orderId||''))return loadGift(ctx,id,true);showGift(ctx,gift,refreshOrder?result:null);}
+  function showGift(ctx,value,payment){let gift=readGift(value);if(gift.status==='created'&&payment?.order?.status==='closed')gift={...gift,status:'cancelled'};ctx.giftId=gift.id;start(ctx,LABELS[gift.status]);
     const payer=ctx.mode==='purchase'||ORDER.test(gift.orderId||'');if(gift.status!=='created'){const pending=stored(PENDING);if(pending?.giftId===gift.id)drop(PENDING);}if(gift.status==='delivered')drop(CLAIM);
     const line={created:'赠送深度报告 · ¥19.90',funded:'礼物已备好，发给你想了解的人。',claimed:'领取已确认，正在准备报告。',delivery_failed:'领取已确认，报告暂未生成成功。',delivered:payer?'朋友的报告已交付。':'你的深度报告已准备好。',expired:'领取时间已过，未领取的付款将原路退回。',refund_requested:'退款申请已提交。',refund_pending:'正在原路退款。',refunded:'退款已完成。',cancelled:'这笔订单已关闭。'}[gift.status];ctx.body.append(el('p',line,'gift-lead'));
-    if(payer&&gift.senderName)ctx.body.append(el('p','赠送署名：'+gift.senderName,'gift-note'));
+    if(payer&&gift.status==='cancelled'){const again=profileLink('重新赠送深度报告'),url=new URL(again.href);url.searchParams.set('open','gift');again.href=url.href;ctx.body.append(again);}
     if(gift.status==='created'&&payer){
       const waiting=stored(PENDING);
       if(waiting?.giftId===gift.id&&waiting.submittedAt&&Date.now()-waiting.submittedAt<60000)notify(ctx,'正在确认付款，请稍后刷新订单。');
+      else if(payment?.order?.status==='created'&&payment.order.expires_at<=Date.now())notify(ctx,'这笔待付款订单已过期，正在核对关闭状态，请刷新订单。');
       else if(!payment?.order||payment.order.status==='created')ctx.body.append(action(ctx,'微信支付 ¥19.90',async()=>{
         const fresh=checkedOrder(await call(ctx,'/synastry/gifts/'+gift.id+'/order'),gift.id),o=fresh.order;
         if(o.order_no!==gift.orderId)throw error('ORDER_RESPONSE_INVALID');
@@ -83,7 +87,15 @@
         const input=el('textarea');input.value=text+' '+url;input.readOnly=true;input.setAttribute('aria-label','领取链接');shareBox.replaceChildren(input);notify(ctx,'长按复制领取链接。');};
       ctx.body.append(action(ctx,'发送给朋友',()=>share(true),'gift-button primary'),action(ctx,'复制领取链接',()=>share(false)),shareBox);
     }
-    if(!payer&&gift.status==='delivered'&&REPORT.test(gift.reportId||'')){const link=el('a','查看我的深度报告','gift-button primary');link.href=window.ZxPaidReports.reportUrl(gift.reportId);ctx.body.append(link);}
+    if(!payer&&['claimed','delivered','delivery_failed'].includes(gift.status)&&REPORT.test(gift.reportId||'')){const link=el('a','查看我的深度报告','gift-button primary');link.href=window.ZxPaidReports.reportUrl(gift.reportId);ctx.body.append(link);}
+    if(['claimed','delivered','delivery_failed'].includes(gift.status)){
+      if(ID.test(gift.pairId||'')){
+        const shared=profileLink('看共同解读'),url=new URL(shared.href);
+        url.searchParams.set('open','shared');url.searchParams.set('pair',gift.pairId);url.hash='';
+        shared.href=url.href;ctx.body.append(shared);
+      }else{const pending=button('共同解读准备中');pending.disabled=true;ctx.body.append(pending);}
+      if(!gift.pairId)ctx.body.append(el('p','共同解读将在双方报告备齐后生成，也可随时从“我的资料”查看。','gift-note'));
+    }
     if(!payer&&['claimed','delivery_failed'].includes(gift.status))ctx.body.append(action(ctx,gift.status==='claimed'?'查看生成结果':'重试生成',async()=>showGift(ctx,readGift(await call(ctx,'/synastry/gifts/'+gift.id+'/retry',{}),gift.id))));
     if(payer&&['funded','expired'].includes(gift.status))ctx.body.append(action(ctx,'申请退款',async()=>{const box=el('div',undefined,'gift-confirm');box.append(el('p','确认收回未领取的礼物并原路退款？'),action(ctx,'确认退款',async()=>showGift(ctx,readGift(await call(ctx,'/synastry/gifts/'+gift.id+'/refund',{confirmed:true}),gift.id))),button('保留礼物',()=>box.remove()));ctx.body.append(box);}));
     if(gift.supportRequired)ctx.body.append(profileLink('前往我的资料联系售后'));
@@ -92,16 +104,10 @@
     if(ctx.options.fromRecords)ctx.body.append(action(ctx,'返回赠送记录',openRecords));
   }
   function purchase(ctx){start(ctx,'送一份深度报告');ctx.body.append(el('p','一份写给 TA 的自我探索。','gift-lead'),el('p','¥19.90 · 深度报告 + 1 次问星','gift-price'));
-    const prior=stored(PENDING),locked=prior&&prior.senderReportId===(ctx.options.senderReportId||null)&&ORDER.test(prior.key||'');
-    const label=el('label','对方看到的署名','gift-field'),signature=el('input');signature.type='text';signature.maxLength=160;signature.setAttribute('aria-label','对方看到的署名');
-    signature.value=locked?prior.senderName:ctx.options.senderName||'';signature.readOnly=!!locked;label.append(signature);ctx.body.append(label,el('p',locked?'正在恢复上次赠送，署名已固定，重试不会重复建单。':'只用于这次赠送，不会修改图谱昵称。','gift-note'));
-
+    if(!ctx.options.senderName?.trim()){ctx.body.append(el('p',MESSAGES.DISPLAY_NAME_INVALID,'gift-note'),profileLink());return;}
     const adult=check('我已满 18 周岁'),agree=check('我已阅读并同意购买与合盘规则');ctx.body.append(adult.label,agree.label,rules());
     ctx.body.append(action(ctx,'确认赠送 ¥19.90',async()=>{if(!adult.input.checked||!agree.input.checked)throw error('PAYMENT_CONSENT_REQUIRED');if(!member().paidReportPurchaseReady?.())throw error('REPORT_SALES_NOT_APPROVED');
-      const senderName=signature.value.normalize('NFC').trim();
-      if(!senderName||(typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('zh',{granularity:'grapheme'}).segment(senderName)].length:Array.from(senderName).length)>20||/[<>{}\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u.test(senderName)){signature.focus();throw error('DISPLAY_NAME_INVALID');}
-      const versions=member().giftPaymentVersions(),p=policy(),senderReportId=ctx.options.senderReportId||null;
-      ctx.options.senderName=senderName;signature.readOnly=true;
+      const versions=member().giftPaymentVersions(),p=policy(),senderReportId=ctx.options.senderReportId||null,senderName=ctx.options.senderName.trim();
       let pending=stored(PENDING);if(!pending||pending.senderReportId!==senderReportId||pending.senderName!==senderName||!ORDER.test(pending.key||''))pending={key:randomKey(),senderReportId,senderName};
       save(PENDING,pending);const response=await call(ctx,'/synastry/gifts/orders',{senderReportId,senderName,idempotencyKey:pending.key,consent:true,adultConfirmed:true,...versions,synastryConsent:{confirmed:true,version:p.VERSION}});
       const result=checkedOrder(response);save(PENDING,{...pending,giftId:result.gift.id});showGift(ctx,result.gift,response);
@@ -142,7 +148,7 @@
     ctx.body.append(action(ctx,'领取礼物',async()=>{if(!await identity(ctx))return;const checked=readGift(await call(ctx,'/synastry/gifts/inspect',{token:ctx.token}));if(checked.self)throw error('GIFT_SELF_CLAIM');if(checked.status!=='funded'){await loadGift(ctx,checked.id);return;}birth(ctx,checked);} ,'gift-button primary'));
   }
   async function open(options={}){const ctx=make('purchase',{senderReportId:options.senderReportId||null,senderName:options.senderName||''});try{if(ctx.options.senderReportId&&!REPORT.test(ctx.options.senderReportId))throw error('ORDER_RESPONSE_INVALID');if(!await identity(ctx))return;
-      const pending=stored(PENDING);if(pending?.giftId&&ID.test(pending.giftId)&&pending.senderReportId===ctx.options.senderReportId){await loadGift(ctx,pending.giftId,true);return;}purchase(ctx);
+      const pending=stored(PENDING);if(pending?.giftId&&ID.test(pending.giftId)&&pending.senderReportId===ctx.options.senderReportId&&pending.senderName===ctx.options.senderName.trim()){await loadGift(ctx,pending.giftId,true);return;}purchase(ctx);
     }catch(e){handle(ctx,e);}}
   async function showIncoming(token){const ctx=make('incoming',{token});try{if(!ID.test(token||''))throw error('GIFT_NOT_FOUND');await incoming(ctx);}catch(e){handle(ctx,e);}}
   async function openGift(id,options={}){const ctx=make('gift',{giftId:id,fromRecords:options.fromRecords===true});try{if(!ID.test(id||''))throw error('GIFT_NOT_FOUND');if(!await identity(ctx))return;await loadGift(ctx,id);}catch(e){handle(ctx,e);}}

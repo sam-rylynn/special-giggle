@@ -1,0 +1,3 @@
+.zx-static-opening .filing-footer { position: fixed; left: 0; right: 0; bottom: max(4px, env(safe-area-inset-bottom)); text-align: center; color: #c4b38b; font: 10px/1.4 "Songti SC", "STSong", serif; }
+.zx-static-opening .filing-footer a { display: inline-flex; align-items: center; min-height: 32px; color: inherit; text-underline-offset: 3px; }
+.zx-static-opening .filing-footer a:focus-visible { outline: 2px solid #f4edde; outline-offset: 2px; }

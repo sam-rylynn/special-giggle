@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="zx-reading">
 <head>
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-IIBdwp9j0kZAEudH4uiHJvbmd1GyG9gYhoR/NAe4lfI=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-NohSRMo7M/HWXgL+rM2hZDgamMhqj16/PpsDEWks100='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-zG490uLrMWECb9TZ3zgpvyCHZpR4j9r5fDfLj53XybY=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-NzSp0brzkGSFDb8V53HltvJm8orQvudzLMgA95PlUVA='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <script data-zx-runtime-load-guard>(function runtimeLoadGuard(required) {
   'use strict';
   const allowed = new Set(required.map(src => new URL(src, location.href).href));
@@ -60,7 +60,7 @@
     show();
   }, true);
   document.addEventListener('DOMContentLoaded', show, {once:true});
-})(["./minimum-age.js?v=96cd776ebf44","./public-config.js?v=668117eb3691","./privacy-consent.js?v=e9d931611689","./member.js?v=8eeed3b7c159","./paid-h5.js?v=8c1eee5dff3c","./paid-reports.js?v=a8d0a77a9626","./report-download.js?v=5e9d071a3ee9","./bazi-engine.js?v=2f507cc27577","./birth-location-picker.js?v=3d149d3ae64c","./content-home-v1.js?v=ee4855e88ba1"]);</script>
+})(["./minimum-age.js?v=96cd776ebf44","./public-config.js?v=10df9c225bac","./privacy-consent.js?v=e9d931611689","./member.js?v=337dc203b382","./paid-h5.js?v=8c1eee5dff3c","./paid-reports.js?v=f9e9c95aeba6","./report-download.js?v=3c2da196ee97","./bazi-engine.js?v=2f507cc27577","./birth-location-picker.js?v=3d149d3ae64c","./content-home-v1.js?v=ee4855e88ba1"]);</script>
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -129,7 +129,7 @@
   .src-inline{font-size:12px;color:#aeb6c3;letter-spacing:.02em}
 
   /* 命盘书册内置目录、进度与两个独立工具。 */
-  .nav-status{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;padding:9px 7px 11px;border-top:1px solid rgba(201,168,92,.12);border-bottom:1px solid rgba(201,168,92,.12)}
+  .nav-status{display:none}
   .nav-current{min-width:0}
   .nav-current span{display:block;color:var(--mist);font-size:10.5px;line-height:1.4;letter-spacing:.08em}
   .nav-current strong{display:block;margin-top:3px;color:#f6efdb;font-family:var(--serif);font-size:13px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
@@ -163,7 +163,7 @@
 
   /* 命盘书册:报告正文不再纵向堆叠,桌面目录 + 单章正文,手机一次只呈现一章。 */
   .report-reader{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;align-items:start;margin-top:0}
-  .reader-rail{position:sticky;top:18px;z-index:8}
+  .reader-rail{position:static}
   .reader-rail-inner{padding:15px 12px;border:1px solid rgba(201,168,92,.22);border-radius:12px;background:rgba(20,28,48,.96)}
   .reader-rail-label{display:block;padding:0 7px 10px;color:var(--gold);font-family:var(--serif);font-size:13px;font-weight:700;letter-spacing:.12em}
   .reader-rail .secnav{margin:0;border-top:1px solid rgba(201,168,92,.12)}
@@ -512,7 +512,7 @@
     .report-topbar{top:max(10px,env(safe-area-inset-top));width:calc(100% - 22px)}
     .report-topbar a,.report-topbar button{min-height:44px;padding:0 12px;font-size:12px}
     .report-reader{display:block}
-    .reader-rail{position:sticky;top:0;z-index:9;margin:0 -18px 12px;padding:8px 18px;background:linear-gradient(180deg,var(--ink) 84%,rgba(14,18,32,0))}
+    .reader-rail{display:none}
     .reader-rail-inner{padding:9px 11px;border-radius:0 0 11px 11px;background:rgba(20,28,48,.97)}
     .reader-rail-label,.reader-rail .secnav{display:none}
     .reader-rail .nav-status{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;padding:3px 0 9px;border-top:0}
@@ -567,11 +567,11 @@
   .private-answer-actions button{font-size:12px;letter-spacing:0;text-indent:0;padding:8px 14px}
   #privateReportState[hidden]{display:none}
   #reportStatus{min-height:1.6em;margin-top:8px;color:#f0cf9b;font-size:12px;text-align:center}
-  .report-download{margin:22px 0;padding:18px 20px;border:1px solid rgba(201,168,92,.3);border-radius:14px;background:rgba(26,34,51,.7)}
-  .report-download[hidden]{display:none}
-  .report-download .member-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0}
-  .report-download button{font-size:14px;letter-spacing:0;text-indent:0;min-height:44px}
-  .report-download p{margin:10px 0 0;font-size:12px;line-height:1.7;color:var(--mist)}
+  .report-download{margin:16px 0;padding:0}
+  .report-download[hidden],.report-download .member-actions[hidden]{display:none}
+  .report-download .member-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+  .report-download button{height:auto;min-height:36px;margin:0;padding:8px 14px;font-size:12px;line-height:1.4;letter-spacing:0;text-indent:0}
+  .report-download p{margin:6px 0 0;font-size:12px;line-height:1.5;color:var(--mist)}
   #reportDownloadStatus:empty{display:none}
   .report-management{margin:22px 0;padding:18px 20px;border:1px solid rgba(201,168,92,.3);border-radius:14px;background:rgba(26,34,51,.7)}
   .report-management[hidden],.report-management [hidden]{display:none}
@@ -588,6 +588,9 @@
 </style>
 <link rel="stylesheet" href="./birth-location-picker.css?v=544f244a033d">
 <link rel="stylesheet" href="./synastry-entry.css?v=0989e4f9c19f">
+<link rel="stylesheet" href="./reading-experience.css?v=42ad17f2ae2c">
+<link rel="stylesheet" href="./reader-comfort.css?v=defda443b3be">
+<link rel="stylesheet" href="./observatory-experience.css?v=7e3afcc0c0c4">
 </head>
 <body class="synastry-approved-layout">
 <a class="skip-link" href="#reportMain">跳到报告正文</a>
@@ -613,9 +616,24 @@
   </header>
 
   <section id="privateReportState" class="private-state" role="status" aria-live="polite" hidden></section>
+  <div id="out"></div>
+
+  <div class="reader-edit-dock" id="reportEditDock" hidden>
+    <small class="navedit">已按你的出生信息生成 · <button id="editLink" type="button" class="text-button" aria-expanded="false" aria-controls="editRow">出生资料有误？修改</button></small>
+    <div class="row" id="editRow" style="display:none">
+      <label class="sr-only" for="d">出生日期</label><input type="date" id="d" style="flex:1.2;min-width:150px">
+      <label class="sr-only" for="t">出生时间</label><input type="time" id="t" style="flex:1;min-width:110px">
+      <label class="sr-only" for="c">出生地点</label><input type="text" id="c" data-birth-location placeholder="输入省、市、区县" maxlength="60" autocomplete="off">
+      <button id="go" type="button">重新生成</button>
+    </div>
+    <div id="reportStatus" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="endviz"><img src="./img/token.jpg" alt="" loading="lazy"><div class="cap">本 命 信 物</div></div>
+
   <section id="reportDownload" class="report-download" aria-label="保存完整报告" hidden>
-    <div class="member-actions"><button id="reportDownloadHtml" type="button">下载完整报告 · HTML</button><button id="reportPrint" class="ghost" type="button">打印／另存为 PDF</button></div>
-    <p>HTML 文件可离线阅读，包含完整五章；不包含问星记录。PDF 请在浏览器打印窗口中选择“另存为 PDF”。已下载文件无法远程撤回，请妥善保管。</p>
+    <div class="member-actions"><button id="reportDownloadHtml" type="button" title="下载 HTML 格式的完整报告">下载完整报告</button><button id="reportPrint" class="ghost" type="button" title="生成可保存的 PDF 文件">另存为 PDF</button></div>
+    <div id="reportPdfActions" class="member-actions" hidden></div>
     <p id="reportDownloadStatus" role="status" aria-live="polite"></p>
   </section>
   <section id="reportManagement" class="report-management" aria-label="报告保存与资料管理" hidden>
@@ -644,20 +662,6 @@
     </details>
     <p id="reportLifecycleStatus" role="status" aria-live="polite"></p>
   </section>
-  <div id="out"></div>
-
-  <div class="reader-edit-dock" id="reportEditDock" hidden>
-    <small class="navedit">已按你的出生信息生成 · <button id="editLink" type="button" class="text-button" aria-expanded="false" aria-controls="editRow">出生资料有误？修改</button></small>
-    <div class="row" id="editRow" style="display:none">
-      <label class="sr-only" for="d">出生日期</label><input type="date" id="d" style="flex:1.2;min-width:150px">
-      <label class="sr-only" for="t">出生时间</label><input type="time" id="t" style="flex:1;min-width:110px">
-      <label class="sr-only" for="c">出生地点</label><input type="text" id="c" data-birth-location placeholder="输入省、市、区县" maxlength="60" autocomplete="off">
-      <button id="go" type="button">重新生成</button>
-    </div>
-    <div id="reportStatus" role="status" aria-live="polite"></div>
-  </div>
-
-  <div class="endviz"><img src="./img/token.jpg" alt="" loading="lazy"><div class="cap">本 命 信 物</div></div>
 
   <div class="meta">
     本报告基于传统文化框架，对出生时间信息进行结构化解读，仅供自我探索与个人发展参考。<br>
@@ -712,9 +716,9 @@
   <div class="age-gate-card">
     <span class="badge">AI 处 理 确 认</span>
     <h2 id="aiProcessingGateTitle">首次使用问星</h2>
-    <p class="gate-detail" id="aiProcessingGateDetail">本次会把个人文化图谱摘要、你的问题、必要的最近问答摘要和今日知星卡，经知星后端发送给 DeepSeek 大模型生成答复。完整答案先写入账号存档，成功交付后才消耗 1 次问星；模型失败、超时或答案未成功持久化时不扣次数。模型服务方会按其服务规则处理输入与输出。请不要填写身份证号、银行卡号、住址、联系方式或医疗诊断。</p>
+    <p class="gate-detail" id="aiProcessingGateDetail">本次会把个人文化图谱摘要、你的问题、必要的最近问答摘要和今日知星卡，经知星后端发送给 AI 大模型生成答复。完整答案先写入账号存档，成功交付后才消耗 1 次问星；模型失败、超时或答案未成功持久化时不扣次数。模型服务方会按其服务规则处理输入与输出。请不要填写身份证号、银行卡号、住址、联系方式或医疗诊断。</p>
     <p class="gate-policy"><a id="aiPrivacyPolicyLink" href="./privacy.html">查看隐私政策</a></p>
-    <label class="gate-check"><input type="checkbox" id="aiProcessingCheck">我了解并同意把上述最小范围发送给 DeepSeek 生成答复；本次成功交付将消耗 1 次问星。该选择记录在本机，可通过“隐私选择”撤回。</label>
+    <label class="gate-check"><input type="checkbox" id="aiProcessingCheck">我了解并同意把上述最小范围发送给 AI 大模型生成答复；本次成功交付将消耗 1 次问星。该选择记录在本机，可通过“隐私选择”撤回。</label>
     <p class="gate-error" id="aiProcessingError" role="alert" aria-live="assertive" hidden></p>
     <div class="gate-actions">
       <button id="aiProcessingOk" type="button" disabled>同意并继续</button>
@@ -726,13 +730,13 @@
 <script src="./vendor/qrcode-generator.js?v=79ec86f82856"></script>
 <script src="./share-qr.js?v=107fa109a833"></script>
 <script src="./minimum-age.js?v=96cd776ebf44"></script>
-<script src="./public-config.js?v=668117eb3691"></script>
+<script src="./public-config.js?v=f8ef10aa58ce"></script>
 <script src="./privacy-consent.js?v=e9d931611689"></script>
 <script src="./analytics.js?v=2986447e1859"></script>
-<script src="./member.js?v=8eeed3b7c159"></script>
+<script src="./member.js?v=0124783497da"></script>
 <script src="./paid-h5.js?v=8c1eee5dff3c"></script>
-<script src="./paid-reports.js?v=a8d0a77a9626"></script>
-<script src="./report-download.js?v=5e9d071a3ee9"></script>
+<script src="./paid-reports.js?v=f9e9c95aeba6"></script>
+<script src="./report-download.js?v=3c2da196ee97"></script>
 <script src="./bazi-engine.js?v=2f507cc27577"></script>
 <script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
@@ -1150,9 +1154,9 @@ document.querySelector('.report-my-link').href=profilePageLink.href;
 const PRIVACY_PAGE_HREF = REPORT_SOURCE_TREE ? './privacy.html' : './privacy.html';
 const AI_DISCLOSURE_PAGE_HREF = REPORT_SOURCE_TREE ? './ai-disclosure.html' : './ai-disclosure.html';
 const MODEL_PROCESSING_NOTICE = PRIVATE_REPORT_MODE
-  ? '本次仅使用这份已购报告的盘面摘要、你的问题，以及你选择继续追问的已保存答案，经知星后端发送给 DeepSeek。完整答案先保存到账户，再确认交付；失败回补状态以服务端确认为准。'
+  ? '本次仅使用这份已购报告的盘面摘要、你的问题，以及你选择继续追问的已保存答案，经知星后端发送给 AI 大模型。完整答案先保存到账户，再确认交付；失败回补状态以服务端确认为准。'
   : LOCAL_DEEP_MODE === 'real'
-  ? '本机真实回答测试会把个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，经只绑定回环地址的临时测试转发发送给已部署的 DeepSeek 函数；本机临时凭证不会发送给云端。'
+  ? '本机真实回答测试会把个人文化图谱摘要、本次问题、最近几轮对话摘要和今日知星卡，经只绑定回环地址的临时测试转发发送给已部署的 AI 大模型函数；本机临时凭证不会发送给云端。'
   : '提问会发送个人文化图谱摘要、本次问题、必要的最近对话摘要和今日知星卡，用于生成本次答复。完整答案先写入账号存档，成功交付后才消耗 1 次问星；模型失败、超时或答案未成功持久化时不扣次数。';
 const MODEL_INPUT_CAUTION = '请不要填写身份证号、银行卡号、住址、联系方式、医疗诊断等不必要的敏感信息。';
 const CREDITS_REQUIRED = {
@@ -1355,7 +1359,7 @@ function deepCard(){
       <p class="deep-intro">写下一个具体情境。系统会结合已经生成的个人文化图谱，整理现实条件、可选路径和下一步验证；输出由人工智能生成，不预测结果，也不替你决定。首问和每次追问各消耗 1 次。</p>
       ${deepMethodReference}
       ${deepMemberBox()}
-      <div class="ai-interaction">${LOCAL_DEEP_MODE === 'real' ? '真实 DeepSeek 测试 · 本机临时凭证' : '你正在与人工智能服务互动'}</div>
+      <div class="ai-interaction">${LOCAL_DEEP_MODE === 'real' ? '真实 AI 大模型测试 · 本机临时凭证' : '你正在与人工智能服务互动'}</div>
       <div class="deep-notice"><p>${esc(MODEL_PROCESSING_NOTICE)}</p><p>${esc(MODEL_INPUT_CAUTION)}</p><div class="deep-policy">首次使用前会再次征求同意；详情见<a href="${PRIVACY_PAGE_HREF}" target="_blank" rel="noopener">《隐私政策》</a>和<a href="${AI_DISCLOSURE_PAGE_HREF}" target="_blank" rel="noopener">《AI 服务说明》</a>。</div></div>
       <div class="deep-composer" id="deepComposer" aria-label="问星输入区">
         <label class="sr-only" for="deepQ">需要梳理的具体情境</label>
@@ -1647,8 +1651,7 @@ function reportNavLink(id, title, className = ''){
 function scrollToReportTarget(target, smooth){
   if (!target) return;
   setTimeout(() => {
-    const mobileRail = matchMedia('(max-width: 760px)').matches ? document.querySelector('.reader-rail') : null;
-    const offset = mobileRail ? mobileRail.getBoundingClientRect().height + 12 : 18;
+    const offset = 18;
     const top = target.getBoundingClientRect().top + window.scrollY - offset;
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (smooth && !reduceMotion) window.scrollTo({ top, behavior:'smooth' });
@@ -1842,21 +1845,7 @@ function buildReportReader(){
     reader.querySelector('.reader-main').appendChild(editDock);
   }
   activateReportChapter('sec-overview', false, false, false, false);
-  mountSynastryShortcut();
 }
-
-function mountSynastryShortcut(){
-  const status=document.querySelector('#reportReader .nav-status');if(!status)return;
-  let shortcut=$('synastry-reader-shortcut');
-  if(!shortcut){
-    shortcut=document.createElement('div');shortcut.id='synastry-reader-shortcut';shortcut.className='syn-reader-shortcut';
-    shortcut.innerHTML='<span>从了解自己，到了解彼此</span><a aria-label="邀请 TA 合盘"><span class="syn-shortcut-full">邀请 TA 合盘</span><span class="syn-shortcut-short">合盘</span><span aria-hidden="true">↗</span></a>';
-  }
-  shortcut.querySelector('a').href=synastryPageHref();
-  const mobile=matchMedia('(max-width:760px)').matches;
-  if(mobile)status.querySelector('.nav-position').append(shortcut);else status.after(shortcut);
-}
-matchMedia('(max-width:760px)').addEventListener('change',mountSynastryShortcut);
 
 function openInitialReportTarget(){
   let id = '';
@@ -2164,7 +2153,9 @@ function deepArchiveNotice(){
 
 /* 支持连续追问，下一问会带上最近几轮问答摘要。每次提交独立消耗 1 次。 */
 function deepUpsell(){
-  return `<div class="da-more">每次追问消耗 1 次，可用次数见提问区。建议补一条具体背景，比如时间、对象、代价或你最纠结的点。</div>`;
+  const remaining=Number.isInteger(PAID_ASK_STATE.remaining)?PAID_ASK_STATE.remaining:null;
+  const balance=remaining===null?'次数以服务端最新记录为准':`当前剩余 ${remaining} 次`;
+  return `<div class="da-more">可以继续追问，每次追问消耗 1 次；${balance}。建议补一条具体背景，比如时间、对象、代价或你最纠结的点。</div>`;
 }
 function moveDeepComposerAfterAnswer(){
   const composer = $('deepComposer');
@@ -2590,6 +2581,7 @@ async function exportPrivateReport(kind){
   $('reportDownloadHtml').disabled=true;$('reportPrint').disabled=true;
   $('reportDownloadStatus').textContent='正在确认报告访问状态……';
   try{
+    if(kind==='print')ZxReportDownload.clearPdf();
     const status=await ZxPaidReports.status(id);
     if(!current())return;
     if(status.report_id!==id||status.readable!==true||status.entitlement_status!=='active'||status.delivery_status!=='ready'){
@@ -2606,17 +2598,30 @@ async function exportPrivateReport(kind){
       disclaimer:snapshot.disclaimer,chaptersHtml:reportChapterMarkup(snapshot.chart,snapshot.sections)});
     if(!current())return;
     if(kind==='print'){
-      await ZxReportDownload.print(html,current);
-      if(current())$('reportDownloadStatus').textContent='请在浏览器打印窗口中选择打印机或“另存为 PDF”。若窗口未弹出，可先下载 HTML 再使用浏览器打印。';
+      const notify=text=>{if(current())$('reportDownloadStatus').textContent=text;};
+      const pdf=await ZxReportDownload.createPdf(html,current,notify);
+      if(!current())return;
+      const latest=await ZxPaidReports.status(id);
+      if(!current())return;
+      if(latest.report_id!==id||latest.readable!==true||latest.entitlement_status!=='active'||latest.delivery_status!=='ready'){
+        privateStatus(latest.entitlement_status==='revoked'?'revoked':'unavailable','REPORT_DOWNLOAD_UNAVAILABLE');return;
+      }
+      if(latest.delivery_id!==deliveryId){await loadPrivateReport();if(current())notify('报告已更新，请重新生成 PDF。');return;}
+      ZxReportDownload.offerPdf(pdf,current,notify);
     }else{
       ZxReportDownload.save(html,current);
-      if(current())$('reportDownloadStatus').textContent='已发起 HTML 下载。下载的文件可离线阅读，请妥善保管。';
+      if(current())$('reportDownloadStatus').textContent='已开始下载。';
     }
   }catch(error){
     if(!current())return;
     if(error&&error.status===401){privateStatus('login','REPORT_AUTH_REQUIRED');return;}
-    if(error&&error.message==='REPORT_PRINT_BLOCKED'){
-      $('reportDownloadStatus').textContent='浏览器拦截了打印窗口。请允许弹出窗口后重试，或下载 HTML 后使用浏览器打印。';return;
+    if(error&&error.message==='REPORT_PDF_LOAD_FAILED'){
+      $('reportDownloadStatus').textContent='PDF 字体或组件未能加载，请检查网络后重试，报告正文仍可阅读。';return;
+    }
+    if(kind==='print'){
+      $('reportDownloadStatus').textContent=error&&error.message==='REPORT_PDF_IMAGE_FAILED'
+        ?'PDF 图表暂时无法生成，请重新打开报告后重试。'
+        :'PDF 暂时未能生成，请重新打开报告后重试。';return;
     }
     $('reportDownloadStatus').textContent='暂时无法准备下载，请联网后重试。你也可以稍后从“我的报告”重新打开。';
   }finally{if(current()){$('reportDownloadHtml').disabled=false;$('reportPrint').disabled=false;}}
@@ -2756,12 +2761,19 @@ function renderPrivateAskStatus(){
   const pending=readPrivatePending(),remaining=PAID_ASK_STATE.remaining;
   const loaded=PAID_ASK_STATE.loaded&&Number.isSafeInteger(remaining)&&remaining>=0;
   const gifts=Number(PAID_ASK_STATE.gift_remaining)||0,purchases=Number(PAID_ASK_STATE.purchased_remaining)||0;
-  const title=loaded?`剩余 ${remaining} 次 · 本报告赠送 ${gifts} 次 · 已购买 ${purchases} 次`:'暂时无法确认问星次数';
+  const title=loaded?`本报告赠送 ${gifts} 次 · 已购买 ${purchases} 次`:'暂时无法确认问星次数';
   const body=deepComposerAvailable()?(loaded?'首问与追问各消耗 1 次。用完后可选择 ¥2.90/次，或 ¥6/3次。':'请刷新次数后再提交。'):'问星服务尚未开放，报告可以继续阅读。';
   box.innerHTML=`<div class="member-title">${esc(title)}</div><p class="member-copy">${esc(body)}</p><div class="member-actions"><button id="privateAskRefresh" type="button" class="ghost">刷新次数</button><button id="privateAskPurchaseClosed" type="button" class="ghost" disabled>问星购买暂未开放</button><a id="privateAskHistory" href="#deepEcho">查看本盘问答</a></div>`;
   $('privateAskRefresh').onclick=()=>refreshPrivateAskState();
+  $('privateAskHistory').onclick=async event=>{
+    event.preventDefault();
+    if(deepRequestInFlight){updatePrivateNotice('本次回答正在处理中，请稍后再读取已保存的问答。');return;}
+    const revision=PRIVATE_READ_REVISION;
+    await restorePrivateAnswers(revision,{interactive:true});
+    if(revision===PRIVATE_READ_REVISION)$('deepEcho')?.scrollIntoView({block:'center',behavior:'smooth'});
+  };
   button.disabled=PRIVATE_LIFECYCLE_BUSY||deepRequestInFlight||!deepComposerAvailable()||!(pending||(loaded&&PAID_ASK_STATE.allowed&&remaining>0));
-  button.textContent=pending?'恢复上一问 · 不重复扣次':(deepRequestInFlight?'正在整理回答…':!deepComposerAvailable()?'问星服务暂不可用':loaded&&remaining===0?'次数已用完':button.disabled?'正在确认可用次数':PRIVATE_ASK_IDS.length?'继续追问 · 消耗 1 次':'提交本次问星 · 消耗 1 次');
+  button.textContent=pending?'恢复上一问 · 不重复扣次':(button.disabled?'问星暂不可用':PRIVATE_ASK_IDS.length?'继续追问 · 消耗 1 次':'提交本次问星 · 消耗 1 次');
 }
 function privateAnswerHtml(item){return `<section class="private-answer" data-answer-id="${item.result_id}">${renderDeep(item.answer,item.question)}<p class="da-more">完整答案已保存到账户。</p><div class="private-answer-actions"><button type="button" class="ghost" data-delete-private-answer="${item.result_id}">删除这条答案</button></div></section>`;}
 function wirePrivateAnswerDeletes(){
@@ -2773,12 +2785,17 @@ function wirePrivateAnswerDeletes(){
     }catch(_){if(button.isConnected){button.disabled=false;updatePrivateNotice('删除未完成，请重试。');}}
   });
 }
-async function restorePrivateAnswers(revision){
+async function restorePrivateAnswers(revision,{interactive=false}={}){
   if(!window.zxMember||typeof zxMember.deepHistory!=='function')return;
-  try{const data=await zxMember.deepHistory();if(revision!==PRIVATE_READ_REVISION||!PRIVATE_SNAPSHOT)return;
+  const knownIds=PRIVATE_ASK_IDS.join(',');
+  if(interactive)updatePrivateNotice('正在读取已保存的问答，不会消耗次数。');
+  try{const data=await zxMember.deepHistory();if(revision!==PRIVATE_READ_REVISION||!PRIVATE_SNAPSHOT||deepRequestInFlight||knownIds!==PRIVATE_ASK_IDS.join(','))return;
     const rows=(Array.isArray(data)?data:Array.isArray(data.items)?data.items:[]).filter(row=>row.report_id===PRIVATE_REPORT_ID&&row.persisted===true&&row.result_status==='completed'&&/^[a-f0-9]{48}$/.test(row.result_id||'')&&row.answer).slice(0,4).reverse();
-    PRIVATE_ASK_IDS=rows.map(row=>row.result_id);$('deepEcho').innerHTML=rows.map(privateAnswerHtml).join('');wirePrivateAnswerDeletes();renderPrivateAskStatus();
-  }catch(_){/* History is optional; a new question can use no prior answer IDs. */}
+    const html=rows.map(privateAnswerHtml).join('');
+    $('deepEcho').innerHTML=html;PRIVATE_ASK_IDS=rows.map(row=>row.result_id);wirePrivateAnswerDeletes();renderPrivateAskStatus();
+    if(interactive)updatePrivateNotice(rows.length?'已读取本报告保存的问答，没有消耗次数。':readPrivatePending()?'上一问的结果尚未确认，请点“恢复上一问”继续核对，不会重复扣次。':'本报告暂时没有已保存的问答。');
+    return true;
+  }catch(_){if(revision===PRIVATE_READ_REVISION&&PRIVATE_SNAPSHOT)updatePrivateNotice('暂时无法读取已保存的问答。请点“查看本盘问答”重试，不会消耗次数。');return false;}
 }
 function updatePrivateNotice(message){
   const echo=$('deepEcho');if(!echo)return;echo.querySelector('.private-ask-notice')?.remove();
@@ -2810,9 +2827,9 @@ async function askPrivateReport(){
     const data=await response.json().catch(()=>({}));if(revision!==PRIVATE_READ_REVISION)return;
     if(!response.ok)throw Object.assign(new Error(deepResponseCode(data)),{status:response.status,code:deepResponseCode(data),data});
     if(data.persisted!==true||data.result_status!=='completed'||!/^[a-f0-9]{48}$/.test(data.result_id||'')||data.result_id!==data.consumption_id||typeof data.reply!=='string'||!Array.isArray(data.parts)||data.parts.length!==3||!Array.isArray(data.advice)||!Number.isSafeInteger(data.remaining)||data.remaining<0)throw new Error('RESULT_DELIVERY_UNCONFIRMED');
+    if(!PRIVATE_ASK_IDS.includes(data.result_id)){$('deepEcho').insertAdjacentHTML('beforeend',privateAnswerHtml({result_id:data.result_id,question:pending.question,answer:data}));PRIVATE_ASK_IDS=[...PRIVATE_ASK_IDS,data.result_id].slice(-4);}
     sessionStorage.removeItem(key);
     $('deepEcho').querySelector('.private-ask-notice')?.remove();
-    if(!PRIVATE_ASK_IDS.includes(data.result_id)){$('deepEcho').insertAdjacentHTML('beforeend',privateAnswerHtml({result_id:data.result_id,question:pending.question,answer:data}));PRIVATE_ASK_IDS=[...PRIVATE_ASK_IDS,data.result_id].slice(-4);}
     $('deepQ').value='';wirePrivateAnswerDeletes();
     await refreshPrivateAskState();
   }catch(error){
@@ -2836,5 +2853,8 @@ if(PRIVATE_REPORT_MODE)loadPrivateReport();
 else initLocalReport();
 </script>
 
+<script src="./reading-experience.js?v=981240d78ef3"></script>
+<script src="./reader-comfort.js?v=a51a64c0963b"></script>
+<script src="./observatory-experience.js?v=a390aeab82ef"></script>
 </body>
 </html>
