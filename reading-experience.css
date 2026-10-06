@@ -1,7 +1,8 @@
 /* Quiet reading surfaces, preserving the approved static-home palette and artwork. */
 html.zx-reading{background:#050e11;color-scheme:dark}
 .zx-reading body{--night:#050e11;--card:#0b171b;--moon:#e9e5da;--mist:#b1bab9;--gold:#d7b77b;background:#050e11;color:var(--moon);letter-spacing:0}
-.zx-reading body::before,.zx-reading body::after{display:none}
+.zx-reading body::before,.zx-reading body::after{display:block}
+.zx-reading body::before{opacity:.55}
 .zx-reading :is(h1,h2,h3,h4,h5,h6,button,a,p,span){letter-spacing:0}
 .zx-reading .report-topbar{max-width:1080px;align-items:center}
 .zx-reading .report-topbar button,.zx-reading .report-topbar a{min-height:44px;border:0;border-radius:4px;background:transparent;font-size:13px}

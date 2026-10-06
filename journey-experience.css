@@ -8,7 +8,9 @@
 .profile-purchase-dialog :focus-visible{outline:2px solid #efd5a0;outline-offset:3px}
 .zx-profile{background:#050e11;color-scheme:dark}
 .zx-profile body{--night:#050e11;--panel:#0b171b;--moon:#e9e5da;--gold:#d7b77b;--mist:#b3c0b8;--line:#33463c;background:#050e11;color:#e9e5da}
-.zx-profile #profile-starfield{display:none}
+.zx-profile #profile-starfield{display:block}
+/* Restore the existing static sky without changing the approved day-master art. */
+.zx-static-home #starfield{display:block!important}
 .zx-profile :is(h1,h2,h3,h4,p,a,button,span){letter-spacing:0}
 .zx-profile .profile-shell{max-width:980px}
 .zx-profile .brand img{display:block;object-fit:contain;flex:none}
