@@ -1,10 +1,11 @@
 /* Offline export utility. Content is supplied only by the authenticated reader. */
 (function(root){
   'use strict';
-  const CHAPTERS=['sec-overview','sec-chart','sec-relation','sec-action','sec-phase'];
+  const LEGACY_CHAPTERS=[['sec-overview','总览'],['sec-chart','盘面'],['sec-relation','关系'],['sec-action','行动'],['sec-phase','时间']];
+  const STANDALONE_CHAPTERS=[['sec-overview','总览'],['sec-cross','本命双盘合看'],['sec-chart','盘面'],['sec-relation','关系'],['sec-action','行动'],['sec-phase','时间']];
   const TAGS=new Set('article section aside div p h2 h3 h4 h5 h6 header span strong b small ul ol li blockquote table caption thead tbody tr th td br em'.split(' '));
   const SVG_TAGS=new Set('svg g circle line path text rect ellipse polygon polyline'.split(' '));
-  const CLASSES=new Set(('report-chapter pad chapter-block chapter-source method-reference src-inline src note warn key key-hot structured-list structured-list-keywords identity-keywords report-guide heading-line heading-eyebrow chart-details chart-details-body skeleton-details chart-table chart-table-scroll chart-hidden chart-hidden-item chart-basis chart-repeat-note chart-table-hint basis gz tg bar track fill ten-god-summary astro-block astro-facts astro-approx wheel relation-levels relation-level-panel action-opening action-pair action-tradeoff action-rule action-rhythm rhythm-steps transition-lead time-window time-period time-ganzhi is-current time-stage dy-meta time-focus time-focus-title time-focus-lead time-focus-decade time-period-label time-key-change time-focus-year time-year-heading time-year-number time-reading-label time-year-why time-year-actions time-key-phrase time-focus-basis time-focus-astro').split(' '));
+  const CLASSES=new Set(('report-chapter pad chapter-block chapter-source method-reference src-inline src note warn key key-hot structured-list structured-list-keywords identity-keywords report-guide heading-line heading-eyebrow chart-details chart-details-body skeleton-details chart-table chart-table-scroll chart-hidden chart-hidden-item chart-basis chart-repeat-note chart-table-hint basis gz tg bar track fill ten-god-summary astro-block astro-facts astro-approx wheel relation-levels relation-level-panel action-opening action-pair action-tradeoff action-rule action-rhythm rhythm-steps transition-lead time-window time-period time-ganzhi is-current time-stage dy-meta time-focus time-focus-title time-focus-lead time-focus-decade time-period-label time-key-change time-focus-year time-year-heading time-year-number time-reading-label time-year-why time-year-actions time-key-phrase copy-key-phrase time-focus-basis time-focus-astro').split(' '));
   const DROP=new Set('script style link meta base iframe object embed input textarea select option button form img video audio source canvas template noscript'.split(' '));
   const SVG_NUMBERS=/^[\d.\s,+eE-]+$/;
   const SVG_COLOR=/^(?:#[\da-fA-F]{3,8}|rgba?\([\d.,\s]+\)|none|transparent)$/;
@@ -55,12 +56,14 @@ table,.bar,.astro-facts,.wheel{break-inside:avoid-page}blockquote{border:0;backg
     for(const child of [...node.childNodes]){const result=clean(child,target);if(result)out.append(result);}
     return out;
   }
-  function makeDocument({identity,judgement,asOfAt,disclaimer,chaptersHtml}){
+  function makeDocument({identity,judgement,reportTitle,asOfAt,disclaimer,chaptersHtml}){
     if(typeof chaptersHtml!=='string'||chaptersHtml.length>1500000||typeof disclaimer!=='string'||!disclaimer.trim())throw new Error('REPORT_EXPORT_INVALID');
     // Template contents are inert, including resource elements, while we discard them.
     const parsed=root.document.createElement('template');parsed.innerHTML=chaptersHtml;
     const target=root.document.implementation.createHTMLDocument('');
-    const chapters=CHAPTERS.map(id=>{
+    const hasCross=[...parsed.content.children].some(node=>node.tagName==='ARTICLE'&&node.id==='sec-cross');
+    const directory=hasCross?STANDALONE_CHAPTERS:LEGACY_CHAPTERS;
+    const chapters=directory.map(([id])=>{
       const candidates=[...parsed.content.children].filter(node=>node.tagName==='ARTICLE'&&node.id===id);
       if(candidates.length!==1)throw new Error('REPORT_EXPORT_INCOMPLETE');
       const article=clean(candidates[0],target);
@@ -68,7 +71,7 @@ table,.bar,.astro-facts,.wheel{break-inside:avoid-page}blockquote{border:0;backg
       article.id=id;return article.outerHTML;
     }).join('\n');
     const asOf=typeof asOfAt==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(asOfAt)?asOfAt.slice(0,10):'';
-    return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>知星 · 深度发展报告</title><style>${CSS}</style></head><body><main><header class="report-heading"><p>知星 · 以易理观己，以星盘为证</p><h1>深度发展报告</h1><p class="identity">${escape(identity)}</p><p class="judgement">${escape(judgement)}</p>${asOf?`<p class="as-of">报告时间基准：${escape(asOf)}</p>`:''}<p class="offline-note">完整五章已展开，可离线阅读。需要 PDF 时，请使用浏览器的打印功能并选择“另存为 PDF”。</p></header><nav class="offline-directory" aria-label="报告五章">${CHAPTERS.map((id,index)=>`<a href="#${id}">${['总览','盘面','关系','行动','时间'][index]}</a>`).join('')}</nav>${chapters}<footer>${escape(disclaimer)}</footer></main></body></html>`;
+    return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'; script-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'"><meta name="referrer" content="no-referrer"><title>${escape(reportTitle||'知星 · 深度发展报告')}</title><style>${CSS}</style></head><body><main><header class="report-heading"><p>知星 · 以易理观己，以星盘为证</p><h1>${escape(reportTitle||'深度发展报告')}</h1><p class="identity">${escape(identity)}</p><p class="judgement">${escape(judgement)}</p>${asOf?`<p class="as-of">报告时间基准：${escape(asOf)}</p>`:''}<p class="offline-note">完整${directory.length}章已展开，可离线阅读。需要 PDF 时，请使用浏览器的打印功能并选择“另存为 PDF”。</p></header><nav class="offline-directory" aria-label="报告${directory.length}章">${directory.map(([id,title])=>`<a href="#${id}">${title}</a>`).join('')}</nav>${chapters}<footer>${escape(disclaimer)}</footer></main></body></html>`;
   }
   function clear(){
     ++generation;clearPdf();
@@ -122,7 +125,7 @@ table,.bar,.astro-facts,.wheel{break-inside:avoid-page}blockquote{border:0;backg
     const font=await pdf.embedFont(bytes,{subset:true});check();
     pdf.setTitle('知星 · 深度发展报告');pdf.setAuthor('知星');pdf.setCreator('知星 · 本机导出');
     const doc=new DOMParser().parseFromString(html,'text/html'),articles=[...doc.querySelectorAll('main > article.report-chapter')];
-    if(articles.length!==5)throw new Error('REPORT_PDF_CONTENT_INVALID');
+    if(![5,6].includes(articles.length))throw new Error('REPORT_PDF_CONTENT_INVALID');
     const W=595.28,H=841.89,M=48,WIDTH=W-2*M,ink=lib.rgb(.12,.16,.21),gold=lib.rgb(.46,.34,.13),gray=lib.rgb(.36,.4,.45);
     let page,y,chapter='深度发展报告';
     const cleanText=text=>String(text||'').replace(/[\uFE0E\uFE0F]/g,'').replace(/\s+/g,' ').trim();
@@ -181,7 +184,7 @@ table,.bar,.astro-facts,.wheel{break-inside:avoid-page}blockquote{border:0;backg
       for(const child of node.childNodes){if(child.nodeType===3||child.nodeType===1&&inline.has(child.localName))pending+=child.textContent;else{flush();await walk(child);}}flush();
     }
     newPage();await walk(doc.querySelector('.report-heading'));
-    for(let i=0;i<articles.length;i++){check();chapter=articles[i].querySelector('h2')?.textContent||String(i+1);newPage();onProgress('正在生成 PDF：'+chapter+'（'+(i+1)+'/5）');await walk(articles[i]);await new Promise(resolve=>root.setTimeout(resolve,0));}
+    for(let i=0;i<articles.length;i++){check();chapter=articles[i].querySelector('h2')?.textContent||String(i+1);newPage();onProgress('正在生成 PDF：'+chapter+'（'+(i+1)+'/'+articles.length+'）');await walk(articles[i]);await new Promise(resolve=>root.setTimeout(resolve,0));}
     await walk(doc.querySelector('main > footer'));
     const pages=pdf.getPages();pages.forEach((p,i)=>p.drawText((i+1)+' / '+pages.length,{x:W-M-45,y:30,size:8,font,color:gray}));
     check();onProgress('正在整理 PDF 文件…');const data=await pdf.save();check();

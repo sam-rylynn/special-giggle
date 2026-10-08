@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-zG490uLrMWECb9TZ3zgpvyCHZpR4j9r5fDfLj53XybY=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-NzSp0brzkGSFDb8V53HltvJm8orQvudzLMgA95PlUVA='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-Y2ycfkthFC8GSpZk5Z9GqvywbfCSYNUSWlQY+MuoJVc=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-l+QpyAfyFHgjfXAH6iQySioXWwackyoUlXDBI033XFI='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <script data-zx-runtime-load-guard>(function runtimeLoadGuard(required) {
   'use strict';
   const allowed = new Set(required.map(src => new URL(src, location.href).href));
@@ -60,7 +60,7 @@
     show();
   }, true);
   document.addEventListener('DOMContentLoaded', show, {once:true});
-})(["./minimum-age.js?v=96cd776ebf44","./public-config.js?v=10df9c225bac","./privacy-consent.js?v=e9d931611689","./member.js?v=337dc203b382","./paid-h5.js?v=8c1eee5dff3c","./paid-reports.js?v=f9e9c95aeba6","./report-download.js?v=3c2da196ee97","./bazi-engine.js?v=2f507cc27577","./birth-location-picker.js?v=3d149d3ae64c","./content-home-v1.js?v=ee4855e88ba1"]);</script>
+})(["./minimum-age.js?v=96cd776ebf44","./public-config.js?v=10df9c225bac","./privacy-consent.js?v=e9d931611689","./member.js?v=337dc203b382","./paid-h5.js?v=8c1eee5dff3c","./paid-reports.js?v=f9e9c95aeba6","./report-download.js?v=aeae8a485817","./bazi-engine.js?v=2f507cc27577","./birth-location-picker.js?v=3d149d3ae64c","./content-home-v1.js?v=ee4855e88ba1"]);</script>
 <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -736,7 +736,7 @@
 <script src="./member.js?v=0124783497da"></script>
 <script src="./paid-h5.js?v=8c1eee5dff3c"></script>
 <script src="./paid-reports.js?v=f9e9c95aeba6"></script>
-<script src="./report-download.js?v=3c2da196ee97"></script>
+<script src="./report-download.js?v=aeae8a485817"></script>
 <script src="./bazi-engine.js?v=2f507cc27577"></script>
 <script src="./birth-location-picker.js?v=3d149d3ae64c"></script>
 <script src="./content-home-v1.js?v=ee4855e88ba1"></script>
@@ -781,6 +781,11 @@ const LOCAL_DEEP_MODE = localDebugDeepMode();
 let LOCAL_DEEP_BOOTSTRAP = captureLocalRealBootstrap();
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function copyInline(text){
+  // Author emphasis only: escape input first; never accept raw HTML or Markdown links.
+  const escaped = String(text ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return escaped.replace(/\*\*([^*\n]+)\*\*/g, '<strong class="copy-key-phrase">$1</strong>');
+}
 
 /* ===== 重点句加粗(仅处理展示格式) =====
  * EMPH.hot / EMPH.key 均为「原文逐字子串」清单,由选词工作流产出并经程序化核验。
@@ -893,8 +898,8 @@ function structuredList(block){
   }
   const className = block.style ? ` structured-list structured-list-${esc(block.style)}` : 'structured-list';
   return `<ul class="${className}">${items.map(item => {
-    if (item && typeof item === 'object') return `<li><strong>${esc(item.title || '')}</strong><span>${esc(item.body || '')}</span></li>`;
-    return `<li>${esc(item)}</li>`;
+    if (item && typeof item === 'object') return `<li><strong>${copyInline(item.title || '')}</strong><span>${copyInline(item.body || '')}</span></li>`;
+    return `<li>${copyInline(item)}</li>`;
   }).join('')}</ul>`;
 }
 
@@ -959,7 +964,7 @@ function timelineBlock(data){
 function timeFocusHighlight(text, phrase){
   const value = String(text || ''), emphasis = String(phrase || '');
   const index = emphasis ? value.indexOf(emphasis) : -1;
-  if (index < 0) return esc(value);
+  if (index < 0 || value.includes('**')) return copyInline(value);
   return esc(value.slice(0,index)) + `<strong class="time-key-phrase">${esc(emphasis)}</strong>` + esc(value.slice(index+emphasis.length));
 }
 
@@ -999,7 +1004,7 @@ function timeFocusBlock(data){
   </section>`).join('');
   const sources = (basis.sources || []).filter(source => /^https:\/\//.test(source.url || ''));
   return `<div class="time-focus"><h3 class="time-focus-title">${esc(data.title)}</h3><p class="time-focus-lead">${esc(data.lead)}</p>
-    ${turning}${timeFocusDecade(data.currentPeriod)}${focus}${timeFocusDecade(data.nextPeriod,!turningYears.length)}
+    ${timeFocusDecade(data.currentPeriod)}${turning}${focus}${timeFocusDecade(data.nextPeriod,!turningYears.length)}
     <details class="chart-details time-focus-basis">${disclosureSummary(basis.title || '查看时间依据')}<div class="chart-details-body">
       ${(basis.items || []).map(item => `<section><h4>${esc(item.title)}</h4><p>${esc(item.body)}</p></section>`).join('')}
       ${sources.length ? `<h4>原典参考</h4><ul>${sources.map(source => `<li><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.title)}</a></li>`).join('')}</ul>` : ''}
@@ -1016,11 +1021,11 @@ function renderStructuredBlocks(blocks){
     if (block.type === 'heading') {
       const tag = Number(block.level) >= 3 ? 'h4' : 'h3';
       const text = String(block.text || '');
-      const title = text.includes('  ') ? text.split('  ').map(line=>`<span class="heading-line">${esc(line)}</span>`).join('  ') : esc(text);
+      const title = text.includes('  ') ? text.split('  ').map(line=>`<span class="heading-line">${copyInline(line)}</span>`).join('  ') : copyInline(text);
       return `<${tag}>${block.eyebrow ? `<small class="heading-eyebrow">${esc(block.eyebrow)}</small>` : ''}${title}</${tag}>`;
     }
-    if (block.type === 'quote') return `<blockquote>${esc(block.text || '')}</blockquote>`;
-    if (block.type === 'paragraph') return `<p>${esc(block.text || '')}</p>`;
+    if (block.type === 'quote') return `<blockquote>${copyInline(block.text || '')}</blockquote>`;
+    if (block.type === 'paragraph') return `<p>${copyInline(block.text || '')}</p>`;
     if (block.type === 'details') return `<details class="chart-details">${disclosureSummary(block.title || '')}<div class="chart-details-body">${renderStructuredBlocks(block.blocks || [])}</div></details>`;
     if (block.type === 'list') return structuredList(block);
     if (block.type === 'report-guide') return reportGuide(block.items);
@@ -1540,16 +1545,19 @@ function reportChapterMarkup(chart, sections){
     : '';
   const skeletonInChart = byId.skeleton && byId.skeleton.placement === 'chart-details';
   const skeletonInOverview = byId.skeleton && byId.skeleton.placement === 'overview-details';
+  const skeletonStandalone = byId.skeleton && byId.skeleton.placement === 'standalone';
   const overviewSkeleton = skeletonInOverview
     ? `<details class="chart-details skeleton-details">${disclosureSummary('性格骨架')}<div class="chart-details-body">${useSection(byId.skeleton,'性格骨架')}</div></details>`
-    : (skeletonInChart ? '' : useSection(byId.skeleton,'性格骨架'));
+    : (skeletonInChart || skeletonStandalone ? '' : useSection(byId.skeleton,'性格骨架'));
   const overview = useSection(byId.overview,'核心气质与主要矛盾') + overviewSkeleton;
+  const cross = skeletonStandalone ? chapterCard('sec-cross','本命双盘合看',useSection(byId.skeleton,'本命双盘合看')) : '';
   const chartContent = useSection(byId.energy,'五行、强弱与主要十神')
     + (structuredProfileSection(byId.energy) ? energyExtra(chart) : '')
     + astroCard(chart) + (skeletonInChart ? useSection(byId.skeleton,'性格骨架') : '') + chartCard(chart);
   const relationContent = useSection(byId.relation,'关系与协作');
   const actionContent = useSection(byId.action,'行动与决策');
   return chapterCard('sec-overview','总览',overview)
+    + cross
     + chapterCard('sec-chart','盘面',chartContent)
     + chapterCard('sec-relation','关系',relationContent)
     + chapterCard('sec-action','行动',actionContent)
@@ -1558,6 +1566,7 @@ function reportChapterMarkup(chart, sections){
 
 function render(chart, sections){
   CHART = chart;
+  configureReportChapters(sections);
   document.querySelector('.endviz').hidden=false;
   const editDock = $('reportEditDock');
   if (editDock && $('out').contains(editDock)) $('out').after(editDock);
@@ -1581,6 +1590,8 @@ function render(chart, sections){
 }
 
 function updateReportHero(chart, overview){
+  $('reportTitle').textContent=overview?.reportTitle||'深度发展报告';
+  document.title=(overview?.reportTitle||'深度发展报告')+' · 知星';
   $('reportSynastryLink').href=synastryPageHref();
   const homeContent = window.ZhixingHomeContentV1;
   const home = !PRIVATE_REPORT_MODE && homeContent && typeof homeContent.buildHome === 'function'
@@ -1590,8 +1601,8 @@ function updateReportHero(chart, overview){
   const fallback = String(overview?.body || '先从总览开始，结合真实经历核对这张盘呈现的倾向。')
     .split(/\n\n+/)[0].replace(/\s*来源[:：].*$/s,'').trim();
   const missingBirthTime=chart.meta&&chart.meta.inputPrecision&&chart.meta.inputPrecision.birthTime==='missing';
-  $('reportIdentity').textContent = identity + (missingBirthTime?'（缺时暂排）':'');
-  $('reportJudgement').textContent = String(overview?.hero || fallback).trim();
+  $('reportIdentity').textContent = overview?.reportByline?.[0] || identity + (missingBirthTime?'（缺时暂排）':'');
+  $('reportJudgement').textContent = overview?.reportByline?.[1] || String(overview?.hero || fallback).trim();
   document.querySelector('.report-hero-nav').hidden=false;
   const precision=$('reportPrecision');
   const warnings=Array.isArray(chart.meta&&chart.meta.warnings)?chart.meta.warnings.filter(Boolean):[];
@@ -1602,14 +1613,25 @@ function updateReportHero(chart, overview){
   precision.hidden=!warnings.length;
 }
 
-const REPORT_NAV_GROUPS = [
-  { label:'五章', items:[['sec-overview','总览'],['sec-chart','盘面'],['sec-relation','关系'],['sec-action','行动'],['sec-phase','时间']] }
-];
-const REPORT_READING_IDS = REPORT_NAV_GROUPS.flatMap(group => group.items.map(item => item[0]));
+const REPORT_LEGACY_CHAPTERS = [['sec-overview','总览'],['sec-chart','盘面'],['sec-relation','关系'],['sec-action','行动'],['sec-phase','时间']];
+const REPORT_STANDALONE_CHAPTERS = [['sec-overview','总览'],['sec-cross','本命双盘合看'],['sec-chart','盘面'],['sec-relation','关系'],['sec-action','行动'],['sec-phase','时间']];
+let REPORT_NAV_GROUPS = [{ label:'五章', items:REPORT_LEGACY_CHAPTERS }];
+let REPORT_READING_IDS = REPORT_LEGACY_CHAPTERS.map(item => item[0]);
+function configureReportChapters(sections){
+  const standalone = sections.some(section => section.id === 'skeleton' && section.placement === 'standalone');
+  const items = standalone ? REPORT_STANDALONE_CHAPTERS : REPORT_LEGACY_CHAPTERS;
+  REPORT_NAV_GROUPS = [{ label:standalone ? '六章' : '五章', items }];
+  REPORT_READING_IDS = items.map(item => item[0]);
+  const crossLink = $('reportCrossLink');
+  if (crossLink) crossLink.hidden = !standalone;
+  const heroNav = document.querySelector('.report-hero-nav');
+  if (heroNav) heroNav.classList.toggle('has-cross',standalone);
+}
 const REPORT_TOOL_IDS = ['sec-deep','sec-qian'];
 // Lucide 0.468.0 (ISC), vendored paths only; ./vendor/lucide-LICENSE.txt.
 // A single 24-unit grid / 1.5 stroke family; labels remain the information source.
 const REPORT_NAV_ICONS = {
+  'sec-cross':'<circle cx="7" cy="12" r="4"/><circle cx="17" cy="12" r="4"/><path d="M11 12h2"/>',
   'sec-chart':'<path d="M12 3v18"/><path d="M3 12h18"/><rect x="3" y="3" width="18" height="18" rx="2"/>',
   'sec-overview':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
   'sec-relation':'<path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>',
@@ -1619,10 +1641,11 @@ const REPORT_NAV_ICONS = {
   'sec-qian':'<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/><path d="m9 10 2 2 4-4"/>'
 };
 const REPORT_MOBILE_TITLES = {
+  'sec-cross':'本命双盘合看',
   'sec-overview':'总览','sec-chart':'盘面','sec-relation':'关系','sec-action':'行动','sec-phase':'时间',
   'sec-deep':'问星','sec-qian':'知星卡'
 };
-const REPORT_NAV_TITLES = Object.fromEntries(REPORT_NAV_GROUPS.flatMap(group => group.items).concat([
+const REPORT_NAV_TITLES = Object.fromEntries(REPORT_STANDALONE_CHAPTERS.concat([
   ['sec-deep','问星'],['sec-qian','今日知星卡']
 ]));
 let REPORT_NAV_OBSERVER = null;
@@ -1636,6 +1659,7 @@ const REPORT_READING_CONTENT_VERSION = 'report-time-annual-approved-2026-09-11';
 let REPORT_CHAPTER_STORAGE_KEY = '';
 let REPORT_GENERATION_REVISION = 0;
 const REPORT_SECTION_ANALYTICS = {
+  'sec-cross':'cross',
   'sec-chart':'chart','sec-overview':'overview',
   'sec-relation':'relation','sec-action':'action','sec-phase':'phase','sec-deep':'context','sec-qian':'card'
 };
@@ -2524,9 +2548,9 @@ async function showPrivateReadError(error){
   return privateStatus('unavailable',code);
 }
 function validPrivateSnapshot(snapshot){
-  const ids=['overview','energy','skeleton','relation','action','phase'];
+  const ids=snapshot?.sections?.length===5?['overview','energy','relation','action','phase']:['overview','energy','skeleton','relation','action','phase'];
   return snapshot&&snapshot.chart&&snapshot.chart.dayMaster&&snapshot.chart.pillars&&snapshot.chart.fiveElements&&snapshot.chart.astro&&
-    snapshot.input&&Array.isArray(snapshot.sections)&&snapshot.sections.length===6&&ids.every(id=>snapshot.sections.filter(s=>s&&s.id===id&&typeof s.body==='string').length===1)&&
+    snapshot.input&&Array.isArray(snapshot.sections)&&[5,6].includes(snapshot.sections.length)&&ids.every(id=>snapshot.sections.filter(s=>s&&s.id===id&&typeof s.body==='string').length===1)&&
     typeof snapshot.contentVersion==='string'&&typeof snapshot.revisionKey==='string'&&/^[a-f0-9]{64}$/.test(snapshot.revisionKey);
 }
 async function loadPrivateReport(){
@@ -2594,7 +2618,7 @@ async function exportPrivateReport(kind){
     }
     const overview=snapshot.sections.find(section=>section.id==='overview');
     const identity=`${snapshot.chart.dayMaster.stem}${snapshot.chart.dayMaster.element} × 太阳${String(snapshot.chart.astro?.sun?.sign||'星座').replace(/座$/,'')}`;
-    const html=ZxReportDownload.document({identity,judgement:overview?.hero||'',asOfAt:snapshot.asOfAt,
+    const html=ZxReportDownload.document({identity:overview?.reportByline?.[0]||identity,reportTitle:overview?.reportTitle,judgement:overview?.reportByline?.[1]||overview?.hero||'',asOfAt:snapshot.asOfAt,
       disclaimer:snapshot.disclaimer,chaptersHtml:reportChapterMarkup(snapshot.chart,snapshot.sections)});
     if(!current())return;
     if(kind==='print'){
