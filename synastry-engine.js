@@ -109,7 +109,10 @@
     const pairedTitle=[a.element,b.element].sort().join('')==='火风'?'风助星火，把兴致带远':'水润沃土，让关照生长';
     const title=same?titles[a.element]:compatible?pairedTitle:'星光各有方向，靠近需要听见';
     const first=same?({火:'一句“走，我们去”，容易成为两个人故事的开场。',土:'一起把一件小事做好，也可以是一种踏实的靠近。',风:'从一句有意思的话开始，给彼此留下继续聊下去的兴致。',水:'愿意认真听一句心里话，就给亲近留下了一个入口。'})[a.element]:compatible?'一种节奏带来邀请，另一种节奏让邀请有了新的去处。':'一人先看见的，未必是另一人最在意的；愿意交换视角，是靠近的第一步。';
-    const paragraphs=[first,identity+'可以从“'+SOLAR_MOTIFS[a.index][0]+'”与“'+SOLAR_MOTIFS[b.index][0]+'”这两个意象展开。看看'+SOLAR_MOTIFS[a.index][1]+'；也问问'+SOLAR_MOTIFS[b.index][1]+'。'];
+    const motifReading=a.index===b.index
+      ?identity+'可以从“'+SOLAR_MOTIFS[a.index][0]+'”这个意象展开。看看'+SOLAR_MOTIFS[a.index][1]+'。'
+      :identity+'可以从“'+SOLAR_MOTIFS[a.index][0]+'”与“'+SOLAR_MOTIFS[b.index][0]+'”这两个意象展开。看看'+SOLAR_MOTIFS[a.index][1]+'；也问问'+SOLAR_MOTIFS[b.index][1]+'。';
+    const paragraphs=[first,motifReading];
     if(moons){const moodFriendly=friendly(moons[0].element,moons[1].element);paragraphs.push('月亮'+moons[0].name+'与月亮'+moons[1].name+'，'+(moodFriendly?'又添了一层可以呼应的感受线索。亲近时，仍要问清此刻想被陪伴，还是想安静一会儿。':'提醒你们把表达感受的方式再多说一步。想要的安慰不同，也可以分别说出，再找到此刻能给的回应。'));}
     return {title,identity,paragraphs,sourceIds:['astro-sun',...(moons?['astro-moon']:[])]};
   }

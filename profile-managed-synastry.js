@@ -112,6 +112,15 @@
     if(ctx.owner)ctx.body.append(act(ctx,button('查看本账号的合盘记录'),()=>records(ctx)));
     update();
   }
+  // The managed page shows both viewpoints. Move only verbatim shared fields
+  // into one common area; keep each person's own action in their named view.
+  function commonViewFields(chapter){
+    const a=chapter.views?.['person-a'],b=chapter.views?.['person-b'],same=(x,y)=>typeof x==='string'&&x.trim()&&x===y;
+    const common={actions:{}};
+    for(const key of ['headline','advice','reminder'])if(same(a?.[key],b?.[key]))common[key]=a[key];
+    for(const key of ['other','together'])if(same(a?.actions?.[key],b?.actions?.[key]))common.actions[key]=a.actions[key];
+    return common;
+  }
   function reading(ctx,result){
     if(result?.status!=='ready'||!PAIR_ID.test(result.id||'')||!Array.isArray(result.report?.chapters)||result.report.chapters.length!==4)throw error('PAIR_UNAVAILABLE');
     start(ctx,'本账号的合盘');
@@ -124,18 +133,28 @@
     const sourceNames={'day-stems':'八字 · 日干关系','day-branches':'八字 · 日支关系','day-elements':'八字 · 日主五行','astro-sun':'星盘 · 太阳夹角','astro-moon':'星盘 · 月亮夹角','astro-asc':'星盘 · 上升夹角'};
     for(const chapter of result.report.chapters){
       const section=node('section',undefined,'managed-chapter');section.append(node('h3',chapter.title),node('p',chapter.scene),node('p',chapter.shared));
+      const common=commonViewFields(chapter),commonArea=node('div',undefined,'managed-common-reading');
+      commonArea.setAttribute('aria-label','共同提示');
+      if(common.headline)commonArea.append(node('h4',common.headline,'managed-reading-headline'));
+      if(common.advice)commonArea.append(node('p',common.advice));
+      for(const [key,title] of [['other','双方都可以做什么'],['together','一起试一次']]){
+        if(!common.actions[key])continue;
+        const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',common.actions[key]));commonArea.append(item);
+      }
+      if(common.reminder)commonArea.append(node('p',common.reminder,'managed-note'));
+      if(commonArea.childElementCount)section.append(commonArea);
       ['person-a','person-b'].forEach((id,i)=>{
         const detail=node('details'),summary=node('summary',names[i]+'的相处提示'),view=chapter.views?.[id];detail.append(summary);
-        if(typeof view?.headline==='string'&&view.headline.trim())detail.append(node('h4',view.headline,'managed-reading-headline'));
-        detail.append(node('p',view?.advice));
+        if(!common.headline&&typeof view?.headline==='string'&&view.headline.trim())detail.append(node('h4',view.headline,'managed-reading-headline'));
+        if(!common.advice&&typeof view?.advice==='string'&&view.advice.trim())detail.append(node('p',view.advice));
         if(view?.actions&&typeof view.actions==='object'){
           const actions=node('div',undefined,'managed-reading-actions');
           [['own','你可以做什么'],['other','对方可以做什么'],['together','一起试一次']].forEach(([key,title])=>{
-            const text=view.actions[key];if(typeof text!=='string'||!text.trim())return;
+            const text=view.actions[key];if(common.actions[key]||typeof text!=='string'||!text.trim())return;
             const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',text));actions.append(item);
-          });detail.append(actions);
+          });if(actions.childElementCount)detail.append(actions);
         }
-        if(typeof view?.reminder==='string'&&view.reminder.trim())detail.append(node('p',view.reminder,'managed-note'));
+        if(!common.reminder&&typeof view?.reminder==='string'&&view.reminder.trim())detail.append(node('p',view.reminder,'managed-note'));
         section.append(detail);
       });
       section.append(node('p',(chapter.sourceIds||[]).map(id=>sourceNames[id]).filter(Boolean).join(' · '),'managed-note'));ctx.body.append(section);

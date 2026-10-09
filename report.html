@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-Y2ycfkthFC8GSpZk5Z9GqvywbfCSYNUSWlQY+MuoJVc=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-l+QpyAfyFHgjfXAH6iQySioXWwackyoUlXDBI033XFI='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-Y2ycfkthFC8GSpZk5Z9GqvywbfCSYNUSWlQY+MuoJVc=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-IVKt8dleiWna3W7Nq6LvUvdYGoP0A1OceGkJDw3icgU='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <script data-zx-runtime-load-guard>(function runtimeLoadGuard(required) {
   'use strict';
   const allowed = new Set(required.map(src => new URL(src, location.href).href));
@@ -207,7 +207,7 @@
   .chapter-block p{margin:0 0 13px;color:var(--moon);font-size:16px;line-height:1.85;text-align:left}
   .chapter-block ul,.chapter-block ol{margin:8px 0 14px;padding-left:1.35em}
   .chapter-block li{margin:7px 0;color:#d7dde5;font-size:15px;line-height:1.75}
-  .chapter-block blockquote{margin:14px 0 18px;padding:12px 0;border-top:1px solid rgba(201,168,92,.2);border-bottom:1px solid rgba(201,168,92,.2);color:#f4ead1;font-family:var(--serif);font-size:17px;line-height:1.8}
+  .chapter-block blockquote,.chapter-block .report-conclusion{margin:14px 0 18px;padding:12px 0;border-top:1px solid rgba(201,168,92,.2);border-bottom:1px solid rgba(201,168,92,.2);color:#f4ead1;font-family:var(--serif);font-size:17px;line-height:1.8}
   .chapter-source,.chapter-block p.chapter-source{margin:22px 0 0;padding-top:12px;border-top:1px solid rgba(201,168,92,.16);color:#aeb6c3;font-size:12px;line-height:1.7}
   p.method-reference,.chapter-block p.method-reference{margin:10px 0 0;color:#a4adbc;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
   .heading-eyebrow{display:block;margin-bottom:4px;color:var(--gold-dim);font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.06em}
@@ -319,6 +319,7 @@
   .time-turning-years>ol{margin:0;padding:0;list-style:none}
   .time-turning-years li{display:grid;grid-template-columns:68px minmax(0,1fr);gap:18px;margin:0;padding:20px 0;border-top:1px solid rgba(201,168,92,.3)}
   .time-turning-year{color:#f5d999;font:700 26px/1.35 var(--serif);text-shadow:0 0 12px rgba(223,184,98,.2)}
+  .time-turning-year small{display:block;margin-top:4px;font:500 14px/1.5 var(--sans);color:#d6c294;text-shadow:none}
   .time-turning-years .time-turning-kind{margin:0 0 3px;color:#c2ae7e;font-size:12px;letter-spacing:.06em}
   .time-turning-years h5{margin:0 0 10px;color:#f0dcaf;font:650 18px/1.6 var(--serif)}
   .time-turning-years .time-turning-basis{margin:0 0 9px;color:#adb6c4;font-size:13px;line-height:1.8}
@@ -995,10 +996,10 @@ function timeFocusBlock(data){
   const years = Array.isArray(data.focusYears) ? data.focusYears : [];
   const turningYears = Array.isArray(data.turningYears) ? data.turningYears.filter(item=>item && item.year && item.title) : [];
   const basis = data.basis || {};
-  const turning = turningYears.length ? `<section class="time-turning-years" aria-labelledby="time-turning-title"><h4 id="time-turning-title">转折与重点年份</h4><ol>${turningYears.map(item=>`<li><span class="time-turning-year">${esc(item.year)}</span><div>${item.kind ? `<p class="time-turning-kind">${esc(item.kind)}</p>` : ''}<h5>${esc(item.title)}</h5>${item.basis ? `<p class="time-turning-basis">${esc(item.basis)}</p>` : ''}<p class="time-turning-body">${timeFocusHighlight(item.body,item.bold)}</p></div></li>`).join('')}</ol></section>` : '';
+  const turning = turningYears.length ? `<section class="time-turning-years" aria-labelledby="time-turning-title"><h4 id="time-turning-title">转折与重点年份</h4><ol>${turningYears.map(item=>`<li><span class="time-turning-year">${esc(item.year)}${item.pillar ? `<small>${esc(item.pillar)}</small>` : ''}</span><div>${item.kind ? `<p class="time-turning-kind">${esc(item.kind)}</p>` : ''}<h5>${esc(item.title)}</h5>${item.basis ? `<p class="time-turning-basis">${esc(item.basis)}</p>` : ''}<p class="time-turning-body">${timeFocusHighlight(item.body,item.bold)}</p></div></li>`).join('')}</ol></section>` : '';
   const focus = years.map(item => `<section class="time-focus-year" data-year="${esc(item.year)}" aria-labelledby="time-year-${esc(item.year)}-title">
     <header class="time-year-heading"><span class="time-year-number">${esc(item.year)}<small>${esc(item.pillar)}</small></span><h4 id="time-year-${esc(item.year)}-title">${esc(item.tagline)}</h4></header>
-    <h5 class="time-reading-label">为什么这样看</h5>${timeFocusParagraphs(item.paragraphs,item.why,item.bold,'time-year-why')}
+    <h5 class="time-reading-label">为什么这样读</h5>${timeFocusParagraphs(item.paragraphs,item.why,item.bold,'time-year-why')}
     ${(item.actions || []).length ? `<h5 class="time-reading-label">可以怎样做</h5><ol class="time-year-actions">${item.actions.map(action => `<li><h6>${esc(action.title)}</h6><p>${timeFocusHighlight(action.body,action.bold)}</p></li>`).join('')}</ol>` : ''}
     ${item.astro && item.astro.body ? `<aside class="time-focus-astro"><h5>${esc(item.astro.title || '星盘辅证')}</h5><p>${timeFocusHighlight(item.astro.body,item.astro.bold)}</p></aside>` : ''}
   </section>`).join('');
@@ -1024,7 +1025,9 @@ function renderStructuredBlocks(blocks){
       const title = text.includes('  ') ? text.split('  ').map(line=>`<span class="heading-line">${copyInline(line)}</span>`).join('  ') : copyInline(text);
       return `<${tag}>${block.eyebrow ? `<small class="heading-eyebrow">${esc(block.eyebrow)}</small>` : ''}${title}</${tag}>`;
     }
-    if (block.type === 'quote') return `<blockquote>${copyInline(block.text || '')}</blockquote>`;
+    if (block.type === 'quote') return block.semantic === 'conclusion'
+      ? `<p class="report-conclusion">${copyInline(block.text || '')}</p>`
+      : `<blockquote>${copyInline(block.text || '')}</blockquote>`;
     if (block.type === 'paragraph') return `<p>${copyInline(block.text || '')}</p>`;
     if (block.type === 'details') return `<details class="chart-details">${disclosureSummary(block.title || '')}<div class="chart-details-body">${renderStructuredBlocks(block.blocks || [])}</div></details>`;
     if (block.type === 'list') return structuredList(block);
