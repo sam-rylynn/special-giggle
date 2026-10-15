@@ -15,7 +15,18 @@
     WECHATPAY_PRODUCT_INVALID:'赠送支付暂时无法发起，请稍后重试原订单。',WECHATPAY_API_ERROR:'微信支付暂未返回付款信息，请稍后重试原订单。',WECHATPAY_NETWORK_ERROR:'连接微信支付失败，请稍后重试原订单。',
     PAYMENT_CHECKOUT_PENDING:'正在准备微信付款，请稍后重试。',PAYMENT_ORDER_EXPIRED:'这笔待付款订单已过期，请到我的资料查看订单。',PAYMENT_SALES_DISABLED:'赠送购买窗口已关闭，已付款的礼物仍可领取。',
     PAYMENT_ACCEPTANCE_ORDER_LIMIT:'已有一笔赠送订单，请先查看赠送记录。',WECHATPAY_TRANSACTION_INVALID:'付款状态暂未确认，请刷新订单重试。',
-    ORDER_RESPONSE_INVALID:'订单信息暂时无法确认，请刷新重试。',LOCAL_STORAGE_UNAVAILABLE:'无法保存本次操作，请开启浏览器存储后重试。'};
+    ORDER_RESPONSE_INVALID:'订单信息暂时无法确认，请刷新重试。',LOCAL_STORAGE_UNAVAILABLE:'无法保存本次操作，请开启浏览器存储后重试。',
+    // Claim requirements match a purchased report: exact time, 男/女, born 1940 or later.
+    REPORT_BIRTH_TIME_REQUIRED:'请填写准确的出生时间（时:分）。深度报告需要准确时间，不能留空。',REPORT_GENDER_REQUIRED:'请选择排盘性别（男或女）。',
+    REPORT_INPUT_DATE_INVALID:'出生日期须为 1940 年 1 月 1 日及以后的有效日期。',REPORT_INPUT_TIME_INVALID:'出生时间格式无效，请重新选择。',
+    REPORT_INPUT_GENDER_INVALID:'排盘性别仅支持男或女。',REPORT_INPUT_CITY_INVALID:'请填写有效的出生地点。',REPORT_CITY_CONFIRMATION_REQUIRED:'请从地点建议中确认完整的市州或区县。',
+    REPORT_INPUT_INVALID:'出生资料格式无效，请核对后重试。',REPORT_SUBJECT_AGE_NOT_ALLOWED:'出生日期不满足本服务的年龄要求。',
+    REPORT_STORAGE_CONFIRMATION_REQUIRED:'请确认上传并保存本次出生资料。',REPORT_PREPARE_LIMIT:'提交次数较多，请稍后再试。',
+    REPORT_OPERATION_IN_PROGRESS:'上一次操作仍在处理中，请稍后刷新。',REPORT_AUTH_REQUIRED:'请重新登录后继续。',REPORT_DELIVERY_UNAVAILABLE:'报告暂时无法生成，请稍后重试。',
+    GIFT_REQUEST_INVALID:'请求无效，请刷新后重试。',GIFT_CONSENT_REQUIRED:'请确认成年及购买与合盘规则。',GIFT_CONFIRMATION_REQUIRED:'请确认后再提交。',
+    GIFT_INPUT_CHANGED:'出生资料已变化，请重新核对后领取。',GIFT_RATE_LIMIT:'操作较频繁，请稍后再试。',GIFT_NOT_EXPIRED:'礼物仍在领取期内，暂不能按过期处理。',
+    GIFT_REFUNDS_UNAVAILABLE:'退款暂时无法发起，请稍后重试或联系售后。',PAYMENT_IDEMPOTENCY_CONFLICT:'本次请求内容已变化，请刷新后重新确认。',
+    ACCOUNT_CLOSURE_PENDING:'账号正在注销处理中，暂不能赠送或领取。',REQUEST_INVALID:'请求无效，请刷新后重试。'};
   let active=null,revision=0;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=String(text??'');if(cls)n.className=cls;return n;};
   const error=code=>Object.assign(new Error(code),{code});
@@ -48,7 +59,9 @@
   async function identity(ctx){if(!enabled())throw error('GIFT_SERVICE_UNAVAILABLE');if(!window.ZxPrivacyConsent?.has?.('device_account')){login(ctx);return false;}notify(ctx,'正在读取赠送信息…');await member().start();current(ctx,!!ctx.owner);ctx.owner=owner();if(!ctx.owner){login(ctx);return false;}return true;}
   function randomKey(){const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
   function readGift(value,id){if(!value||!ID.test(value.id||'')||id&&value.id!==id||!Object.hasOwn(LABELS,value.status))throw error('ORDER_RESPONSE_INVALID');return value;}
-  function checkedOrder(value,id){const g=readGift(value?.gift,id),o=value?.order;if(!o||!ORDER.test(o.order_no||'')||g.orderId!==o.order_no||o.product_code!=='gift_report_v1'||o.amount_fen!==1990||o.currency!=='CNY'||o.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');return {gift:g,order:o,checkout:value.checkout};}
+  // The gift price comes from the policy projection (report-offer.js), never a literal amount.
+  function giftFen(){const item=window.ZxReportOffer?.offers?.find(entry=>entry?.productCode==='gift_report_v1');return item&&item.currency==='CNY'&&Number.isSafeInteger(item.amountFen)&&item.amountFen>0?item.amountFen:null;}
+  function checkedOrder(value,id){const g=readGift(value?.gift,id),o=value?.order,fen=giftFen();if(!o||!ORDER.test(o.order_no||'')||g.orderId!==o.order_no||o.product_code!=='gift_report_v1'||fen===null||o.amount_fen!==fen||o.currency!=='CNY'||o.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');return {gift:g,order:o,checkout:value.checkout};}
   function giftUrl(token){const source=/\/(web|v1)\/[^/]*$/.test(location.pathname),url=new URL(source?'../web/synastry.html':'./synastry.html',location.href);url.search='';if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&window.ZxPaidReports?.isPrivate?.())url.searchParams.set('private-report','1');url.hash='gift='+token;return url.href;}
   function existingReport(ctx,e){const id=e.data?.reportId,code=e.data?.senderCode;if(!REPORT.test(id||''))return;ctx.existingLink?.remove();
     if(/^ZX[A-F0-9]{16}$/.test(code||'')&&typeof window.ZxProfileSocial?.open==='function')ctx.existingLink=action(ctx,'使用已有报告发起合盘',()=>{current(ctx);close();return window.ZxProfileSocial.open({compose:true,channel:'internal',lookupCode:code,reportId:id});});
@@ -58,13 +71,13 @@
   async function loadGift(ctx,id,refreshOrder=false){const result=refreshOrder?await call(ctx,'/synastry/gifts/'+id+'/order'):await call(ctx,'/synastry/gifts/'+id);const gift=refreshOrder?checkedOrder(result,id).gift:readGift(result,id);if(!refreshOrder&&gift.status==='created'&&ORDER.test(gift.orderId||''))return loadGift(ctx,id,true);showGift(ctx,gift,refreshOrder?result:null);}
   function showGift(ctx,value,payment){let gift=readGift(value);if(gift.status==='created'&&payment?.order?.status==='closed')gift={...gift,status:'cancelled'};ctx.giftId=gift.id;start(ctx,LABELS[gift.status]);
     const payer=ctx.mode==='purchase'||ORDER.test(gift.orderId||'');if(gift.status!=='created'){const pending=stored(PENDING);if(pending?.giftId===gift.id)drop(PENDING);}if(gift.status==='delivered')drop(CLAIM);
-    const line={created:'赠送深度报告 · ¥19.90',funded:'礼物已备好，发给你想了解的人。',claimed:'领取已确认，正在准备报告。',delivery_failed:'领取已确认，报告暂未生成成功。',delivered:payer?'朋友的报告已交付。':'你的深度报告已准备好。',expired:'领取时间已过，未领取的付款将原路退回。',refund_requested:'退款申请已提交。',refund_pending:'正在原路退款。',refunded:'退款已完成。',cancelled:'这笔订单已关闭。'}[gift.status];ctx.body.append(el('p',line,'gift-lead'));
+    const line={created:'赠送深度报告 · '+(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认'),funded:'礼物已备好，发给你想了解的人。',claimed:'领取已确认，正在准备报告。',delivery_failed:'领取已确认，报告暂未生成成功。',delivered:payer?'朋友的报告已交付。':'你的深度报告已准备好。',expired:'领取时间已过，未领取的付款将原路退回。',refund_requested:'退款申请已提交。',refund_pending:'正在原路退款。',refunded:'退款已完成。',cancelled:'这笔订单已关闭。'}[gift.status];ctx.body.append(el('p',line,'gift-lead'));
     if(payer&&gift.status==='cancelled'){const again=profileLink('重新赠送深度报告'),url=new URL(again.href);url.searchParams.set('open','gift');again.href=url.href;ctx.body.append(again);}
     if(gift.status==='created'&&payer){
       const waiting=stored(PENDING);
       if(waiting?.giftId===gift.id&&waiting.submittedAt&&Date.now()-waiting.submittedAt<60000)notify(ctx,'正在确认付款，请稍后刷新订单。');
       else if(payment?.order?.status==='created'&&payment.order.expires_at<=Date.now())notify(ctx,'这笔待付款订单已过期，正在核对关闭状态，请刷新订单。');
-      else if(!payment?.order||payment.order.status==='created')ctx.body.append(action(ctx,'微信支付 ¥19.90',async()=>{
+      else if(!payment?.order||payment.order.status==='created')ctx.body.append(action(ctx,'微信支付 '+(window.ZxPaidReports?.priceLabel(payment.order)||'金额待确认'),async()=>{
         const fresh=checkedOrder(await call(ctx,'/synastry/gifts/'+gift.id+'/order'),gift.id),o=fresh.order;
         if(o.order_no!==gift.orderId)throw error('ORDER_RESPONSE_INVALID');
         if(o.status!=='created'||fresh.gift.status!=='created'){showGift(ctx,fresh.gift,fresh);return;}
@@ -103,10 +116,10 @@
     ctx.body.append(action(ctx,'刷新状态',()=>loadGift(ctx,gift.id,payer)),rules());
     if(ctx.options.fromRecords)ctx.body.append(action(ctx,'返回赠送记录',openRecords));
   }
-  function purchase(ctx){start(ctx,'送一份深度报告');ctx.body.append(el('p','一份写给 TA 的自我探索。','gift-lead'),el('p','¥19.90 · 深度报告 + 1 次问星','gift-price'));
+  function purchase(ctx){start(ctx,'送一份深度报告');ctx.body.append(el('p','一份写给 TA 的自我探索。','gift-lead'),el('p',(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认')+' · 深度报告 + 1 次问星','gift-price'));
     if(!ctx.options.senderName?.trim()){ctx.body.append(el('p',MESSAGES.DISPLAY_NAME_INVALID,'gift-note'),profileLink());return;}
     const adult=check('我已满 18 周岁'),agree=check('我已阅读并同意购买与合盘规则');ctx.body.append(adult.label,agree.label,rules());
-    ctx.body.append(action(ctx,'确认赠送 ¥19.90',async()=>{if(!adult.input.checked||!agree.input.checked)throw error('PAYMENT_CONSENT_REQUIRED');if(!member().paidReportPurchaseReady?.())throw error('REPORT_SALES_NOT_APPROVED');
+    ctx.body.append(action(ctx,'确认赠送 '+(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认'),async()=>{if(!adult.input.checked||!agree.input.checked)throw error('PAYMENT_CONSENT_REQUIRED');if(!member().paidReportPurchaseReady?.())throw error('REPORT_SALES_NOT_APPROVED');
       const versions=member().giftPaymentVersions(),p=policy(),senderReportId=ctx.options.senderReportId||null,senderName=ctx.options.senderName.trim();
       let pending=stored(PENDING);if(!pending||pending.senderReportId!==senderReportId||pending.senderName!==senderName||!ORDER.test(pending.key||''))pending={key:randomKey(),senderReportId,senderName};
       save(PENDING,pending);const response=await call(ctx,'/synastry/gifts/orders',{senderReportId,senderName,idempotencyKey:pending.key,consent:true,adultConfirmed:true,...versions,synastryConsent:{confirmed:true,version:p.VERSION}});
@@ -115,20 +128,24 @@
   }
   function birth(ctx,preview){start(ctx,'领取你的深度报告');ctx.body.append(el('p','请确认你自己的出生资料。','gift-lead'));
     const form=el('form');form.addEventListener('submit',e=>e.preventDefault());const field=(text,type)=>{const label=el('label',text,'gift-field'),input=el('input');input.type=type;input.setAttribute('aria-label',text);label.append(input);form.append(label);return input;};
-    const d=field('出生日期','date'),t=field('出生时间（不知道可留空）','time'),c=field('出生地点','text'),label=el('label','性别','gift-field'),g=el('select');g.setAttribute('aria-label','性别');[['','请选择'],['男','男'],['女','女'],['其他','其他']].forEach(([value,text])=>{const option=el('option',text);option.value=value;g.append(option);});label.append(g);form.append(label);c.setAttribute('data-birth-location','');
+    form.append(el('p','深度报告需要准确的出生时间（时:分）和排盘性别（男或女）；出生日期须在 1940 年 1 月 1 日及以后，领取人须已满 18 周岁。','gift-note'));
+    const d=field('出生日期','date'),t=field('出生时间（须准确到分钟）','time'),c=field('出生地点','text'),label=el('label','排盘性别','gift-field'),g=el('select');g.setAttribute('aria-label','排盘性别');[['','请选择'],['男','男'],['女','女']].forEach(([value,text])=>{const option=el('option',text);option.value=value;g.append(option);});label.append(g);form.append(label);c.setAttribute('data-birth-location','');
+    d.min='1940-01-01';d.required=true;t.required=true;g.required=true;
     const transfer=check('我确认这是本人的资料，同意上传并保存用于生成报告。'),claim=check('领取报告并同意合盘');form.append(transfer.label,claim.label,rules());
     const inputs=[d,t,c,g,transfer.input,claim.input];let prepared=null,claimStarted=false;
     const submit=action(ctx,'领取报告并同意合盘',async()=>{
       if(!transfer.input.checked)throw error('REPORT_TRANSFER_CONFIRMATION_REQUIRED');if(!claim.input.checked)throw error('CONSENT_REQUIRED');
       const p=policy(),input={d:d.value,t:t.value,c:c.value.trim(),g:g.value};
       if(!prepared){
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(input.d)||input.t&&!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(input.t)||!['男','女','其他'].includes(input.g))throw error('BIRTH_INPUT_INVALID');
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(input.d))throw error('REPORT_INPUT_DATE_INVALID');
+        if(!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(input.t))throw error('REPORT_BIRTH_TIME_REQUIRED');
+        if(!['男','女'].includes(input.g))throw error('REPORT_GENDER_REQUIRED');
         const [y,m,day]=input.d.split('-').map(Number),date=new Date(Date.UTC(y,m-1,day)),today=p.dateKey(Date.now());
-        if(y<1900||date.getUTCFullYear()!==y||date.getUTCMonth()!==m-1||date.getUTCDate()!==day)throw error('BIRTH_INPUT_INVALID');
+        if(y<1940||y>2100||date.getUTCFullYear()!==y||date.getUTCMonth()!==m-1||date.getUTCDate()!==day)throw error('REPORT_INPUT_DATE_INVALID');
         if(input.d>String(Number(today.slice(0,4))-18)+today.slice(4))throw error('PARTICIPANT_INELIGIBLE');
         const engine=window.BaziEngine;if(!engine?.computeChart||!window.ZxBirthLocationPicker?.attach)throw error('BIRTH_INPUT_INVALID');
         if(!engine.resolveCity?.(input.c)?.complete)throw error('BIRTH_LOCATION_REQUIRED');
-        const [hh,mm]=input.t?input.t.split(':').map(Number):[];engine.computeChart({y,m,d:day,hh,mm,city:input.c,gender:input.g});
+        const [hh,mm]=input.t.split(':').map(Number);engine.computeChart({y,m,d:day,hh,mm,city:input.c,gender:input.g});
         const response=await call(ctx,'/synastry/gift-claims/prepare',{token:ctx.token,input,transfer_confirmed:true,storage_confirmed:true,subject_is_self:true});
         if(!REPORT.test(response?.report_id||''))throw error('ORDER_RESPONSE_INVALID');prepared=response.report_id;
       }

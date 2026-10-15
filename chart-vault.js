@@ -1,7 +1,7 @@
 /* Local chart slots are not report entitlements. Paid access always comes from the account service. */
 (function(root){
   'use strict';
-  const KEY='zx_chart_library_v1', SELECTION_KEY='zx_chart_selection_v1', LIMIT=2;
+  const KEY='zx_chart_library_v1', SELECTION_KEY='zx_chart_selection_v1', LIMIT=5;
   const LOCAL=/^[a-f0-9]{32}$/, REPORT=/^[a-f0-9]{48}$/, OWNER=/^[a-f0-9]{64}$/;
   const copy=value=>JSON.parse(JSON.stringify(value));
   const fail=(code,message)=>{const error=new Error(message);error.code=code;throw error;};
@@ -47,20 +47,39 @@
       root.sessionStorage.removeItem('zx_active_input_v1');root.sessionStorage.removeItem('zx_report_handoff_v1');root.sessionStorage.removeItem('zx_display_profile_v1');
     }catch(_){}
   }
-  function readStore(){
-    let value;
-    try{value=JSON.parse(root.localStorage.getItem(KEY)||'null');}catch(_){return fail('STORE_UNAVAILABLE','本机图谱暂时无法读取，请检查浏览器存储。');}
-    if(value===null)return empty();
-    if(value.version!==1||!Array.isArray(value.entries)||!Array.isArray(value.paidLinks))return fail('STORE_INVALID','本机图谱记录异常，原记录已保留，请先导出资料。');
-    const ids=new Set();
-    for(const entry of value.entries){
-      if(!entry||!LOCAL.test(entry.id)||ids.has(entry.id)||!Number.isSafeInteger(entry.createdAt)||!Number.isSafeInteger(entry.updatedAt))return fail('STORE_INVALID','本机图谱记录异常，原记录已保留。');
-      ids.add(entry.id);input(entry.input);name(entry.name);
-      if((entry.reportId||entry.accountRef)&&(!REPORT.test(entry.reportId)||!OWNER.test(entry.accountRef)))fail('STORE_INVALID','图谱关联记录异常，原记录已保留。');
-    }
-    for(const link of value.paidLinks){if(!link||!LOCAL.test(link.id)||!REPORT.test(link.reportId)||!OWNER.test(link.accountRef)||Object.hasOwn(link,'input'))fail('STORE_INVALID','报告称呼记录异常，原记录已保留。');name(link.name);}
-    return value;
+  function validEntry(entry){
+    try{
+      if(!entry||typeof entry!=='object'||!LOCAL.test(entry.id)||!Number.isSafeInteger(entry.createdAt)||!Number.isSafeInteger(entry.updatedAt))return false;
+      input(entry.input);name(entry.name);
+      return !(entry.reportId||entry.accountRef)||REPORT.test(entry.reportId)&&OWNER.test(entry.accountRef);
+    }catch(_){return false;}
   }
+  function validLink(link){
+    try{return !!link&&typeof link==='object'&&LOCAL.test(link.id)&&REPORT.test(link.reportId)&&OWNER.test(link.accountRef)&&!Object.hasOwn(link,'input')&&(name(link.name),true);}
+    catch(_){return false;}
+  }
+  // One malformed record must not make the whole library unusable. Invalid or duplicate
+  // records are set aside in `quarantine` (kept, exported and cleared with the library).
+  function readStore(){
+    let raw,value;
+    try{raw=root.localStorage.getItem(KEY);}catch(_){return fail('STORE_UNAVAILABLE','本机图谱暂时无法读取，请检查浏览器存储。');}
+    if(raw===null)return empty();
+    try{value=JSON.parse(raw);}catch(_){return fail('STORE_INVALID','本机图谱存档无法解析，原记录已保留。请先导出本机资料备份。');}
+    if(value===null)return empty();
+    if(!value||typeof value!=='object'||value.version!==1||!Array.isArray(value.entries)||!Array.isArray(value.paidLinks)||value.quarantine!==undefined&&!Array.isArray(value.quarantine))return fail('STORE_INVALID','本机图谱记录异常，原记录已保留，请先导出资料。');
+    // Age checks need the shared module; without it nothing is set aside.
+    if(value.entries.length&&typeof root.ZxMinimumAge?.evaluateMinimumAge!=='function')return fail('STORE_UNAVAILABLE','本机图谱暂时无法读取，请刷新页面后重试。');
+    const ids=new Set(),entries=[],paidLinks=[],quarantine=Array.isArray(value.quarantine)?value.quarantine.slice():[];
+    for(const entry of value.entries){
+      if(validEntry(entry)&&!ids.has(entry.id)){ids.add(entry.id);entries.push(entry);}
+      else quarantine.push({kind:'entry',record:entry});
+    }
+    for(const link of value.paidLinks){if(validLink(link))paidLinks.push(link);else quarantine.push({kind:'paidLink',record:link});}
+    const data={...value,entries,paidLinks};
+    if(quarantine.length)data.quarantine=quarantine;else delete data.quarantine;
+    return data;
+  }
+  function quarantined(){if(!consent())return 0;try{return readStore().quarantine?.length||0;}catch(_){return 0;}}
   function announce(){root.dispatchEvent?.(new root.CustomEvent('zx-chart-library-changed'));}
   let queue=Promise.resolve();
   let lockDatabase;
@@ -110,7 +129,7 @@
     return mutate(data=>{
       let entry=data.entries.find(item=>identity(item.input)===identity(normalized));
       if(entry){entry.name=display;entry.updatedAt=Date.now();return entry;}
-      if(data.entries.length>=LIMIT)fail('CHART_LIMIT','本机已保存 2 张基础图谱。请在“我的资料”主动删除一张后再添加，已有图谱不会被覆盖。');
+      if(data.entries.length>=LIMIT)fail('CHART_LIMIT','本机已保存 5 张基础图谱。请在“我的资料”主动删除一张后再添加，已有图谱不会被覆盖。');
       entry={id:newId(),name:display,input:normalized,createdAt:Date.now(),updatedAt:Date.now()};data.entries.push(entry);return entry;
     });
   }
@@ -134,7 +153,8 @@
     if(expectedInput&&identity(entry.input)!==identity(expectedInput))fail('CHART_CHANGED','这张本机图谱的资料已修改；原报告可从账号恢复，未关联到新资料。');
     entry.reportId=reportId;entry.accountRef=accountRef;entry.updatedAt=Date.now();return entry;
   });
-  const usable=(item,now=Date.now())=>!!(item&&REPORT.test(item.report_id)&&item.readable===true&&!item.unavailable_reason&&item.refund_status!=='pending'&&item.entitlement_status==='active'&&item.delivery_status==='ready'&&Number.isSafeInteger(item.expires_at)&&item.expires_at>now);
+  // Shared report-access rule (member.js); unknown means not usable.
+  const usable=(item,now=Date.now())=>!!root.ZxReportAccess?.usable(item,now);
   async function reconcile(reports,accountRef){
     if(!consent())return [];
     if(!OWNER.test(accountRef)||!Array.isArray(reports))fail('INVALID_OWNER','请重新登录后恢复报告。');
@@ -161,6 +181,32 @@
     let link=data.paidLinks.find(row=>row.reportId===reportId&&row.accountRef===accountRef);
     if(!link){link={id:newId(),reportId,accountRef,name:''};data.paidLinks.push(link);}link.name=name(value);return link;
   });
+  // Signing out or closing the account keeps base charts but removes every report/account
+  // link stored with them on this device (member.js dispatches zx-account-signed-out).
+  function forgetAccountLinks(){
+    const run=()=>{
+      let data;try{data=readStore();}catch(_){return false;}
+      let changed=false;
+      for(const entry of data.entries)if(Object.hasOwn(entry,'reportId')||Object.hasOwn(entry,'accountRef')){delete entry.reportId;delete entry.accountRef;changed=true;}
+      if(data.paidLinks.length){data.paidLinks=[];changed=true;}
+      if(data.quarantine){
+        const kept=[];
+        for(const item of data.quarantine){
+          if(item?.kind==='paidLink'){changed=true;continue;}
+          const record=item?.record;
+          if(record&&typeof record==='object'&&(Object.hasOwn(record,'reportId')||Object.hasOwn(record,'accountRef'))){delete record.reportId;delete record.accountRef;changed=true;}
+          kept.push(item);
+        }
+        if(kept.length)data.quarantine=kept;else delete data.quarantine;
+      }
+      if(changed){root.localStorage.setItem(KEY,JSON.stringify(data));announce();}
+      return changed;
+    };
+    if(root.navigator?.locks?.request)return root.navigator.locks.request(KEY,run);
+    if(root.indexedDB?.open)return legacyLock(run);
+    const pending=queue.then(run);queue=pending.catch(()=>{});return pending;
+  }
+  root.addEventListener?.('zx-account-signed-out',()=>{Promise.resolve().then(forgetAccountLinks).catch(()=>{});});
   const subscribe=fn=>{root.addEventListener?.('zx-chart-library-changed',fn);return()=>root.removeEventListener?.('zx-chart-library-changed',fn);};
   root.addEventListener?.('storage',event=>{
     if(event.key!==KEY&&event.key!==null)return;
@@ -172,6 +218,6 @@
     announce();
   });
   ['zx-birth-local-cleared','zx-local-data-cleared'].forEach(type=>root.addEventListener?.(type,announce));
-  const api={KEY,SELECTION_KEY,LIMIT,list,get,selected,select,save,rename,updateInput,remove,bindReport,reconcile,paidName,resolvedPaidLink,renamePaid,hasRoom:()=>list().length<LIMIT,subscribe,usable};
+  const api={KEY,SELECTION_KEY,LIMIT,list,get,selected,select,save,rename,updateInput,remove,bindReport,reconcile,paidName,resolvedPaidLink,renamePaid,hasRoom:()=>list().length<LIMIT,subscribe,usable,quarantined,forgetAccountLinks};
   root.ZxChartVault=api;if(typeof module==='object')module.exports=api;
 })(typeof window==='object'?window:globalThis);

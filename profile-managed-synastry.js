@@ -7,7 +7,7 @@
     REPORT_ACCOUNT_CHANGED:'账号已切换，请重新打开自己的合盘。',PRIVACY_CONSENT_REQUIRED:'请先到账号页确认账号资料用途。',
     AUTH_REQUIRED:'账号会话已失效，请重新登录。',REPORT_UNAVAILABLE:'所选报告尚未交付、已经到期或当前不可用，请刷新资料后重新选择。',
     MANAGED_DISTINCT_REPORTS_REQUIRED:'请选择两张出生资料不同的有效深度报告。',MANAGED_PERMISSION_REQUIRED:'请确认你有权使用两张资料开展本次合盘。',
-    CURSOR_INVALID:'记录已更新，请刷新重试。',PAIR_RECONFIRM_REQUIRED:'来源报告已更正，请重新选盘并确认。旧的合盘已停止阅读。',PAIR_UNAVAILABLE:'此份合盘已移除或来源报告已失效。',
+    CURSOR_INVALID:'记录已更新，请刷新重试。',PAIR_RECONFIRM_REQUIRED:'来源报告已更正，请重新选盘并确认。旧的合盘已停止阅读。',PAIR_UNAVAILABLE:'此份合盘已移除或来源报告已失效。',REPORT_REFUND_PENDING:'该报告退款处理中，合盘暂停查看；退款关闭后自动恢复，退款完成后合盘将删除。',
     PARTICIPANT_INELIGIBLE:'两张资料的主体均需已满 18 周岁。',RATE_LIMITED:'操作较频繁，请稍后重试。',NOT_FOUND:'没有找到当前账号可查看的这份合盘。'};
   let active=null,revision=0;
   const PICK_KEY='zx_managed_synastry_selection_v1';
@@ -30,8 +30,8 @@
   const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=String(text??'');if(cls)n.className=cls;return n;};
   const error=code=>Object.assign(new Error(code),{code});
   const state=()=>window.zxMember?.snapshot?.()||{};
-  const usable=r=>REPORT_ID.test(r?.report_id||'')&&r.readable===true&&r.entitlement_status==='active'&&r.delivery_status==='ready'&&
-    !r.unavailable_reason&&r.refund_status!=='pending'&&Number.isSafeInteger(r.storage_expires_at??r.expires_at)&&(r.storage_expires_at??r.expires_at)>Date.now();
+  // Shared report-access rule from member.js (storage_expires_at first); unknown means not usable.
+  const usable=r=>!!window.ZxReportAccess?.usable(r);
   const name=r=>String(r?.name||r?.displayName||r?.nickname||r?.title||'未设置昵称').slice(0,100);
   function button(text,fn,cls='button'){const n=node('button',text,cls);n.type='button';if(fn)n.addEventListener('click',fn);return n;}
   function current(ctx,ownerRequired=true){
@@ -134,30 +134,36 @@
     for(const chapter of result.report.chapters){
       const section=node('section',undefined,'managed-chapter');section.append(node('h3',chapter.title),node('p',chapter.scene),node('p',chapter.shared));
       const common=commonViewFields(chapter),commonArea=node('div',undefined,'managed-common-reading');
-      commonArea.setAttribute('aria-label','共同提示');
+      commonArea.setAttribute('aria-label','共同解读');
       if(common.headline)commonArea.append(node('h4',common.headline,'managed-reading-headline'));
       if(common.advice)commonArea.append(node('p',common.advice));
-      for(const [key,title] of [['other','双方都可以做什么'],['together','一起试一次']]){
-        if(!common.actions[key])continue;
-        const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',common.actions[key]));commonArea.append(item);
-      }
-      if(common.reminder)commonArea.append(node('p',common.reminder,'managed-note'));
+      if(common.reminder)commonArea.append(node('p',common.reminder,'managed-reading-conclusion'));
       if(commonArea.childElementCount)section.append(commonArea);
       ['person-a','person-b'].forEach((id,i)=>{
-        const detail=node('details'),summary=node('summary',names[i]+'的相处提示'),view=chapter.views?.[id];detail.append(summary);
-        if(!common.headline&&typeof view?.headline==='string'&&view.headline.trim())detail.append(node('h4',view.headline,'managed-reading-headline'));
-        if(!common.advice&&typeof view?.advice==='string'&&view.advice.trim())detail.append(node('p',view.advice));
+        const view=chapter.views?.[id],reading=node('div',undefined,'managed-view');
+        reading.setAttribute('aria-label',names[i]+'的视角');
+        if(!common.headline&&typeof view?.headline==='string'&&view.headline.trim())reading.append(node('h4',names[i]+' · '+view.headline,'managed-reading-headline'));
+        if(!common.advice&&typeof view?.advice==='string'&&view.advice.trim())reading.append(node('p',view.advice));
+        if(!common.reminder&&typeof view?.reminder==='string'&&view.reminder.trim())reading.append(node('p',view.reminder,'managed-reading-conclusion'));
+        if(reading.childElementCount)section.append(reading);
+        const detail=node('details'),summary=node('summary',names[i]+'可以怎样做');detail.append(summary);
         if(view?.actions&&typeof view.actions==='object'){
-          const actions=node('div',undefined,'managed-reading-actions');
           [['own','你可以做什么'],['other','对方可以做什么'],['together','一起试一次']].forEach(([key,title])=>{
             const text=view.actions[key];if(common.actions[key]||typeof text!=='string'||!text.trim())return;
-            const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',text));actions.append(item);
-          });if(actions.childElementCount)detail.append(actions);
+            const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',text));detail.append(item);
+          });
         }
-        if(!common.reminder&&typeof view?.reminder==='string'&&view.reminder.trim())detail.append(node('p',view.reminder,'managed-note'));
-        section.append(detail);
+        if(detail.childElementCount>1)section.append(detail);
       });
-      section.append(node('p',(chapter.sourceIds||[]).map(id=>sourceNames[id]).filter(Boolean).join(' · '),'managed-note'));ctx.body.append(section);
+      const joint=node('details');joint.append(node('summary','一起可以怎样做'));
+      for(const [key,title] of [['other','双方都可以做什么'],['together','一起试一次']]){
+        if(!common.actions[key])continue;
+        const item=node('div',undefined,'managed-reading-action');item.append(node('h4',title),node('p',common.actions[key]));joint.append(item);
+      }
+      if(joint.childElementCount>1)section.append(joint);
+      const sourceText=(chapter.sourceIds||[]).map(id=>sourceNames[id]).filter(Boolean).join(' · ');
+      if(sourceText){const basis=node('details');basis.append(node('summary','查看解读依据'),node('p',sourceText,'managed-note'));section.append(basis);}
+      ctx.body.append(section);
     }
     ctx.body.append(node('p',result.report.disclaimer,'managed-note'));
     if(Number.isSafeInteger(result.expiresAt))ctx.body.append(node('p','可阅读至 '+new Date(result.expiresAt).toLocaleDateString('zh-CN',{timeZone:'Asia/Shanghai'})+'；来源报告更正、失效或被删除后，此份合盘停止阅读。','managed-note'));
@@ -175,7 +181,11 @@
       if(!PAIR_ID.test(item?.id||'')||seen.has(item.id))return;
       seen.add(item.id);
       const card=node('article',undefined,'managed-chapter'),names=(item.reportIds||[]).map((id,i)=>name(ctx.reports.find(r=>r.report_id===id)||{title:i?'第二张图谱':'第一张图谱'}));
-      card.append(node('h3',names.join(' × ')),act(ctx,button('阅读合盘'),async()=>reading(ctx,await call(ctx,'/synastry/managed-pairs/'+item.id))));
+      card.append(node('h3',names.join(' × ')));
+      // The list marks a paused pair as status:'unavailable' with unavailableReason (for example a
+      // source report in refund). It stays listed as unreadable, without a read action.
+      if(item.status==='unavailable')card.append(node('p',MESSAGES[item.unavailableReason]||'此份合盘当前不可阅读。','managed-note managed-unreadable'));
+      else card.append(act(ctx,button('阅读合盘'),async()=>reading(ctx,await call(ctx,'/synastry/managed-pairs/'+item.id))));
       const remove=button('移除此份合盘',()=>{
         if(ctx.busy)return;const area=node('div',undefined,'managed-confirm');
         area.append(node('p','只删除此份合盘，保留两张个人图谱和深度报告。','managed-note'),act(ctx,button('确认移除'),async()=>{

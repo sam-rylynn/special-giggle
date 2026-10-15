@@ -45,16 +45,26 @@
     return result;
   }, {}));
 
+  // Product semantics only. Prices come from the policy projection (report-offer.js); while a
+  // price is not projected, the server catalog value is accepted if it is a positive amount.
   var PRODUCT_CONTRACT = Object.freeze({
-    ask_single_v1: Object.freeze({
-      productCode: 'ask_single_v1', title: '单次问星', amountFen: 290,
-      questionCredits: 1, unitAmountFen: 290, description: '1 次问星'
-    }),
-    ask_pack_3_v1: Object.freeze({
-      productCode: 'ask_pack_3_v1', title: '三次问星包', amountFen: 600,
-      questionCredits: 3, unitAmountFen: 200, description: '3 次问星 · 每次 ¥2'
-    })
+    ask_single_v1: Object.freeze({ productCode: 'ask_single_v1', title: '单次问星', questionCredits: 1, description: '1 次问星' }),
+    ask_pack_3_v1: Object.freeze({ productCode: 'ask_pack_3_v1', title: '三次问星包', questionCredits: 3, description: '3 次问星' })
   });
+  function projectedFen(productCode, field) {
+    var offers = window.ZxReportOffer && Array.isArray(window.ZxReportOffer.offers) ? window.ZxReportOffer.offers : [];
+    for (var index = 0; index < offers.length; index++) {
+      var item = offers[index];
+      if (item && item.productCode === productCode) {
+        return item.currency === 'CNY' && Number.isSafeInteger(item[field]) && item[field] > 0 ? item[field] : null;
+      }
+    }
+    return null;
+  }
+  function matchesProjection(productCode, field, value) {
+    var expected = projectedFen(productCode, field);
+    return Number.isSafeInteger(value) && value > 0 && (expected === null || value === expected);
+  }
   var ORDER_RE = /^[a-f0-9]{32}$/i;
   var WECHAT_APP_ID_RE = /^wx[0-9a-f]{16}$/i;
   var PENDING_PURCHASE_KEY = 'zx_pending_paid_ask_purchase_v1';
@@ -246,7 +256,7 @@
     var amount = Number(input.amount_fen);
     var credits = Number(input.question_credits);
     var unit = Number(input.unit_amount_fen);
-    if (amount !== contract.amountFen || credits !== contract.questionCredits || unit !== contract.unitAmountFen ||
+    if (!matchesProjection(code, 'amountFen', amount) || credits !== contract.questionCredits || !matchesProjection(code, 'unitAmountFen', unit) ||
         input.currency !== 'CNY' || input.auto_renew !== false || typeof input.purchase_eligible !== 'boolean') return null;
     return Object.freeze({
       productCode: code,
@@ -254,7 +264,7 @@
       amountFen: amount,
       questionCredits: credits,
       unitAmountFen: unit,
-      description: contract.description,
+      description: credits > 1 ? contract.description + ' · 每次 ' + money(unit) : contract.description,
       purchaseEligible: input.purchase_eligible === true,
       reason: String(input.reason || '')
     });

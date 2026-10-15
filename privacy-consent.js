@@ -4,11 +4,12 @@
 (function () {
   'use strict';
 
-  var NOTICE_VERSION = 'privacy-2026.09.09-report-v1';
+  var NOTICE_VERSION = 'privacy-2026.10.15-report-v2';
   // The device chart library has its own notice. Updating local retention does
   // not revoke the separate account/AI choices or revise existing purchase terms.
   var BIRTH_LOCAL_NOTICE_VERSION = 'birth-local-2026.09.11-library-v1';
-  var CHOICES_KEY = 'zx_privacy_choices_v1';
+  var CHOICES_KEY = 'zx_privacy_choices_v2';
+  var LEGACY_CHOICES_KEY = 'zx_privacy_choices_v1';
   var SUPPORT_EMAIL = 'wyh767745207@qq.com';
   var DOCK_SUPPRESSED = false;
   var EXPORT_KEYS = [
@@ -16,11 +17,12 @@
     'zx_saved_reports_v1',
     'zx_profile_name_v1',
     'zx_chart_library_v1',
-    CHOICES_KEY
+    CHOICES_KEY,
+    LEGACY_CHOICES_KEY
   ];
   var BIRTH_DATA_KEYS = ['zx_chart_library_v1', 'zx_chart_selection_v1', 'zx_input',
     'zx_active_input_v1', 'zx_report_handoff_v1', 'zx_display_profile_v1',
-    'zx_saved_reports_v1', 'zx_profile_name_v1'];
+    'zx_saved_reports_v1', 'zx_profile_name_v1', 'zx_chart_resume_token_v1', 'zx_chart_resume_input_v1'];
   var SCOPES = ['birth_local', 'device_account', 'ai_processing', 'product_analytics'];
 
   function readJson(key) {
@@ -75,6 +77,15 @@
       try { clearBirthLocalData(); } finally { notify('zx-birth-local-cleared'); }
     }
     if (!scope || scope === 'device_account') notify('zx-account-consent-revoked');
+    // Explicit withdrawal also reaches already-open old controllers. Grants never
+    // rewrite their notice record, so a policy upgrade cannot look like withdrawal.
+    var legacy = readJson(LEGACY_CHOICES_KEY);
+    if (legacy && legacy.scopes && (!scope || Object.prototype.hasOwnProperty.call(legacy.scopes, scope))) {
+      if (scope) delete legacy.scopes[scope];
+      else legacy.scopes = {};
+      legacy.updatedAt = saved.updatedAt;
+      localStorage.setItem(LEGACY_CHOICES_KEY, JSON.stringify(legacy));
+    }
     return saved;
   }
 
@@ -95,16 +106,37 @@
   // A different tab cannot remove this tab's sessionStorage. Propagate a
   // withdrawal so that its temporary birth handoffs and visible chart are cleared.
   if (typeof window.addEventListener === 'function') window.addEventListener('storage', function (event) {
-    if (event.key !== CHOICES_KEY && event.key !== null) return;
-    var previous;
+    if (event.key !== CHOICES_KEY && event.key !== LEGACY_CHOICES_KEY && event.key !== null) return;
+    var previous, next;
     try { previous = JSON.parse(event.oldValue || 'null'); } catch (_) {}
+    try { next = JSON.parse(event.newValue || 'null'); } catch (_) {}
     var cleared = event.key === null || event.newValue === null;
-    var current = readChoices();
-    if (!has('birth_local') && (cleared || previous && previous.scopes && previous.scopes.birth_local &&
-        (!current.scopes.birth_local || previous.scopes.birth_local.noticeVersion === BIRTH_LOCAL_NOTICE_VERSION))) {
+    // A new notice requires confirmation, not deletion. Only an explicit removal
+    // of a previously granted scope within the same notice propagates withdrawal.
+    var sameNotice = previous && next && previous.version === next.version;
+    var withdrawnScopes = sameNotice ? SCOPES.filter(function (scope) {
+      return previous.scopes && previous.scopes[scope] && (!next.scopes || !next.scopes[scope]);
+    }) : [];
+    var birthWithdrawn = withdrawnScopes.indexOf('birth_local') >= 0;
+    var accountWithdrawn = withdrawnScopes.indexOf('device_account') >= 0;
+    if (event.key === LEGACY_CHOICES_KEY) {
+      // An old tab may still explicitly withdraw. Mirror only that removal into
+      // the current notice; never copy its old grants or write back to the old tab.
+      if (!withdrawnScopes.length) return;
+      var saved = readChoices();
+      withdrawnScopes.forEach(function (scope) { delete saved.scopes[scope]; });
+      saved.updatedAt = next.updatedAt || new Date().toISOString();
+      if (!writeChoices(saved)) throw new Error('privacy choice unavailable');
+      if (birthWithdrawn) {
+        try { clearBirthLocalData(); } finally { notify('zx-birth-local-cleared'); }
+      }
+      if (accountWithdrawn) notify('zx-account-consent-revoked');
+      return;
+    }
+    if (!has('birth_local') && (cleared || birthWithdrawn)) {
       try { clearBirthLocalData(); } finally { notify('zx-birth-local-cleared'); }
     }
-    if (!has('device_account') && (cleared || previous && previous.scopes && previous.scopes.device_account)) notify('zx-account-consent-revoked');
+    if (!has('device_account') && (cleared || accountWithdrawn)) notify('zx-account-consent-revoked');
   });
 
   function exportLocalData() {
@@ -121,6 +153,24 @@
       if (value === null) return;
       try { data.data[key] = JSON.parse(value); } catch (_) { data.data[key] = value; }
     });
+    return data;
+  }
+
+  // Saves the export as a JSON file (the "导出" promised in the privacy policy). Login
+  // tokens are never part of EXPORT_KEYS.
+  function downloadLocalData() {
+    var data = exportLocalData();
+    var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' }));
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'zhixing-local-data-' + data.exportedAt.slice(0, 10) + '.json';
+    link.hidden = true;
+    document.body.appendChild(link);
+    try { link.click(); }
+    finally {
+      link.remove();
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+    }
     return data;
   }
 
@@ -205,8 +255,9 @@
       '<div class="zx-privacy-heading"><h2 id="zxPrivacyCenterTitle">隐私选择与本机资料</h2><button id="zxPrivacyClose" type="button">关闭</button></div>' +
       '<p class="zx-privacy-state" id="zxPrivacyChoiceState"></p>' +
       '<p>本期不收集产品使用统计。启用账号功能需要你确认；把盘面摘要、问题和必要的近期对话发送给 DeepSeek 前，也会单独征求同意。</p>' +
-      '<p>基础图谱最多在本机保存 2 张，保留到你主动删除。可在“我的资料”逐张删除，或在这里撤回本机处理同意并清除全部本机图谱。已购报告按账号单独保存，不占这 2 个名额；清理本机不会删除服务端已购报告。</p>' +
+      '<p>基础图谱最多在本机保存 5 张，保留到你主动删除。可在“我的资料”逐张删除，或在这里导出备份、撤回本机处理同意并清除全部本机图谱。已购报告按账号单独保存，不占这 5 个名额；清理本机不会删除服务端已购报告。</p>' +
       '<div class="zx-privacy-actions">' +
+        '<button id="zxPrivacyExport" type="button">导出本机资料（JSON 文件）</button>' +
         '<button class="zx-privacy-danger" id="zxPrivacyRevokeBirth" type="button">撤回本机处理同意并删除图谱</button>' +
         '<button class="zx-privacy-primary" id="zxPrivacyRevoke" type="button">撤回问星处理与统计同意</button>' +
         '<button class="zx-privacy-danger" id="zxPrivacyClear" type="button">清除本机知星资料</button>' +
@@ -278,6 +329,15 @@
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     });
 
+    document.getElementById('zxPrivacyExport').addEventListener('click', function () {
+      try {
+        downloadLocalData();
+        status.textContent = '已生成本机资料文件，包含本机图谱、称呼和隐私选择，不含登录凭证。若微信未弹出保存选项，请在系统浏览器中打开本页后再导出。';
+      } catch (_) {
+        status.textContent = '导出未完成，请检查浏览器站点存储设置后重试。';
+      }
+    });
+
     document.getElementById('zxPrivacyRevokeBirth').addEventListener('click', function () {
       if (!window.confirm('撤回后将删除当前浏览器保存的基础图谱、称呼和临时出生资料，无法恢复。已购报告仍按账号保存，不会因此删除。是否继续？')) return;
       try {
@@ -327,6 +387,7 @@
     revoke: revoke,
     snapshot: readChoices,
     exportLocalData: exportLocalData,
+    downloadLocalData: downloadLocalData,
     clearAllLocalData: clearAllLocalData,
     mountPrivacyDock: mountPrivacyDock,
     setDockSuppressed: setDockSuppressed

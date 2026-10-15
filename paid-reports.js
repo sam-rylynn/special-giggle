@@ -3,6 +3,14 @@
  */
 (function () {
   'use strict';
+  // Prices come only from the generated policy projection (report-offer.js); unknown stays null.
+  function offerFen(code){
+    var item=window.ZxReportOffer?.offers?.find(function(entry){return entry&&entry.productCode===code;});
+    return item&&item.currency==='CNY'&&Number.isSafeInteger(item.amountFen)&&item.amountFen>0?item.amountFen:null;
+  }
+  function reportPrice(){return window.ZxReportOffer?.price('deep_report_v1')||'价格待确认';}
+  function reportUsable(item){return !!window.ZxReportAccess?.usable(item);}
+  function reportExpiry(item){return window.ZxReportAccess?.expiry(item)??null;}
   var REPORT_RE = /^[a-f0-9]{48}$/;
   var ORDER_RE = /^[a-f0-9]{32}$/;
   var RESUME_KEY = 'zx_private_report_resume_id';
@@ -13,6 +21,11 @@
   // Formal policy plus the server's per-account offer authorize purchase.
   var pendingPurchaseKeys = new Map();
   var submittedOrders = new Map(),checkoutRefreshTimer = null;
+  // One request key per account and report survives a reload in this tab, so confirming
+  // again after an unclear result reuses the same order request. Orders are payable for
+  // 30 minutes, so an older key is not worth reusing.
+  var PURCHASE_KEYS = 'zx_private_report_purchase_keys_v1', PURCHASE_KEY_TTL = 30 * 60 * 1000;
+  var CHECKOUT_AUTO_RETRIES = 3, checkoutRetry = {orderNo:'',count:0};
   var generation = 0;
   var accountPending = null;
   function localPage() { return location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname); }
@@ -163,12 +176,45 @@
     if(!existing)host.prepend(panel);
   }
   function purchaseReady() { return !!(window.zxMember && member().paidReportPurchaseReady && member().paidReportPurchaseReady()); }
+  var CHECKOUT_PRODUCTS = Object.freeze({deep_report_v1:{credits:1,title:'完整深度报告',note:'赠送1次问星',projected:true},
+    ask_single_v1:{credits:1,title:'单次问星',note:'增加1次问星'},ask_pack_3_v1:{credits:3,title:'三次问星包',note:'增加3次问星'}});
+  // The report price must match the policy projection. Ask prices must match it once they are
+  // projected; until then the order is checked against the server's own ask catalog before paying.
   function checkoutProduct(order) {
-    var products = {deep_report_v1:{amount:1990,credits:1,title:'完整深度报告',note:'赠送1次问星'},
-      ask_single_v1:{amount:290,credits:1,title:'单次问星',note:'增加1次问星'},ask_pack_3_v1:{amount:600,credits:3,title:'三次问星包',note:'增加3次问星'}};
-    if (!order || !Object.prototype.hasOwnProperty.call(products, order.product_code)) return null;
-    var product = products[order.product_code];
-    return order.currency === 'CNY' && order.amount_fen === product.amount ? product : null;
+    if (!order || !Object.prototype.hasOwnProperty.call(CHECKOUT_PRODUCTS, order.product_code)) return null;
+    var product = CHECKOUT_PRODUCTS[order.product_code], expected = offerFen(order.product_code);
+    if (order.currency !== 'CNY' || !Number.isSafeInteger(order.amount_fen) || order.amount_fen <= 0) return null;
+    if (expected !== null ? order.amount_fen !== expected : product.projected) return null;
+    return Object.assign({amount:order.amount_fen}, product);
+  }
+  function readPurchaseKeys() {
+    try { var value = JSON.parse(sessionStorage.getItem(PURCHASE_KEYS) || 'null'); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+    catch (_) { return {}; }
+  }
+  function writePurchaseKeys(keys) {
+    try { if (Object.keys(keys).length) sessionStorage.setItem(PURCHASE_KEYS, JSON.stringify(keys)); else sessionStorage.removeItem(PURCHASE_KEYS); } catch (_) {}
+  }
+  function purchaseKey(owner, id) {
+    var name = owner + ':' + id, keys = readPurchaseKeys(), entry = keys[name], now = Date.now();
+    if (entry && /^[a-f0-9]{32}$/.test(entry.key || '') && Number.isSafeInteger(entry.at) && entry.at <= now && now - entry.at < PURCHASE_KEY_TTL) return entry.key;
+    var key = pendingPurchaseKeys.get(name);
+    if (!key) { var bytes = new Uint8Array(16); crypto.getRandomValues(bytes); key = Array.from(bytes, function (b) { return b.toString(16).padStart(2, '0'); }).join(''); pendingPurchaseKeys.set(name, key); }
+    keys[name] = {key:key, at:now}; writePurchaseKeys(keys);
+    return key;
+  }
+  function forgetPurchaseKey(owner, id) {
+    var name = owner + ':' + id, keys = readPurchaseKeys();
+    pendingPurchaseKeys.delete(name);
+    if (keys[name]) { delete keys[name]; writePurchaseKeys(keys); }
+  }
+  function endedOrder(order) {
+    return ['closed','close_pending','expired','failed','cancelled'].includes(order.status) ||
+      order.status === 'created' && Number(order.expires_at) > 0 && Number(order.expires_at) <= Date.now();
+  }
+  function repurchaseLink(order, id) {
+    if (order.product_code === 'deep_report_v1' && id) return link('重新购买这份报告', route('account', id, 'report-purchase'));
+    if (/^ask_(?:single|pack_3)_v1$/.test(order.product_code || '') && id) return link('重新购买问星次数', route('profile', id, 'ask-section'));
+    return link('查看可购买的内容', route('account', undefined, 'account-status'));
   }
   function consent() { return !!(window.ZxPrivacyConsent && window.ZxPrivacyConsent.has('device_account')); }
   function ownedCall(method, args) {
@@ -208,7 +254,8 @@
   function privacyReset() {
     generation += 1;
     try{sessionStorage.removeItem(RETURN_KEY);sessionStorage.removeItem(GIFT_RETURN_KEY);}catch(_){}
-    pendingPurchaseKeys.clear();submittedOrders.clear();
+    pendingPurchaseKeys.clear();submittedOrders.clear();checkoutRetry={orderNo:'',count:0};
+    try{sessionStorage.removeItem(PURCHASE_KEYS);}catch(_){}
     if(checkoutRefreshTimer){clearTimeout(checkoutRefreshTimer);checkoutRefreshTimer=null;}
     ['accountActions','reportList','orderList','privatePurchaseActions','checkoutActions','checkoutServiceLinks','deleteActions'].forEach(empty);
     hide('delete-account'); text('deleteLive','');
@@ -317,16 +364,15 @@
     var adult=check('reportPurchaseAdultConsent','我已满18周岁。');
     var notice=node('p','','state-body');notice.id='reportPurchaseNotice';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
     var inFlight=false;
-    var submit=button('确认购买 ¥19.90',async function(){
+    var submit=button('确认购买 '+reportPrice(),async function(){
       if(inFlight||!policy.checked||!adult.checked||epoch!==generation)return;
       inFlight=true;submit.disabled=true;submit.textContent='正在创建订单…';notice.textContent='正在确认这份报告的订单，请稍候。';
       try{
-        var owner=member().snapshot().accountRef,key=owner+':'+id;
-        if(!pendingPurchaseKeys.has(key)){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);pendingPurchaseKeys.set(key,Array.from(bytes,function(b){return b.toString(16).padStart(2,'0');}).join(''));}
-        var result=await member().paidReportCreateOrder(id,{policyConsent:true,adultConfirmed:true},pendingPurchaseKeys.get(key));
+        var owner=member().snapshot().accountRef;
+        var result=await member().paidReportCreateOrder(id,{policyConsent:true,adultConfirmed:true},purchaseKey(owner,id));
         if(epoch!==generation||member().snapshot().accountRef!==owner)return;
         var order=result.order;
-        if(!order||!ORDER_RE.test(order.order_no||'')||order.paid_report_id!==id||order.product_code!=='deep_report_v1'||order.amount_fen!==1990||order.currency!=='CNY')throw error('ORDER_RESPONSE_INVALID');
+        if(!order||!ORDER_RE.test(order.order_no||'')||order.paid_report_id!==id||order.product_code!=='deep_report_v1'||order.amount_fen!==offerFen('deep_report_v1')||order.currency!=='CNY')throw error('ORDER_RESPONSE_INVALID');
         window.location.assign(checkoutUrl(order.order_no,id));
       }catch(e){if(epoch===generation){
         policy.checked=false;adult.checked=false;
@@ -334,11 +380,14 @@
           e.code==='PAYMENT_PRODUCT_UNAVAILABLE'?'这份报告暂时无法购买，尚未创建订单。请稍后刷新页面再试。':
           /SALES_(DISABLED|NOT_APPROVED)|REPORT_SALES_STOPPED/.test(e.code||'')?'本次购买入口已关闭，尚未创建新订单。已有订单请到“我的订单”查看。':
           /AUTH|SESSION|TOKEN/.test(e.code||'')||e.status===401?'登录状态已失效，请重新登录后查看我的订单，再继续购买。':
-          '订单结果尚未确认。请先查看我的订单；再次确认会复用本次请求，避免重复建单。';
+          e.code==='PAYMENT_REPORT_ORDER_PENDING'?'上一笔订单还在等待微信支付确认关闭，暂时不能重新下单。请稍后到“我的订单”刷新状态后再试。':
+          e.code==='PAYMENT_IDEMPOTENCY_CONFLICT'?'购买条件已更新，请重新勾选确认后再购买。':
+          '订单结果尚未确认。请先查看我的订单；在当前标签页内再次确认会沿用同一请求，不会重复建单。';
+        if(e.code==='PAYMENT_IDEMPOTENCY_CONFLICT')forgetPurchaseKey(member().snapshot().accountRef,id);
         text('privatePurchaseBody',failure);notice.textContent=failure;
         if(notice.scrollIntoView)notice.scrollIntoView({block:'nearest'});
       }}
-      finally{inFlight=false;if(epoch===generation){submit.disabled=!policy.checked||!adult.checked;submit.textContent='确认购买 ¥19.90';}}
+      finally{inFlight=false;if(epoch===generation){submit.disabled=!policy.checked||!adult.checked;submit.textContent='确认购买 '+reportPrice();}}
     });
     submit.id='reportPurchaseSubmit';submit.disabled=true;
     function update(){submit.disabled=inFlight||!policy.checked||!adult.checked;}
@@ -362,7 +411,7 @@
         var report = (catalog.products || []).find(function (item) { return item.product_code === 'deep_report_v1'; });
         var price = priceLabel(report);
         var allowed = purchaseReady() && report && report.purchase_eligible === true && report.payment_available === true &&
-          report.amount_fen === 1990 && report.currency === 'CNY';
+          report.amount_fen === offerFen('deep_report_v1') && report.currency === 'CNY';
         text('privatePurchaseBody', price ? price + ' · 赠送1次问星。根据你的盘面对知星进行任意提问解读。' + (allowed ? '购买后可阅读完整五章，并下载保存。' : '购买暂未开放。')
           : '完整报告尚未开放购买。赠送1次问星，根据你的盘面对知星进行任意提问解读。');
         if (allowed) renderPurchaseConfirmation(id,epoch);
@@ -378,7 +427,7 @@
       if (!REPORT_RE.test(item.report_id || '')) return;
       var row = node('article', '', 'report-item');
       var content = node('div'); content.append(node('strong', item.title || '深度发展报告'), node('p', readableState(item), 'state-body'));
-      var expiry = storageExpiry(item.storage_expires_at || item.expires_at);
+      var expiry = storageExpiry(reportExpiry(item));
       if (expiry) content.append(node('p','保存至 ' + expiry,'state-body'));
       var actions = node('div', '', 'report-item-actions');
       actions.append(link(item.entitlement_status === 'unpaid' ? '查看报告状态' : '进入报告', item.entitlement_status === 'unpaid' ? route('account', item.report_id, 'report-purchase') : reportUrl(item.report_id)));
@@ -507,8 +556,9 @@
       var result = await ownedCall('paymentOrder', [orderNo]); if (epoch !== generation) return;
       var order = result.order || result;
       if (order.order_no !== orderNo) throw error('ORDER_RESPONSE_INVALID');
+      checkoutRetry = {orderNo:orderNo,count:0};
       if(order.product_code==='gift_report_v1'){
-        if(order.amount_fen!==1990||order.currency!=='CNY'||order.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');
+        if(order.amount_fen!==offerFen('gift_report_v1')||order.currency!=='CNY'||order.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');
         text('checkoutBadge','赠送订单');text('checkoutTitle','送出的一份了解');text('checkoutBody','查看付款、发送礼物与领取状态。');
         text('checkoutProduct','赠送深度报告');text('checkoutAmount',priceLabel(order));text('checkoutOrderNo',order.order_no);
         text('checkoutNotice','');hide('checkoutRecoveryNote');
@@ -527,6 +577,7 @@
       text('checkoutCredits', order.status === 'refunded' ? '本单退款已完成' : done ? '以对应报告内可用次数为准' : '等待服务端交付'); hide('checkoutDetails', false);
       if (done && id) {
         submittedOrders.delete(orderNo);
+        if (order.product_code === 'deep_report_v1') forgetPurchaseKey(member().snapshot().accountRef, id);
         text('checkoutBadge', '已完成'); text('checkoutTitle', '支付与交付已确认'); text('checkoutBody', '可返回对应报告继续阅读。');
         append('checkoutActions', link('返回这份报告', reportUrl(id) + (order.product_code === 'deep_report_v1' ? '' : '#sec-deep')));
       } else if (paid && order.status === 'entitlement_pending' && id) {
@@ -551,10 +602,9 @@
               var report=await api.status(id),catalog=await api.products(id,'ask');
               if(epoch!==generation||member().snapshot().accountRef!==owner)return;
               var matches=(catalog.products||[]).filter(function(item){return item.product_code===current.product_code;});
-              var offer=matches.length===1?matches[0]:null,expiry=report.storage_expires_at||report.expires_at;
-              if(report.report_id!==id||report.readable!==true||report.entitlement_status!=='active'||report.delivery_status!=='ready'||report.unavailable_reason||
-                  !Number.isSafeInteger(expiry)||expiry<=Date.now()||catalog.payment_available!==true||
-                  !offer||offer.payment_available!==true||offer.purchase_eligible!==true||!checkoutProduct(offer)||offer.question_credits!==product.credits)throw error('ASK_PURCHASE_UNAVAILABLE');
+              var offer=matches.length===1?matches[0]:null;
+              if(report.report_id!==id||!reportUsable(report)||catalog.payment_available!==true||
+                  !offer||offer.payment_available!==true||offer.purchase_eligible!==true||!checkoutProduct(offer)||offer.amount_fen!==current.amount_fen||offer.question_credits!==product.credits)throw error('ASK_PURCHASE_UNAVAILABLE');
             }
             var outcome=await window.ZxPaidAsk.invokeReportJsapi(fresh);
             if(epoch!==generation)return;
@@ -563,6 +613,15 @@
             await mountCheckout();
           }catch(e){if(epoch===generation){text('checkoutBody','支付结果尚未确认，请刷新订单状态核对；系统不会根据浏览器提示发放报告。');pay.disabled=false;}}
         });pay.id='reportCheckoutPay';append('checkoutActions',pay);
+      } else if (!paid && endedOrder(order)) {
+        // Closed, expired or failed orders end here; a new purchase starts a new request.
+        var waitingClose = order.status === 'created' || order.status === 'close_pending';
+        if (order.product_code === 'deep_report_v1' && id) forgetPurchaseKey(member().snapshot().accountRef, id);
+        text('checkoutBadge', waitingClose || order.status === 'expired' ? '已过期' : order.status === 'failed' ? '未完成' : '已关闭');
+        text('checkoutTitle', waitingClose || order.status === 'expired' ? '这笔订单已超过付款时间' : order.status === 'failed' ? '这笔订单未能完成' : '这笔订单已关闭');
+        text('checkoutBody', (waitingClose ? '请不要再为这笔订单付款；微信支付确认关闭后即可重新购买。' : '这笔订单没有确认收款，不会扣款，也不会发放权益。') +
+          '如仍需要，可以重新购买，系统会重新核对价格与购买资格。');
+        append('checkoutActions', repurchaseLink(order, id));
       } else {
         text('checkoutBadge', order.status === 'manual_review' ? '人工核验' : order.status === 'refunded' ? '已退款' : '待确认');
         text('checkoutTitle', order.status === 'manual_review' ? '订单需要人工核验' : order.status === 'refunded' ? '退款已完成' : '订单状态待确认');
@@ -572,8 +631,20 @@
       append('checkoutActions', button('刷新订单状态', mountCheckout)); append('checkoutActions', link('返回我的订单', route('account', id, 'order-center')));
     } catch (e) {
       if (epoch !== generation) return;
-      text('checkoutBadge', '暂不可用'); text('checkoutTitle', '暂时无法读取订单'); text('checkoutBody', message(e));
-      append('checkoutActions', link('登录并查看订单', loginUrl(reportId())));
+      var code = String(e && e.code || ''), signedOut = e && (e.status === 401 || e.status === 403) || /AUTH|SESSION|TOKEN|CONSENT/.test(code);
+      text('checkoutBadge', signedOut ? '需登录' : '暂不可用'); text('checkoutTitle', '暂时无法读取订单'); text('checkoutBody', message(e));
+      append('checkoutActions', button('刷新状态', function () { checkoutRetry = {orderNo:orderNo,count:0}; return mountCheckout(); }));
+      if (signedOut) { append('checkoutActions', link('登录并查看订单', loginUrl(reportId()))); return; }
+      // Right after paying, the order service can lag briefly: retry a few times on its own.
+      if (checkoutRetry.orderNo !== orderNo) checkoutRetry = {orderNo:orderNo,count:0};
+      if (checkoutRetry.count < CHECKOUT_AUTO_RETRIES) {
+        var delay = 3000 * Math.pow(2, checkoutRetry.count); checkoutRetry.count += 1;
+        text('checkoutNotice', '订单状态暂时读取失败，' + delay / 1000 + ' 秒后自动重试（第 ' + checkoutRetry.count + '/' + CHECKOUT_AUTO_RETRIES + ' 次）。如刚完成付款，请勿重复付款。');
+        checkoutRefreshTimer = setTimeout(function () { if (epoch === generation) mountCheckout(); }, delay);
+      } else {
+        text('checkoutNotice', '自动重试仍未读取到订单状态。请稍后点“刷新状态”；如已付款，请勿重复付款，可在“我的订单”核对。');
+      }
+      append('checkoutActions', link('返回我的订单', route('account', reportId() || undefined, 'order-center')));
     }
   }
   var api = Object.freeze({

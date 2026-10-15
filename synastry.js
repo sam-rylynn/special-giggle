@@ -18,7 +18,8 @@
     return {d:value.d,t:value.t||'',c:value.c,g:value.g||''};
   }
   function reportInput(result,id,ageAllowed,now=Date.now()){
-    return result&&REPORT.test(id||'')&&result.report_id===id&&result.readable===true&&result.entitlement_status==='active'&&result.delivery_status==='ready'&&!result.unavailable_reason&&result.refund_status!=='pending'&&Number.isSafeInteger(result.expires_at)&&result.expires_at>now?safeInput(result.snapshot?.input,ageAllowed):null;
+    // Shared report-access rule from member.js (storage_expires_at first); unknown means not usable.
+    return result&&REPORT.test(id||'')&&result.report_id===id&&!!root?.ZxReportAccess?.usable(result,now)?safeInput(result.snapshot?.input,ageAllowed):null;
   }
   function routeUrl(href,page,pick,hash=''){
     const current=new URL(href),source=/\/web\/synastry\.html$/.test(current.pathname);
@@ -36,6 +37,8 @@
   if(typeof document==='undefined')return;
   const $=id=>document.getElementById(id),app=$('app'),member=()=>root.zxMember,vault=()=>root.ZxChartVault,snapshot=()=>member()?.snapshot?.()||{};
   let active=null,chart=null,displayName='',failure='',busy=true,epoch=0,openedRank='',readyReport=false,owner='',reportExpires=0,privateReturn=null,confirmedInvitation=null;
+  let incomingInvite=/^#invite=([a-f0-9]{64})$/.exec(location.hash)?.[1]||'';
+  if(incomingInvite){const url=new URL(location.href);url.hash='invite-external';history.replaceState(history.state,'',url.href);}
   let incomingGift=/^#gift=([a-f0-9]{64})$/.exec(location.hash)?.[1]||'';
   if(incomingGift){const url=new URL(location.href);url.hash='gift';history.replaceState(history.state,'',url.href);}
   const route=()=>PAGES.includes(location.hash.slice(1))?location.hash.slice(1):location.hash==='#result'?'connections':'home';
@@ -51,7 +54,7 @@
   function serviceMessage(){
     if(!member()?.paidReportServiceAvailable?.()||!member()?.synastryCall)return '账号与合盘服务暂未开放。你可以查看合拍类型；真实邀请和共同解读将在服务开放后使用。';
     if(!signedIn(snapshot()))return '登录自己的微信账号后，即可查看邀请与共同解读。';
-    return '报告还没备齐也可以先邀请。双方选定自己的有效报告并分别同意后，共同解读免费解锁。';
+    return '一份有效深度报告包含1个固定配对名额。另一方无需购买报告，仍须本人确认出生资料并单独同意。';
   }
   function serviceNotice(){return `<p class="synastry-state" role="status">${esc(serviceMessage())}<a class="text-link" href="${esc(accountUrl())}">前往我的资料登录 / 恢复 <span aria-hidden="true">→</span></a></p>`;}
   function identity(){return `<section class="star-account" aria-label="当前图谱昵称"><div class="star-account-person"><span class="star-account-mark" aria-hidden="true">星</span><div><strong class="synastry-account-name">${esc(displayName||'未设置昵称')}</strong><p>当前图谱</p></div></div><div class="star-account-actions"><a class="star-account-help" href="${esc(profileUrl())}">我的资料 <span aria-hidden="true">›</span></a></div></section>`;}
@@ -78,7 +81,7 @@
     <ul class="type-list type-list--codenames" aria-label="五种合拍类型推荐">${ranking.rows.map(r=>`<li class="type-row">
       <button class="type-toggle" data-rank="${esc(r.id)}" aria-expanded="${openedRank === r.id}" aria-controls="detail-${esc(r.id)}">
         <span class="stem-seal ${r.stem.endsWith('木') ? 'wood' : r.stem.endsWith('火') ? 'fire' : r.stem.endsWith('水') ? 'water' : ''}" aria-hidden="true">${esc(r.stem[0])}</span>
-        <span class="type-copy"><span class="type-name">${esc(r.stem)}<small>· 太阳${esc(r.sun)}</small></span><span class="type-headline">${esc(r.opening?.status==='ready'?r.opening.name+' · '+r.opening.title:'资料待补充')}</span></span>
+        <span class="type-copy"><span class="type-name">${esc(r.stem)}<small>· 太阳${esc(r.sun)}</small></span><span class="type-headline">${esc(r.opening?.status==='ready'?r.opening.name+' · '+(r.typeFocus||r.opening.title):'资料待补充')}</span></span>
         <span class="type-affordance" aria-hidden="true"><span class="type-action">${openedRank===r.id?'收起':'查看'}</span><span class="type-arrow">›</span></span>
       </button>
       <div class="type-detail" id="detail-${esc(r.id)}" data-rank-opening="${esc(r.id)}" ${openedRank === r.id ? '' : 'hidden'}></div>
@@ -97,12 +100,12 @@
       else {const note=document.createElement('p');note.textContent='这组类型的解读暂时无法打开，请刷新后重试。';container.append(note);}
     }
   }
-  const invite=()=>`<section class="invite-channel-page" aria-labelledby="invite-channel-title"><header class="channel-heading"><p class="entry-eyebrow">知星 · 合盘邀请</p><h1 id="invite-channel-title">把这封邀请<br>送到 TA 身边</h1><p>选一种方便你们的方式</p></header><div class="invite-channel-grid"><a class="channel-choice channel-external" href="#invite-external"><span class="channel-mark" aria-hidden="true">↗</span><span class="channel-kicker">站外 · 微信好友</span><h2>微信邀请</h2><p>把邀请链接发给 TA<br>还没用过知星，也能收到</p><span class="channel-choice-action">制作邀请链接 <span aria-hidden="true">→</span></span></a><a class="channel-choice channel-internal" href="#invite-internal"><span class="channel-mark" aria-hidden="true">星</span><span class="channel-kicker">站内 · 已有知星账号</span><h2>站内邀请</h2><p>用知星号找到 TA<br>邀请直接出现在站内消息里</p><span class="channel-choice-action">按知星号邀请 <span aria-hidden="true">→</span></span></a></div><p class="channel-shared-rule">已有知星账号，也可以通过微信链接接受邀请。<br>双方报告交付并同意后，合盘免费解锁。</p></section>`;
+  const invite=()=>`<section class="invite-channel-page" aria-labelledby="invite-channel-title"><header class="channel-heading"><p class="entry-eyebrow">知星 · 合盘邀请</p><h1 id="invite-channel-title">把这封邀请<br>送到 TA 身边</h1><p>选一种方便你们的方式</p></header><div class="invite-channel-grid"><a class="channel-choice channel-external" href="#invite-external"><span class="channel-mark" aria-hidden="true">↗</span><span class="channel-kicker">站外 · 微信好友</span><h2>微信邀请</h2><p>把邀请链接发给 TA<br>还没用过知星，也能收到</p><span class="channel-choice-action">制作邀请链接 <span aria-hidden="true">→</span></span></a><a class="channel-choice channel-internal" href="#invite-internal"><span class="channel-mark" aria-hidden="true">星</span><span class="channel-kicker">站内 · 已有知星账号</span><h2>站内邀请</h2><p>用知星号找到 TA<br>邀请直接出现在站内消息里</p><span class="channel-choice-action">按知星号邀请 <span aria-hidden="true">→</span></span></a></div><p class="channel-shared-rule">已有知星账号，也可以通过微信链接接受邀请。<br>指定配对只需一方的有效报告；双方仍须本人确认资料并分别同意。</p></section>`;
   const title=kind=>kind==='gift'?['这份了解','我想送给你']:['如果相遇有伏笔','我想和你一起读'];
   const logoAsset=()=>asset('logo-guanxiang-gold.svg');
   const lockup=()=>`<span class="celestial-lockup"><img src="${logoAsset()}" alt=""><span>知星<small>以易理观己，以星盘为证</small></span></span>`;
   function card({kind='invite',senderName=displayName||'你的朋友'}={}){return `<figure class="celestial-card celestial-b${Array.from(senderName).length>14?' long-signature':''}" aria-label="${kind==='gift'?'礼物':'邀请'}卡片"><img class="celestial-background" src="${asset('celestial-b.png')}" width="1024" height="1536" alt="日月沿细金轨道相连"><figcaption><div class="celestial-card-content">${lockup()}<div class="celestial-card-copy"><p class="celestial-kicker">${kind==='gift'?'一份送给你的个人解读':'一封写给你的合盘邀请'}</p><h2>${title(kind).join('<br>')}</h2><p class="celestial-subtitle">${kind==='gift'?'读懂自己，从这一份了解开始':'读懂自己，也读懂彼此'}</p><p class="celestial-signature"><span>来自</span> ${esc(senderName)}</p></div></div><small class="celestial-card-footer">知星 · 个人发展与文化研究</small></figcaption></figure>`;}
-  const externalInvite=()=>`<section class="invite-send-page"><a class="back-link" href="#invite">← 两种邀请方式</a><header class="send-heading"><p class="entry-eyebrow">微信邀请</p><h1>把这份邀请<br>发给微信好友</h1><p>还没用过知星，也可以收到</p></header><div class="send-content"><div>${card()}</div><section class="send-actions" aria-label="发送邀请的方法"><h2>复制链接，发给 TA</h2><p>粘贴到微信聊天窗口，由你选择好友发送。</p><button class="primary full" id="copy-invite-link">复制邀请链接 <span aria-hidden="true">↗</span></button><button class="secondary full" id="open-invite-poster">复制邀请卡片 <span aria-hidden="true">→</span></button><a class="secondary full invite-gift-action" href="#gift">送 TA 一份深度报告 · ¥19.90 <span aria-hidden="true">→</span></a><p class="send-local-note">请先确认邀请用途并生成真实链接，再由你选择好友发送。复制卡片不代表邀请已发送。</p><p class="send-copy-feedback" id="invite-copy-feedback" role="status"></p></section></div><div class="send-next"><p>已有报告直接用<br>双方报告交付并同意后，合盘免费解锁</p></div>${serviceNotice()}</section>`;
+  const externalInvite=()=>`<section class="invite-send-page"><a class="back-link" href="#invite">← 两种邀请方式</a><header class="send-heading"><p class="entry-eyebrow">微信邀请</p><h1>把这份邀请<br>发给微信好友</h1><p>还没用过知星，也可以收到</p></header><div class="send-content"><div>${card()}</div><section class="send-actions" aria-label="发送邀请的方法"><h2>复制链接，发给 TA</h2><p>粘贴到微信聊天窗口，由你选择好友发送。</p><button class="primary full" id="copy-invite-link">复制邀请链接 <span aria-hidden="true">↗</span></button><button class="secondary full" id="open-invite-poster">复制邀请卡片 <span aria-hidden="true">→</span></button><a class="secondary full invite-gift-action" href="#gift">送 TA 一份深度报告 · ${esc(root.ZxReportOffer?.price('gift_report_v1')||'价格待确认')} <span aria-hidden="true">→</span></a><p class="send-local-note">请先确认邀请用途并生成真实链接，再由你选择好友发送。复制卡片不代表邀请已发送。</p><p class="send-copy-feedback" id="invite-copy-feedback" role="status"></p></section></div><div class="send-next"><p>已有报告直接用<br>一份有效报告提供1个固定配对名额；对方无需购买</p></div>${serviceNotice()}</section>`;
   function gift(){
     return `${back('invite','邀请 TA')}<div class="gift-redesign gift-shop">
       <p class="gift-perspective">${esc(displayName||'你')} · 赠送报告</p>
@@ -118,14 +121,14 @@
           <div class="gift-section-label"><span>赠送清单</span><span>01 份</span></div>
           <h2 id="gift-order-title">知星 · 完整深度报告</h2>
           <p class="gift-order-description">五章解读 · 保存 6 个月 · 可下载<br>随报告赠 1 次本盘问星</p>
-          <div class="gift-price-row"><span>赠送一份个人报告</span><strong>¥19.90<small>/ 份</small></strong></div>
+          <div class="gift-price-row"><span>赠送一份个人报告</span><strong>${esc(root.ZxReportOffer?.price('gift_report_v1')||'价格待确认')}<small>/ 份</small></strong></div>
           <div class="gift-owner-columns" aria-label="付款人与收礼人的归属">
             <div><span class="gift-owner-role">付款人 · ${esc(displayName||'你')}</span><h3>你得到</h3><p>赠送订单与退款记录。</p></div>
             <div><span class="gift-owner-role">收礼人 · 由 TA 本人确认</span><h3>TA 得到</h3><p>自己的报告与 1 次问星。</p></div>
           </div>
           <p class="gift-privacy-note">TA 领取时同意与你合盘，私人报告仍只属于 TA。</p>
           <p class="expiry">7 天内领取，未领取原路退款。</p>
-          <button class="primary full" type="button" id="purchase-gift" ${member()?.giftReportServiceAvailable?.()===true?'':'disabled'}>${member()?.giftReportServiceAvailable?.()===true?'赠送这份了解 · ¥19.90':'赠送服务暂未开放'}</button>
+          <button class="primary full" type="button" id="purchase-gift" ${member()?.giftReportServiceAvailable?.()===true?'':'disabled'}>${member()?.giftReportServiceAvailable?.()===true?'赠送这份了解 · '+(root.ZxReportOffer?.price('gift_report_v1')||'价格待确认'):'赠送服务暂未开放'}</button>
           ${member()?.giftReportServiceAvailable?.()===true?'':'<p class="gift-demo-note">开放后即可购买并发送给 TA。</p>'}
           <details class="source-detail gift-rules"><summary>赠送与领取说明<span aria-hidden="true"></span></summary><ul><li>未领取时可撤回，退款原路退给付款人；发起退款与到账分别展示。</li><li>支付成功后 7 天内领取；到期未领取自动发起原路退款，到账时间以支付渠道为准。</li><li>报告保存期自成功交付起计 6 个月，不从赠送付款时起算。</li><li>领取时明确同意与赠送人合盘；共同阅读截至双方报告较早到期日，解除合盘不会收回个人报告。</li><li>报告已交付后，赠送人不能单方面收回，适用原报告售后规则。</li></ul></details>
         </section>
@@ -189,7 +192,7 @@
         if(active.accountRef&&active.accountRef!==current.accountRef)throw new Error('当前账号已改变，请从“我的资料”重新选择自己的报告。');
         const expected=current.accountRef,result=await root.ZxPaidReports.read(active.id);if(version!==epoch)return;
         if(!signedIn(snapshot())||snapshot().accountRef!==expected)throw new Error('账号状态已改变，请从“我的资料”重新进入。');
-        input=reportInput(result,active.id,ageAllowed);owner=expected;readyReport=!!input;reportExpires=result?.expires_at||0;
+        input=reportInput(result,active.id,ageAllowed);owner=expected;readyReport=!!input;reportExpires=root.ZxReportAccess?.expiry(result)||0;
         displayName=vault()?.paidName(active.id,expected)||'';
       }
       if(!input)throw new Error('图谱资料不完整，请到“我的资料”补充后再进入合盘。');
@@ -198,7 +201,8 @@
     }catch(error){if(version!==epoch)return;chart=null;displayName='';readyReport=false;owner='';failure=error.message||'暂时无法读取图谱，请回到“我的资料”重试。';}
     if(version!==epoch)return;busy=false;render();
     if(incomingGift){const token=incomingGift;incomingGift='';await root.ZxProfileGift?.showIncoming(token);}
-    if(privateReturn?.inviteToken&&TOKEN.test(privateReturn.inviteToken)){const token=privateReturn.inviteToken;privateReturn=null;await root.ZxProfileSocial?.showIncoming(token);}
+    if(incomingInvite){const token=incomingInvite;incomingInvite='';privateReturn=null;await root.ZxProfileSocial?.showIncoming(token);}
+    else if(privateReturn?.inviteToken&&TOKEN.test(privateReturn.inviteToken)){const token=privateReturn.inviteToken;privateReturn=null;await root.ZxProfileSocial?.showIncoming(token);}
   }
   $('social-close')?.addEventListener('click',()=>$('social-detail').close());
   document.querySelectorAll('[data-close-dialog]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog')?.close()));

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-Fo6lmAx/rzpotPjJao7BPr4/LFa/FW9Ej2eVH/bfg+I='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
   <meta name="referrer" content="no-referrer">
 <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
@@ -13,17 +13,18 @@
   <link rel="stylesheet" href="./static-home.css?v=3b618f747e5d">
   <script defer src="./static-opening.js?v=f8f9b8184264"></script>
 <link rel="stylesheet" href="./static-opening-production.css?v=17067acfeca3">
+<link rel="stylesheet" href="./h5-reading.css?v=edf3ed1f2963">
 </head>
 <body class="zx-static-opening zx-entrance-pending">
   <main class="zx-entrance">
     <div class="zx-entrance-frame">
       <picture class="zx-entrance-picture">
         <source media="(min-width: 760px) and (min-aspect-ratio: 4/3)" srcset="./media/static-home/entrance-landscape.webp">
-        <img id="zx-entrance-image" src="./media/static-home/approved-entrance.webp" width="563" height="1203" alt="知星，以易理观己，以星盘为证。金色星环环绕玄青太极，两颗宝石映照星空。" fetchpriority="high">
+        <img id="zx-entrance-image" src="./media/static-home/approved-entrance-opt.webp" width="563" height="1203" alt="知星，以易理观己，以星盘为证。金色星环环绕玄青太极，两颗宝石映照星空。" fetchpriority="high">
       </picture>
       <div class="zx-entrance-copy">
         <div class="zx-entrance-fallback"><img class="zx-entrance-symbol" src="./media/static-home/approved-symbol.png" width="81" height="82" alt=""><h1>知 星</h1><p>以易理观己，以星盘为证</p></div>
-        <a class="zx-enter" href="./app.html"><span>进入知星</span></a>
+        <a class="zx-enter" href="./app.html"><span>进入知星 <span aria-hidden="true">→</span></span></a>
       </div>
     </div>
   </main>

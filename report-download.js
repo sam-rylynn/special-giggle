@@ -98,7 +98,7 @@ table,.bar,.astro-facts,.wheel{break-inside:avoid-page}blockquote{border:0;backg
     });
   }
   async function pdfDependencies(){
-    if(!pdfLibraries)pdfLibraries=Promise.all([loadScript('pdf-lib-1.17.1.min.js','PDFLib'),loadScript('fontkit-1.1.1.min.js','fontkit')]).catch(e=>{pdfLibraries=null;throw e;});
+    if(!pdfLibraries)pdfLibraries=Promise.all([loadScript('pdf-lib-1.17.1.min.js?v=0f9a5cad0794','PDFLib'),loadScript('fontkit-1.1.1.min.js?v=d8df561b9fba','fontkit')]).catch(e=>{pdfLibraries=null;throw e;});
     if(!fontData)fontData=(async()=>{const controller=new AbortController(),timer=root.setTimeout(()=>controller.abort(),45000);try{
       const response=await fetch(new URL('ZhixingPDFSans-Regular.ttf',pdfAssets),{signal:controller.signal,credentials:'omit',referrerPolicy:'no-referrer'});
       if(!response.ok)throw new Error('REPORT_PDF_LOAD_FAILED');return new Uint8Array(await response.arrayBuffer());

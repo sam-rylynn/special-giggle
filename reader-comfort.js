@@ -1,7 +1,8 @@
 /* Optional reader controls. The native reader remains the authority for access and chapters. */
 (function (root) {
   'use strict';
-  const chapters = ['sec-overview', 'sec-chart', 'sec-relation', 'sec-action', 'sec-phase'];
+  // Six-chapter reports add the standalone sec-cross chapter (see REPORT_STANDALONE_CHAPTERS in report.html).
+  const chapters = ['sec-overview', 'sec-cross', 'sec-chart', 'sec-relation', 'sec-action', 'sec-phase'];
   const preferenceKey = 'zx_reader_preferences_v1';
   const positionPrefix = 'zx_reader_position_v1:';
   const maxAge = 30 * 86400000;

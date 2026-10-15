@@ -1,7 +1,7 @@
 /* Cultural relationship facts and an explicitly experimental type ordering. No compatibility probability. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SynastryEngine=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const VERSION='synastry-facts-20260912-v3',RANK_VERSION='synastry-type-codenames-20260912-v1',ASSESSMENT_VERSION='synastry-codenames-20260912-v1';
+  const VERSION='synastry-facts-20260912-v3',RANK_VERSION='synastry-type-codenames-20261013-v2',ASSESSMENT_VERSION='synastry-codenames-20261013-v2';
   const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'], ELEMENTS=['木','火','土','金','水'];
   const SIGNS=['白羊','金牛','双子','巨蟹','狮子','处女','天秤','天蝎','射手','摩羯','水瓶','双鱼'];
   const COMBINE=['甲己','乙庚','丙辛','丁壬','戊癸'],BRANCH_COMBINE=['子丑','寅亥','卯戌','辰酉','巳申','午未'],BRANCH_OPPOSE=['子午','丑未','寅申','卯酉','辰戌','巳亥'];
@@ -82,7 +82,7 @@
     let title,paragraphs,ease,friction;
     if(rel==='同气'){
       title=ma.image+'与'+mb.image+'，同声相近';
-      paragraphs=[identity+'借同一种五行意象，照见相近的出发点。'+ma.image+'与'+mb.image+'可以彼此映照，也仍有各自的形状。','在一起时，可以从'+ma.detail+'开始，再听听另一种做法：'+mb.detail+'。熟悉感之外，仍值得认真问一次对方真正喜欢什么。'];
+      paragraphs=[identity+'借同一种五行意象，照见相近的出发点。'+ma.image+'与'+mb.image+'可以彼此映照，也仍有各自的形状。',a===b?'借同一个'+ma.image+'的意象，可以从'+ma.detail+'开始。相近的出发点，不会替两个人决定各自喜欢什么。':'在一起时，可以从'+ma.detail+'开始，再听听另一种做法：'+mb.detail+'。熟悉感之外，仍值得认真问一次对方真正喜欢什么。'];
       ease='从相近的关注点开始聊天，容易找到两个人都愿意参与的一件事。';
       friction='觉得“我们很像”时，也各自说清预算、时间与偏好，不用默契省去确认。';
     }else if(rel==='我生'||rel==='生我'){
@@ -148,7 +148,7 @@
       const opening=exact?openingFor({scope:'type',stems,rel:canonicalRel,branch:null,combine,suns:[own,other].sort((a,b)=>a.index-b.index),moons:null,code}):partial('type');
       rows.push({id:'type-'+s+'-'+z,stem:stem+element(stem),sun:SIGNS[z],score:0,primary:0,secondary:0,relation:rel,
         sources:['日主五行·'+rel,...(combine?['日干五合']:[]),'太阳星座元素·'+(own.element===other.element?'同类':compatible?'相接':'不同节奏')],
-        headline:opening.tagline,ease:[opening.east.paragraphs[0],opening.west.paragraphs[0]],friction:opening.friction,opening});
+        typeFocus:exact?SOLAR_MOTIFS[z][0]:'资料待补充',headline:opening.tagline,ease:[opening.east.paragraphs[0],opening.west.paragraphs[0]],friction:opening.friction,opening});
     }
     const order={heming:0,yinghe:1,tiaoxian:2};
     rows.sort((a,b)=>(order[a.opening.code]??3)-(order[b.opening.code]??3)||a.id.localeCompare(b.id,'en',{numeric:true}));

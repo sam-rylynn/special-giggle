@@ -93,6 +93,9 @@
   }
 
   function enhanceOpenings(main) {
+    for(const detail of main.querySelectorAll('details')){
+      if(detail.querySelector('.celestial-card'))detail.open=true;
+    }
     for (const opening of main.querySelectorAll('.type-detail .synastry-opening')) {
       if (opening.dataset.zxCompat) continue;
       opening.dataset.zxCompat = '1';

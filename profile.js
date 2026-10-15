@@ -2,9 +2,8 @@
 (function (root) {
   'use strict';
   const REPORT_ID = /^[a-f0-9]{48}$/;
-  const usable = (item, now = Date.now()) => !!(item && REPORT_ID.test(item.report_id || '') &&
-    item.readable === true && !item.unavailable_reason && item.refund_status !== 'pending' && item.entitlement_status === 'active' && item.delivery_status === 'ready' &&
-    Number.isSafeInteger(item.expires_at) && item.expires_at > now);
+  // Shared report-access rule from member.js (storage_expires_at first); unknown means not usable.
+  const usable = (item, now = Date.now()) => !!root.ZxReportAccess?.usable(item, now);
   function balanceValue(value) {
     if (!value || !['remaining', 'gift_remaining', 'purchased_remaining'].every(key => Number.isSafeInteger(value[key]) && value[key] >= 0)) return null;
     if (value.remaining !== value.gift_remaining + value.purchased_remaining) return null;
@@ -80,7 +79,9 @@
   const snapshot=()=>client()&&client().snapshot?client().snapshot():{};
   const signedIn=state=>state.authenticated===true&&state.identityKind==='wechat'&&/^[a-f0-9]{64}$/.test(state.accountRef||'');
   const hasConsent=scope=>!!(root.ZxPrivacyConsent&&root.ZxPrivacyConsent.has(scope));
-  function safeVault(read,fallback){try{return read();}catch(_){libraryError='本机图谱存档暂时无法读取，原数据已保留。请先检查浏览器存储权限后刷新，当前不覆盖或新增存档。';return fallback;}}
+  function safeVault(read,fallback){try{return read();}catch(error){libraryError=error?.code==='STORE_INVALID'
+    ?'本机图谱存档格式异常，原数据已保留，当前不覆盖或新增存档。可先点“导出本机资料”备份，再联系客服处理。'
+    :'本机图谱存档暂时无法读取，原数据已保留。请先检查浏览器存储权限后刷新，当前不覆盖或新增存档。';return fallback;}}
   const entries=()=>safeVault(()=>vault()&&vault().list?vault().list():[],[]);
   const hasRoom=()=>!libraryError&&safeVault(()=>!vault()||!vault().hasRoom||vault().hasRoom(),false);
   function hasChart() {
@@ -119,12 +120,12 @@
   function setLink(id,label,href){txt(id,label);$(id).href=href;}
   function renderLibrary() {
     const rows=entries(), selected=choice(), list=$('chart-library-list');list.replaceChildren();
-    txt('chart-capacity',`基础图谱 ${rows.length} / 2`);
-    txt('chart-library-note','免费保存2张基础图谱，主动删除前一直保留。已购报告另行保存，不占名额。');
+    txt('chart-capacity',`基础图谱 ${rows.length} / ${vault()?.LIMIT||5}`);
+    txt('chart-library-note','免费保存5张基础图谱，主动删除前一直保留。已购报告另行保存，不占名额。');
     setLink('add-chart-action','添加图谱',homeFor(null,'new-chart'));
     const room=hasRoom();
     $('add-chart-action').setAttribute('aria-disabled',String(!room));
-    txt('chart-capacity-help',room?'':'基础图谱已存满。删除一张，或完成报告购买后可继续添加。');
+    txt('chart-capacity-help',room?'':'基础图谱已存满。请主动删除一张后再添加；已购报告按账号另存。');
     function row(data,kind){
       const id=kind==='local'?data.id:data.report_id, picked=!!(selected&&selected.kind===kind&&selected.id===id);
       const selection=kind==='local'?{kind,id}:{kind,id,accountRef:owner};
@@ -151,6 +152,8 @@
       item.append(content,seal,controls);list.append(item);
     }
     rows.forEach(item=>row(item,'local'));reports.filter(item=>usable(item)||!rows.some(entry=>entry.accountRef===owner&&entry.reportId===item.report_id)).forEach(item=>row(item,'report'));
+    const isolated=safeVault(()=>vault()?.quarantined?.()||0,0),notice=$('chart-library-quarantine');
+    if(notice){notice.textContent=isolated?`有 ${isolated} 条本机图谱记录格式异常，已单独隔离保存，不影响其他图谱，也不占名额。可点“导出本机资料”备份。`:'';notice.hidden=!isolated;}
     const temporary=!rows.length&&(hasChart()||hasTemporaryRecord());$('save-current-chart').hidden=!temporary;
     setLink('save-current-chart','保存当前临时图谱',homeFor(null,'save-last'));
     if(!rows.length&&!reports.length)list.append(node('p',temporary?'当前日主页尚未加入图谱列表，可先保存，再添加下一张。':'还没有保存的图谱。先添加一张，之后可在这里随时切换。','chart-library-empty'));
@@ -167,8 +170,8 @@
     txt('chart-summary',!entry&&!record&&localChart?'先保存当前图谱。':'');
     txt('report-state',item?'已解锁':serviceState==='error'?'待确认':'待解锁');
     $('report-state').classList.toggle('is-unlocked',!!item);$('report-state').closest('section,article').classList.toggle('is-locked',!item);
-    txt('report-description',item?'已解锁完整五章':record?'查看交付与有效期':'完整五章 ¥19.90 · 交付赠1次问星');
-    setLink('report-action',item?'阅读深度报告':entry?'解锁深度报告':record?'查看报告状态':localChart?'保存图谱后购买':'先添加图谱',
+    txt('report-description',item?'已解锁完整五章':record?'查看交付与有效期':'完整五章 '+(window.ZxReportOffer?.price('deep_report_v1')||'价格待确认')+' · 交付赠1次问星');
+    setLink('report-action',item?'阅读深度报告':entry?'解锁深度报告'+(window.ZxReportOffer?.price('deep_report_v1')?' · '+ZxReportOffer.price('deep_report_v1'):''):record?'查看报告状态':localChart?'保存图谱后购买':'先添加图谱',
       item?route('report',currentId):entry?'#purchase-report':record?route('account',record.report_id,'report-purchase'):homeFor(null,localChart?'save-last':'new-chart'));
     const items=reports.filter(item=>usable(item));$('report-select').replaceChildren();
     const placeholder=node('option','选择已购图谱');placeholder.value='';$('report-select').append(placeholder);
@@ -178,8 +181,8 @@
     txt('ask-count',balanceUnknown?'—':'0');txt('ask-detail',item?'正在读取次数…':serviceState==='error'?'次数暂时无法读取，请刷新。':record?'当前报告暂不可用于问星。':'解锁本盘深度报告后可用。');
     setLink('ask-action',item?'去问星':record?'查看报告状态':'解锁深度报告',item?route('report',currentId,'sec-deep'):entry?'#purchase-report':record?route('account',record.report_id,'report-purchase'):homeFor(null,localChart?'save-last':'new-chart'));
     setLink('recharge-action',item?'问星充值':record?'查看订单':entry?'问星充值':'先建立图谱',item?'#ask-section':record?route('account',record.report_id,'report-purchase'):entry?'#purchase-report':homeFor(null,localChart?'save-last':'new-chart'));$('recharge-action').setAttribute('aria-describedby','ask-detail');
-    txt('synastry-state',items.length>=2?'可合盘':'待解锁');$('synastry-state').classList.toggle('is-unlocked',items.length>=2);
-    txt('synastry-description',items.length>=2?'':'两张深度报告备齐后，合盘免费解锁。');
+    txt('synastry-state',items.length?'配对入口已开放':'待解锁');$('synastry-state').classList.toggle('is-unlocked',items.length>0);
+    txt('synastry-description','每份有效深度报告包含1个固定配对名额，另一方无需购买报告；双方仍须本人确认资料并分别同意。');
     txt('invite-description','');
     txt('synastry-records','');
     txt('profile-account-label',serviceState==='ready'?'已登录':serviceState==='closed'?'暂未开放':'登录 / 恢复记录');
@@ -256,6 +259,18 @@
       if(master)paidSeals.set(key,master);
     }));
     if(unchanged(epoch,account))renderLibrary();
+  }
+  // report.html links "购买次数" here; the content is hidden until the first render.
+  function revealAskSection(){
+    if(location.hash!=='#ask-section')return;
+    const section=$('ask-section');if(!section||section.closest('[hidden]'))return;
+    section.scrollIntoView({block:'start'});$('recharge-action')?.focus({preventScroll:true});
+  }
+  function exportLocalData(){
+    try{
+      const data=root.ZxPrivacyConsent?.downloadLocalData?.();
+      txt('chart-export-status',data?'已生成本机资料文件（JSON），包含本机图谱、称呼与隐私选择，不含登录凭证。若微信未弹出保存选项，请在系统浏览器打开本页后再导出。':'当前页面暂不能导出，请刷新后重试。');
+    }catch(_){txt('chart-export-status','导出未完成，请检查浏览器存储设置后重试。');}
   }
   function openAccountTarget(){
     if(['#account-status','#order-center','#report-purchase','#delete-account','#member-upgrade'].includes(location.hash)){
@@ -340,12 +355,16 @@
       try{await vault().remove(id);removeTarget='';$('remove-chart-dialog').close();render();refreshBalance();}
       catch(error){txt('remove-chart-error',error.message||'删除暂未完成，请重试。');}finally{button.disabled=false;}
     });
-    $('add-chart-action').addEventListener('click',event=>{if(!hasRoom()){event.preventDefault();txt('profile-notice',libraryError||'本机已保存2张基础图谱。请先删除一张，或完成其中一张报告的购买交付，再添加。');}});
+    $('add-chart-action').addEventListener('click',event=>{if(!hasRoom()){event.preventDefault();txt('profile-notice',libraryError||'本机已保存5张基础图谱。请先主动删除一张后再添加；已购报告按账号另存。');}});
     $('report-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);}});
     $('ask-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);}});
     $('report-select').addEventListener('change',()=>{const id=$('report-select').value;if(reports.some(item=>item.report_id===id&&usable(item)))select({kind:'report',id,accountRef:owner});});
     $('recharge-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);return;}if(!currentId)return;event.preventDefault();if(root.ZxProfileRecharge)root.ZxProfileRecharge.open({reportId:currentId,onChanged:refresh});});
     $('managed-synastry-action').addEventListener('click',openManaged);
+    $('export-local-data')?.addEventListener('click',exportLocalData);
+    root.addEventListener('hashchange',revealAskSection);
+    $('sponsored-pair-action')?.addEventListener('click',()=>root.ZxProfileSocial?.open({compose:true,channel:'external',reportId:currentId,reports}));
+    $('manage-pair-data-action')?.addEventListener('click',()=>root.ZxProfileSocial?.open({kind:'participant'}));
     $('gift-purchase-action').addEventListener('click',openGiftPurchase);
     $('synastry-action').addEventListener('click',()=>root.ZxProfileSocial&&root.ZxProfileSocial.open({kind:'records',direct:true,reportId:currentId,reports}));
     $('invite-action').addEventListener('click',openInvitations);
@@ -361,6 +380,7 @@
     const invite=new URLSearchParams(location.hash.slice(1)).get('invite');
     if(/^[a-f0-9]{64}$/.test(invite||'')&&root.ZxProfileSocial){requestedEntryOpened=true;root.ZxProfileSocial.open({kind:'invitations',token:invite});}
     else initialRefresh.then(openRequestedEntry);
+    initialRefresh.then(revealAskSection);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
 })(typeof window==='object'?window:globalThis);

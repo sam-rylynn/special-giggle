@@ -2,7 +2,11 @@
 (function (root) {
   'use strict';
   const KEY = 'zx_profile_ask_purchase_v1';
-  const PRODUCTS = Object.freeze({ask_single_v1:{title:'单次问星',amount:290,credits:1},ask_pack_3_v1:{title:'三次问星包',amount:600,credits:3}});
+  // Product semantics only; prices come from the policy projection (report-offer.js).
+  const PRODUCTS = Object.freeze({ask_single_v1:{title:'单次问星',credits:1},ask_pack_3_v1:{title:'三次问星包',credits:3}});
+  const projectedFen = code => { const item=root.ZxReportOffer?.offers?.find(entry=>entry?.productCode===code); return item&&item.currency==='CNY'&&Number.isSafeInteger(item.amountFen)&&item.amountFen>0?item.amountFen:null; };
+  // Until ask prices are projected, the server catalog amount is shown and the order must match it.
+  const priceMatches = (code,amount) => Number.isSafeInteger(amount)&&amount>0&&(projectedFen(code)===null||projectedFen(code)===amount);
   let active = null, revision = 0;
   const node = (tag, text, className) => { const el=document.createElement(tag);if(text)el.textContent=text;if(className)el.className=className;return el; };
   const err = code => Object.assign(new Error(code), {code});
@@ -37,14 +41,12 @@
     delete stored.requests[reportId];sessionStorage.setItem(KEY,JSON.stringify(stored));
   }
   function validReport(report,id) {
-    const expiry=report&&(report.storage_expires_at||report.expires_at);
-    return report&&report.report_id===id&&report.readable===true&&report.entitlement_status==='active'&&report.delivery_status==='ready'&&!report.unavailable_reason&&
-      Number.isSafeInteger(expiry)&&expiry>Date.now();
+    return !!report&&report.report_id===id&&!!root.ZxReportAccess?.usable(report);
   }
   function offer(catalog,code) {
     const expected=PRODUCTS[code],matches=Array.isArray(catalog?.products)?catalog.products.filter(p=>p.product_code===code):[];
     const value=matches.length===1?matches[0]:null;
-    return catalog?.payment_available===true&&value?.payment_available===true&&value.purchase_eligible===true&&value.amount_fen===expected.amount&&value.currency==='CNY'&&value.question_credits===expected.credits?value:null;
+    return catalog?.payment_available===true&&value?.payment_available===true&&value.purchase_eligible===true&&priceMatches(code,value.amount_fen)&&value.currency==='CNY'&&value.question_credits===expected.credits?value:null;
   }
   function orderLink(orderNo,reportId,text) {const link=node('a',text,'btn');link.href=root.ZxPaidReports.checkoutUrl(orderNo,reportId);return link;}
   function ordersLink(reportId) {const link=node('a','查看我的订单','btn');const url=new URL(root.ZxPaidReports.loginUrl(reportId));url.hash='order-center';link.href=url.href;return link;}
@@ -65,11 +67,12 @@
     if(pending)view.content.append(node('p','上次购买结果尚未确认。再次提交会继续同一请求；购买其他商品前，请先核对我的订单。','profile-recharge-note'),ordersLink(view.reportId));
     const form=node('form'),choices=node('fieldset',null,'profile-recharge-products');choices.append(node('legend','选择问星次数'));
     let selected='',busy=false;
-    const radios=[];
+    const radios=[],amounts={};
     for(const code of available){
       const product=PRODUCTS[code],label=node('label',null,'profile-recharge-option'),radio=node('input');
+      amounts[code]=offer(catalog,code).amount_fen;
       radio.type='radio';radio.name='profile-ask-product';radio.value=code;radio.disabled=!!pending&&pending.productCode!==code;
-      const detail=node('span');detail.append(node('strong',product.title+' · '+money(product.amount)),node('small',product.credits+' 次问星'));
+      const detail=node('span');detail.append(node('strong',product.title+' · '+money(amounts[code])),node('small',product.credits+' 次问星'));
       label.append(radio,detail);choices.append(label);radios.push(radio);
       radio.addEventListener('change',()=>{selected=radio.value;policy.checked=false;adult.checked=false;error.textContent='';update();});
     }
@@ -97,8 +100,8 @@
         storePending(request);
         const result=await root.zxMember.paidAskCreateOrder(view.reportId,selected,{policyConsent:true,adultConfirmed:true},request.key);
         current(view);
-        const order=result?.order,product=PRODUCTS[selected];
-        if(!order||!/^[a-f0-9]{32}$/.test(order.order_no||'')||order.paid_report_id!==view.reportId||order.product_code!==selected||order.amount_fen!==product.amount||order.currency!=='CNY')throw err('ORDER_RESPONSE_INVALID');
+        const order=result?.order;
+        if(!order||!/^[a-f0-9]{32}$/.test(order.order_no||'')||order.paid_report_id!==view.reportId||order.product_code!==selected||order.amount_fen!==amounts[selected]||order.currency!=='CNY')throw err('ORDER_RESPONSE_INVALID');
         request.orderNo=order.order_no;storePending(request);
         root.location.assign(root.ZxPaidReports.checkoutUrl(order.order_no,view.reportId));
       } catch(e) {
@@ -134,7 +137,8 @@
         const result=await root.zxMember.paymentOrder(pending.orderNo);current(view);
         const order=result?.order||result;
         if(order.order_no!==pending.orderNo||order.paid_report_id!==view.reportId||order.product_code!==pending.productCode)throw err('ORDER_RESPONSE_INVALID');
-        if(['completed','closed','refunded','expired','cancelled'].includes(order.status)){removePending(view.owner,view.reportId);pending=null;}
+        const lapsed=order.status==='created'&&Number(order.expires_at)>0&&Number(order.expires_at)<=Date.now();
+        if(['completed','closed','refunded','expired','cancelled','failed'].includes(order.status)||lapsed){removePending(view.owner,view.reportId);pending=null;}
         else {notice(view,'你还有一笔问星订单待确认，请先核对该订单，避免重复购买。');content.append(orderLink(order.order_no,view.reportId,'查看这笔订单'));return;}
       }
       const catalog=await root.ZxPaidReports.products(view.reportId,'ask');current(view);render(view,catalog,pending);

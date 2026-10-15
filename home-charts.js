@@ -3,9 +3,8 @@
   'use strict';
   const LOCAL=/^[a-f0-9]{32}$/, REPORT=/^[a-f0-9]{48}$/, OWNER=/^[a-f0-9]{64}$/;
   const signedIn=state=>!!(state&&state.authenticated===true&&state.identityKind==='wechat'&&OWNER.test(state.accountRef||''));
-  const readable=(item,now=Date.now())=>!!(item&&REPORT.test(item.report_id||'')&&item.readable===true&&
-    item.entitlement_status==='active'&&item.delivery_status==='ready'&&!item.unavailable_reason&&item.refund_status!=='pending'&&
-    Number.isSafeInteger(item.expires_at)&&item.expires_at>now);
+  // Shared report-access rule from member.js (storage_expires_at first); unknown means not usable.
+  const readable=(item,now=Date.now())=>!!root?.ZxReportAccess?.usable(item,now);
   function safeInput(value,ageAllowed){
     if(!value||typeof value.d!=='string'||!ageAllowed(value.d)||typeof value.c!=='string'||!value.c.trim()||value.c.length>160||
       /[<>\u0000-\u001f]/.test(value.c)||!['','男','女','其他',null].includes(value.g)||
@@ -74,14 +73,16 @@
     if($('day-profile-link'))$('day-profile-link').href=route('profile',profileQuery);
     if($('homeRankSynastry'))$('homeRankSynastry').href=route('synastry',profileQuery)+'#rank';
     if($('homeInviteSynastry'))$('homeInviteSynastry').href=route('synastry',profileQuery)+'#invite';
-    status(reportsMessage||(entries.length>=2?'本机已保存 2 张基础图谱；可在“我的资料”删除一张后再添加。':entries.length+activeReports.length?'选择一张图谱进入，也可以在“我的资料”管理称呼与合盘。':'还没有保存的图谱，可以先添加一张。'));
+    let isolated=0;try{isolated=vault().quarantined?.()||0;}catch(_){}
+    const isolatedMessage=isolated?`有 ${isolated} 条本机图谱记录格式异常，已隔离保留，其余图谱可正常使用；可在“我的资料”导出本机资料。`:'';
+    status(reportsMessage||isolatedMessage||(entries.length>=vault().LIMIT?'本机已保存 5 张基础图谱；可在“我的资料”删除一张后再添加。':entries.length+activeReports.length?'选择一张图谱进入，也可以在“我的资料”管理称呼与合盘。':'还没有保存的图谱，可以先添加一张。'));
   }
   function choose(message,options={}){
     revision++;editingId='';returnSelection=null;cancelButton(false);bridge.reset();bridge.showChooser();setUrl({},options);render();if(message)status(message);
     requestAnimationFrame(()=>$('chartChooserTitle').focus({preventScroll:true}));
   }
   function add(options={}){
-    if(!vault().hasRoom()){choose('本机已保存 2 张基础图谱，请在“我的资料”主动删除一张后再添加。已有图谱不会被覆盖。');return;}
+    if(!vault().hasRoom()){choose('本机已保存 5 张基础图谱，请在“我的资料”主动删除一张后再添加。已有图谱不会被覆盖。');return;}
     revision++;editingId='';returnSelection=vault().selected();vault().select(null);bridge.reset();$('formTitle').textContent='填写出生资料';
     $('formReadiness').textContent='录入他人资料前，请先取得对方同意。';cancelButton(returnToProfile||locals().length>0||reports.length>0);
     try{sessionStorage.removeItem('zx_display_profile_v1');sessionStorage.removeItem('zx_active_input_v1');sessionStorage.removeItem('zx_report_handoff_v1');}catch(_){}
@@ -218,14 +219,14 @@
     if(query.get('save-last')==='1'){
       const last=lastDraft();booted=true;
       if(last&&vault().hasRoom()){vault().select(null);bridge.requestSaveLast(last,true);return;}
-      choose(last?'本机已保存 2 张，请先在“我的资料”删除一张。':'旧草稿已过期或已清除，请添加新的图谱。');return;
+      choose(last?'本机已保存 5 张，请先在“我的资料”删除一张。':'旧草稿已过期或已清除，请添加新的图谱。');return;
     }
     render();bridge.showChooser();await refreshReports();if(epoch!==revision)return;booted=true;
     const entries=locals(),paid=reports.filter(item=>readable(item)),total=entries.length+paid.length;
     if(total>1){choose('',{replace:true});return;}
     if(total===1){if(entries.length)openLocal(entries[0].id,{replace:true});else await openReport(paid[0].report_id,{replace:true});return;}
     const last=lastDraft();if(last){vault().select(null);bridge.requestSaveLast(last);return;}
-    bridge.showNew(false);
+    bridge.showNew(true);
   }
   bootstrap().catch(error=>{booted=true;choose(error.message||'本机图谱暂时无法读取，请在“我的资料”查看。');});
 })(typeof window==='object'?window:globalThis);

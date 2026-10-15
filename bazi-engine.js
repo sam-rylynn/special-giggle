@@ -7,7 +7,8 @@
  *   对香港天文台 2019—2026 共 192 个分钟级锚点实测最大差 1.22 分钟;低精度 sunGeom 仅供均时差用。
  *   出生时刻距立春/月节 < 2 小时 → boundary 告警(此时风险在出生时间本身的精度,非算法)。
  * - 真太阳时:经度差 + 均时差(误差 < 1 分钟);城市未收录 → 按 120°E 并标注。
- * - 输入时间按东八区(北京时间)解释。
+ * - 输入时间按北京当地民用钟面解释:1986–1991 年大陆夏令时期间自动减 1 小时换算为东八区标准时
+ *   (港澳台不调整;规则见 cnDstWindow,判定结果写入 meta.dst)。
  * - 晚子时(23:00–23:59)按次日日柱起时柱(与 V0 dayPillar 规则一致,派别注明)。
  * - 日主强弱为简化计分模型 v1(得令/得地/得势加权),供解释层引用,非断语。
  * - 西盘三要素(回归黄道):太阳黄经同引擎复用;月亮黄经 Meeus 主项截断(±0.3°,
@@ -70,7 +71,9 @@ function deltaT(y){
   if (y < 1986){ t = y-1975; return 45.45 + 1.067*t - t*t/260 - t*t*t/718; }
   if (y < 2005){ t = y-2000; return 63.86 + 0.3345*t - 0.060374*t*t + 0.0017275*t*t*t + 0.000651814*Math.pow(t,4) + 0.00002373599*Math.pow(t,5); }
   if (y < 2050){ t = y-2000; return 62.92 + 0.32217*t + 0.005589*t*t; }
-  const u = (y-1820)/100; return -20 + 32*u*u;
+  const u = (y-1820)/100;
+  if (y < 2150) return -20 + 32*u*u - 0.5628*(2150-y);   // 2050–2150 段含线性修正项,与 2050 前段连续
+  return -20 + 32*u*u;
 }
 /* 太阳视黄经·高精度:截断 VSOP87D(官方系数)+ ΔT(UT→TT) + 章动/光行差主项 + FK5。
  * 对香港天文台 2019—2026 共 192 个分钟级锚点实测最大差 1.22 分钟。 */
@@ -454,7 +457,82 @@ function searchLocations(query,options={}){
   return ranked.slice(0,limit).map(({rec})=>({id:rec.id,key:rec.key,name:rec.name,label:rec.label,province:rec.province,prefecture:rec.prefecture,level:rec.level,lng:rec.lng,lat:rec.lat}));
 }
 
+/* ---------------- 中国大陆 1986–1991 夏令时(tz 数据库 Asia/Shanghai) ----------------
+ * 1986:5 月 4 日 02:00 起,至 9 月 14 日 02:00(夏令时钟面)止;
+ * 1987–1991:4 月第一个 ≥11 日的星期日 02:00 起,至 9 月第一个 ≥11 日的星期日 02:00(夏令时钟面)止。
+ * 出生地为大陆城市、未填写或未收录时,输入按当时的民用钟面理解:钟面落在
+ * [起始日 02:00, 结束日 02:00) 内一律减 1 小时换算为东八区标准时,再做真太阳时等计算。
+ * 起始日 02:00–02:59(钟面不存在)与结束日 01:00–01:59(钟面重复)同样按夏令时理解。
+ * 香港、澳门、台湾 1986–1991 年未实行夏令时,不调整。 */
+const CN_DST_RULE = 'CN-1986-1991';
+const HOUR_MS = 3600000;
+function sundayOnOrAfter(y, m, d){
+  return d + (7 - new Date(Date.UTC(y, m - 1, d)).getUTCDay()) % 7;
+}
+/* 某年夏令时的钟面区间(以 UTC 字段记录的"墙上时间"毫秒,半开区间) */
+function cnDstWindow(y){
+  if (y < 1986 || y > 1991) return null;
+  const start = y === 1986 ? [5, 4] : [4, sundayOnOrAfter(y, 4, 11)];
+  const end = [9, sundayOnOrAfter(y, 9, 11)];
+  return { startWall: Date.UTC(y, start[0] - 1, start[1], 2), endWall: Date.UTC(y, end[0] - 1, end[1], 2) };
+}
+/* 出生地是否按大陆规则处理夏令时:港澳台不调整;未填写或未收录城市按大陆规则。 */
+const NON_MAINLAND_REGION = /^(?:香港|澳门|澳門|台湾|台灣|臺灣|臺湾)/;
+function dstBasis(cityHit, city){
+  if (cityHit) return NON_MAINLAND_REGION.test(String(cityHit.province || cityHit.prov || cityHit.label || '')) ? 'hk-mo-tw' : 'mainland';
+  const s = normalizeLocation(city);
+  if (/香港|澳[门門]|台湾/.test(s)) return 'hk-mo-tw';
+  return s ? 'unresolved-city' : 'no-city';
+}
+/* 民用钟面(北京当地) → 绝对时刻。返回 utc 与是否按夏令时换算。 */
+function civilClockToUtc(wall, applyDst){
+  const w = applyDst ? cnDstWindow(new Date(wall).getUTCFullYear()) : null;
+  const inDst = !!w && wall >= w.startWall && wall < w.endWall;
+  return { utc: wall - 8 * HOUR_MS - (inDst ? HOUR_MS : 0), inDst, window: w };
+}
+/* 绝对时刻 → 当时北京民用钟面(夏令时期间 +1 小时),用于对外展示节气等时刻。 */
+function formatCivilMinute(utcMs, applyDst){
+  const w = applyDst ? cnDstWindow(new Date(utcMs + 8 * HOUR_MS).getUTCFullYear()) : null;
+  const inDst = !!w && utcMs >= w.startWall - 8 * HOUR_MS && utcMs < w.endWall - 9 * HOUR_MS;
+  return formatBeijingMinute(utcMs + (inDst ? HOUR_MS : 0));
+}
+/* 夏令时判定(供引擎内部与服务端口径共用):只读输入,不排盘。
+ * timeBasis:'civil'(默认,按民用钟面含 1986–1991 夏令时)或 'standard'(输入已是东八区标准时)。 */
+function dstAdjustment(input){
+  const { y, m, d } = input;
+  const hasTime = input.hh !== undefined && input.hh !== null && input.hh !== '';
+  const hh = hasTime ? input.hh : 12, mm = hasTime && input.mm !== undefined && input.mm !== null && input.mm !== '' ? input.mm : 0;
+  const wall = Date.UTC(y, m - 1, d, hh, mm);
+  const w = cnDstWindow(y);
+  if (!w || wall < w.startWall || wall >= w.endWall) return null;
+  const basis = input.timeBasis === 'standard' ? 'standard-time-input' : dstBasis(resolveCity(input.city), input.city);
+  const applied = basis !== 'hk-mo-tw' && basis !== 'standard-time-input';
+  const result = { applied, offsetMin: applied ? -60 : 0, rule: CN_DST_RULE, basis, timeKnown: hasTime,
+    civilTime: formatBeijingMinute(wall - 8 * HOUR_MS),
+    standardTime: formatBeijingMinute(wall - (applied ? 9 : 8) * HOUR_MS) };
+  if (wall < w.startWall + HOUR_MS) result.transition = 'nonexistent';       // 起始日 02:00–02:59
+  else if (wall >= w.endWall - HOUR_MS) result.transition = 'repeated';      // 结束日 01:00–01:59
+  return result;
+}
+function addCalendarMonths(date, months){
+  const y = date.getUTCFullYear(), m = date.getUTCMonth() + months;
+  const last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m, Math.min(date.getUTCDate(), last), date.getUTCHours(), date.getUTCMinutes()));
+}
+/* 入口校验:只接受数值型的公历年月日,超出可验证范围或日历上不存在的日期直接报错。 */
+function assertCalendarDate(input){
+  if (!input || typeof input !== 'object') throw new TypeError('排盘输入必须是对象');
+  const { y, m, d } = input;
+  if (!Number.isInteger(y) || y < 1900 || y > 2100) throw new RangeError('出生年份必须是 1900—2100 的整数');
+  if (!Number.isInteger(m) || m < 1 || m > 12) throw new RangeError('出生月份必须是 1—12 的整数');
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  if (!Number.isInteger(d) || d < 1 || d > days) throw new RangeError('出生日期无效：' + y + ' 年 ' + m + ' 月只有 ' + days + ' 天');
+  if (input.timeBasis !== undefined && input.timeBasis !== 'civil' && input.timeBasis !== 'standard')
+    throw new RangeError('timeBasis 只能是 civil 或 standard');
+}
+
 function computeChart(input){
+  assertCalendarDate(input);
   const { y, m, d, city } = input;
   const hourSupplied = input.hh !== undefined && input.hh !== null && input.hh !== '';
   const minuteSupplied = input.mm !== undefined && input.mm !== null && input.mm !== '';
@@ -466,7 +544,7 @@ function computeChart(input){
   const hasTime = hourSupplied;
   const hh = hasTime ? input.hh : 12, mm = hasTime ? (minuteSupplied ? input.mm : 0) : 0;
   const meta = {
-    engine: 'bazi-engine v1.2.0-alpha',
+    engine: 'bazi-engine v1.3.0-alpha',
     tz: 'UTC+8(北京时间)',
     notes: [],
     warnings: [],
@@ -495,7 +573,14 @@ function computeChart(input){
     }
   } else if (city) meta.warnings.push('城市「' + city + '」暂未收录，已按东八区标准时推算；真太阳时、时柱和上升点可能不准确。');
   else meta.warnings.push('未填写出生城市，已按东八区标准时暂排；真太阳时未做经度校正，上升点不生成。');
-  const stdUtc = Date.UTC(y, m - 1, d, hh - 8, mm);
+  /* 民用钟面 → 东八区标准时:1986–1991 年大陆夏令时期间自动减 1 小时(无提示,只留可追溯字段)。 */
+  const applyDst = input.timeBasis !== 'standard' && dstBasis(cityHit, city) !== 'hk-mo-tw';
+  const dst = dstAdjustment(input);
+  if (dst){
+    meta.dst = dst;
+    if (dst.applied && hasTime) meta.notes.push('已按 1986–1991 年夏令时换算为标准时');
+  }
+  const stdUtc = civilClockToUtc(Date.UTC(y, m - 1, d, hh, mm), applyDst).utc;
   const eot = hasTime ? equationOfTime(stdUtc) : 0;
   const tstOffsetMin = hasTime ? (lon - 120) * 4 + eot : 0;
   const tstUtc = stdUtc + tstOffsetMin * 60000;
@@ -554,8 +639,9 @@ function computeChart(input){
    * 未填时辰时，只要节气落在输入的北京时间公历日，就失败关闭完整报告。 */
   const boundaries = [];
   const H2 = 2 * 3600000;
-  const dayStartUtc = Date.UTC(y, m - 1, d) - 8 * 3600000;
-  const dayEndUtc = dayStartUtc + 86400000;
+  /* 出生日期的民用整日(夏令时日按钟面换算;起止两日分别为 23/25 小时)。 */
+  const dayStartUtc = civilClockToUtc(Date.UTC(y, m - 1, d), applyDst).utc;
+  const dayEndUtc = civilClockToUtc(Date.UTC(y, m - 1, d + 1), applyDst).utc;
   const missingTimeTerm = hasTime ? null : terms.find(term => term.ms >= dayStartUtc && term.ms < dayEndUtc);
   let termBoundary = null;
   if (missingTimeTerm){
@@ -590,13 +676,13 @@ function computeChart(input){
       timeKnown: termBoundary.timeKnown,
       relation: termBoundary.relation,
       deltaMinutes: termBoundary.deltaMinutes,
-      termTime: formatBeijingMinute(termBoundary.term.ms),
+      termTime: formatCivilMinute(termBoundary.term.ms, applyDst),
       ...(termBoundary.reason ? { reason:termBoundary.reason } : {})
     });
     if (!hasTime){
       meta.requiresBirthTime = true;
       meta.inputPrecision.provisionalPillars = [...new Set([...meta.inputPrecision.provisionalPillars, ...affects])];
-      meta.warnings.push(`未填写出生时间，而出生日期当天包含${jie}（北京时间 ${formatBeijingMinute(termBoundary.term.ms).slice(11)}）排盘分界；${affects.map(key => key === 'year' ? '年柱' : '月柱').join('、')}无法唯一确定，请补充出生时间后再生成完整图谱。`);
+      meta.warnings.push(`未填写出生时间，而出生日期当天包含${jie}（北京时间 ${formatCivilMinute(termBoundary.term.ms, applyDst).slice(11)}）排盘分界；${affects.map(key => key === 'year' ? '年柱' : '月柱').join('、')}无法唯一确定，请补充出生时间后再生成完整图谱。`);
     }
   }
   if (hasTime){
@@ -705,19 +791,24 @@ function computeChart(input){
     /* 月数四舍五入到 12 时必须向岁数进位；否则 startAge、首段年份与文案会互相矛盾。 */
     if (startM >= 12){ startY += Math.floor(startM / 12); startM %= 12; }
     const normalizedStartAge = +(startY + startM / 12).toFixed(1);
+    /* 交运日期 = 出生时刻(北京标准时)+ 起运的岁数与月数(与 startText 同一口径);
+     * 首运公历年取交运日期所在年,不再用出生年 + 整岁,避免“0岁10个月”被算进出生当年。 */
+    const startDate = addCalendarMonths(new Date(birthUtc + 8 * HOUR_MS), startY * 12 + startM);
+    const startYear = startDate.getUTCFullYear();
     const mIdx = gzIndex(monthP.stem, monthP.branch);
     const steps = [];
     /* 覆盖 10 个连续十年段，使当前允许的 1940 年出生用户在 2026 年仍落在已算区间内。 */
     for (let k = 1; k <= 10; k++){
       const idx = ((mIdx + (forward ? k : -k)) % 60 + 60) % 60;
       const st = STEMS[idx % 10], br = BRANCHES[idx % 12];
-      const ageFrom = startY + (k - 1) * 10;
+      const ageFrom = startY + (k - 1) * 10, yearFrom = startYear + (k - 1) * 10;
       steps.push({ stem: st, branch: br, god: tenGod(dayStem, st) || '—',
-        ageFrom, ageTo: ageFrom + 9, yearFrom: y + ageFrom, yearTo: y + ageFrom + 9 });
+        ageFrom, ageTo: ageFrom + 9, yearFrom, yearTo: yearFrom + 9 });
     }
     daYun = { forward, gender,
       startAge: normalizedStartAge,
       startText: startY + '岁' + (startM ? startM + '个月' : '') + '起运',
+      startDate: startDate.toISOString().slice(0, 10),
       steps };
   }
 
@@ -751,7 +842,7 @@ function computeChart(input){
 
 /* 导出(Node + 浏览器) */
 const BaziEngine = {
-  computeChart, sunLon, sunLonHi, moonLon, ascendantLon, jieTime, equationOfTime,
+  computeChart, dstAdjustment, deltaT, sunLon, sunLonHi, moonLon, ascendantLon, jieTime, equationOfTime,
   tenGod, resolveCity, searchLocations, CITY, CITY_ALIASES, STEMS, BRANCHES, HIDDEN, JIE, SIGNS
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = BaziEngine;

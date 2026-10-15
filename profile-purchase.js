@@ -235,15 +235,20 @@
     }
     const entry = view.entry, chart = node('div', null, 'chart');
     chart.append(node('strong', entry.name || '当前选中的图谱'), node('span', entry.input.d + ' · ' + (entry.input.t || '时间待补全') + ' · ' + (entry.input.g || '排盘性别待补全')), node('span', entry.input.c));
-    body.append(node('p', '¥19.90 / 盘', 'price'), node('p', '完整五章报告 · 成功交付赠1次本盘问星', 'note'), chart);
+    body.append(node('p', (root.ZxReportOffer?.price('deep_report_v1')||'价格待确认')+' / 盘', 'price'), node('p', '完整五章报告 · 成功交付赠1次本盘问星', 'note'), chart);
     const benefits = node('ul', null, 'benefits');
-    ['围绕这张盘展开人格、关系、行动与时间解读。', '成功交付后保存6个北京时间日历月，保存期内可下载全文。', '每份已购报告可免费更正一次出生资料，保存期限不重置。'].forEach(text => benefits.append(node('li', text)));
+    ['围绕这张盘展开人格、关系、行动与时间解读。', '成功交付后保存6个北京时间日历月，保存期内可下载全文。', '每份已购报告可免费更正一次本人出生资料的填写错误（日期与时间改动不超过 62 天），保存期限不重置。', '含一个指定配对的共同阅读。对方登录并独立确认本人资料后接受邀请，无需另买个人报告；共同阅读随本报告到期，解除后不释放配对名额。'].forEach(text => benefits.append(node('li', text)));
     body.append(benefits, link('购买须知', route('purchase-notice')), link('隐私与保存说明', route('privacy')));
     if (!entry.input.t || !['男', '女'].includes(entry.input.g)) {
       const edit = new URL(route('home')); edit.searchParams.set('edit-chart', entry.id);
       body.append(node('p', '这张本机基础盘还缺少准确出生时间或排盘性别，补充后可继续核对购买信息。修改本机资料不会更改账号内的已购报告。', 'status'),
         link('补充这张图谱的资料', edit.href));
       if (!purchasable()) body.append(node('p', '购买服务当前暂未开放，可以先补全本机资料。', 'status'));
+      return;
+    }
+    if (!/MicroMessenger/i.test(navigator.userAgent) && root.ZxChartContinuation) {
+      body.append(node('p', '微信登录和支付需要在微信中完成。可将这张图谱续接到自己的微信，取回并核对后继续购买。', 'status'),
+        button('在微信中继续这张图谱', () => root.ZxChartContinuation.open(entry)));
       return;
     }
     if (!available()) {

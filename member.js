@@ -20,6 +20,39 @@
   var ACCESS_TOKEN_EXPIRES_KEY = 'zx_access_token_expires_at';
   var AUTH_REFRESH_LOCK_NAME = 'zx-auth-refresh-v1';
   var AUTH_CHANNEL_NAME = 'zx-auth-session-v1';
+  var READING_PROGRESS_PREFIX = 'zx_report_last_chapter_v2:';
+  var READER_POSITION_PREFIX = 'zx_reader_position_v1:';
+  var ACCOUNT_SESSION_KEYS = ['zx_chart_selection_v1', 'zx_managed_synastry_selection_v1', 'zx_ui_continuation_v1'];
+
+  // The one report-access rule shared by every page that loads this client.
+  // storage_expires_at is the server's storage expiry; expires_at is its older mirror.
+  function paidReportExpiry(item) {
+    if (!item || typeof item !== 'object') return null;
+    var value = Number.isSafeInteger(item.storage_expires_at) ? item.storage_expires_at : item.expires_at;
+    return Number.isSafeInteger(value) && value > 0 ? value : null;
+  }
+  function paidReportUsable(item, now) {
+    var at = Number.isSafeInteger(now) ? now : Date.now();
+    var expiry = paidReportExpiry(item);
+    return !!(item && /^[a-f0-9]{48}$/.test(String(item.report_id || '')) && item.readable === true &&
+      !item.unavailable_reason && item.refund_status !== 'pending' && item.entitlement_status === 'active' &&
+      item.delivery_status === 'ready' && expiry !== null && expiry > at);
+  }
+  window.ZxReportAccess = Object.freeze({ expiry: paidReportExpiry, usable: paidReportUsable });
+
+  // Prices come only from the generated policy projection (report-offer.js).
+  // A missing price stays unknown; the server catalog still decides eligibility.
+  function projectedPriceFen(productCode) {
+    var source = window.ZxReportOffer;
+    var offers = source && Array.isArray(source.offers) ? source.offers : [];
+    for (var index = 0; index < offers.length; index++) {
+      var item = offers[index];
+      if (item && item.productCode === productCode) {
+        return item.currency === 'CNY' && Number.isSafeInteger(item.amountFen) && item.amountFen > 0 ? item.amountFen : null;
+      }
+    }
+    return null;
+  }
 
   function isLocalDebugHost(hostname) {
     return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
@@ -174,6 +207,28 @@
     } catch (_) {}
     try { window.dispatchEvent(new CustomEvent('zx-private-session-cleared')); } catch (_) {}
   }
+  // Signing out or closing the account removes device records that name or derive
+  // from an account. Base charts stay; chart-vault.js removes their account links
+  // when it receives zx-account-signed-out.
+  function clearAccountLocalTraces() {
+    try {
+      for (var index = localStorage.length - 1; index >= 0; index--) {
+        var key = localStorage.key(index);
+        if (!key) continue;
+        var progressScope = key.indexOf(READING_PROGRESS_PREFIX) === 0 ? key.slice(READING_PROGRESS_PREFIX.length) : '';
+        // Private report progress keys start with the 64-hex account ref; local
+        // charts use a single birth-input digest without an account segment.
+        if (key.indexOf(READER_POSITION_PREFIX) === 0 || /^[a-f0-9]{64}:/.test(progressScope)) localStorage.removeItem(key);
+      }
+    } catch (_) {}
+    ACCOUNT_SESSION_KEYS.forEach(function (key) {
+      try {
+        var value = JSON.parse(sessionStorage.getItem(key) || 'null');
+        if (value && (value.kind === 'report' || value.owner || value.accountRef || value.report)) sessionStorage.removeItem(key);
+      } catch (_) { dropSession(key); }
+    });
+    try { window.dispatchEvent(new CustomEvent('zx-account-signed-out')); } catch (_) {}
+  }
   function blockAutomaticOauth() {
     ss(PAID_ASK_AUTO_OAUTH_BLOCK_KEY, '1');
   }
@@ -241,6 +296,7 @@
         dropSession(ACCESS_TOKEN_KEY);
         dropSession(ACCESS_TOKEN_EXPIRES_KEY);
         clearPaidAskSessionState();
+        clearAccountLocalTraces();
         blockAutomaticOauth();
         state.ready = false;
         state.memberUntil = null;
@@ -257,11 +313,34 @@
     return String(path || '').indexOf('/auth/') === 0;
   }
 
-  function rawRefreshAccessToken() {
+  // A refresh that races another use of the old token is answered with 409
+  // SESSION_REFRESH_RETRY. Wait as asked (retry_after / Retry-After, at most 3 s) and
+  // refresh once more; any further failure follows the normal path, where only
+  // 401/403 end the private session.
+  var REFRESH_RETRY_MAX_MS = 3000;
+  function refreshRetryDelay(error) {
+    var data = error && error.data || {};
+    var detail = data.error && typeof data.error === 'object' ? data.error : {};
+    var candidates = [data.retry_after, detail.retry_after, error && error.retryAfter];
+    for (var index = 0; index < candidates.length; index++) {
+      if (candidates[index] == null || candidates[index] === '') continue;
+      var seconds = Number(candidates[index]);
+      if (Number.isFinite(seconds) && seconds >= 0) return Math.min(REFRESH_RETRY_MAX_MS, Math.round(seconds * 1000));
+    }
+    return 1000;
+  }
+  function requestRefresh(retried) {
     return api(AUTH_SESSION_REFRESH_PATH, {
       method: 'POST',
       noSessionRetry: true
-    }).then(saveTokens).then(function (data) {
+    }).catch(function (error) {
+      if (retried || !error || error.status !== 409 || error.code !== 'SESSION_REFRESH_RETRY') throw error;
+      return new Promise(function (resolve) { setTimeout(resolve, refreshRetryDelay(error)); })
+        .then(function () { return requestRefresh(true); });
+    });
+  }
+  function rawRefreshAccessToken() {
+    return requestRefresh(false).then(saveTokens).then(function (data) {
       var current = accessTokenData();
       if (current) {
         postAuthMessage({
@@ -394,6 +473,8 @@
           error.status = r.status;
           error.data = data;
           error.code = String(code || '');
+          // Readable only when the API exposes it over CORS; retry_after in the body is the fallback.
+          try { var retryAfter = r.headers && typeof r.headers.get === 'function' ? r.headers.get('Retry-After') : null; if (retryAfter != null) error.retryAfter = retryAfter; } catch (_) {}
           throw error;
         }
         return data;
@@ -554,8 +635,8 @@
     return privateReportsPage() && !!API_BASE && (injectedPublicConfig.reportServiceAvailable === true || !!localDebugUrlParam('api'));
   }
   var REPORT_PAYMENT_VERSIONS = Object.freeze({
-    agreementVersion:'user-agreement-2026.09.09-report-v1',privacyVersion:'privacy-2026.09.09-report-v1',
-    membershipTermsVersion:'paid-report-2026.09.09-v1',refundPolicyVersion:'refund-2026.09.09-report-v1',
+    agreementVersion:'user-agreement-2026.10.15-report-v2',privacyVersion:'privacy-2026.10.15-report-v2',
+    membershipTermsVersion:'paid-report-2026.09.09-v1',refundPolicyVersion:'refund-2026.10.15-report-v2',
     aiDisclosureVersion:'ai-disclosure-2026.09.09-report-v1',purchaseNoticeVersion:'purchase-notice-2026.09.09-report-v1'
   });
   var REPORT_POLICY_PATHS = Object.freeze({userAgreementUrl:'/terms.html',privacyUrl:'/privacy.html',
@@ -568,7 +649,13 @@
       Object.keys(REPORT_PAYMENT_VERSIONS).every(function(key){return injectedPublicConfig[key] === REPORT_PAYMENT_VERSIONS[key];}) &&
       Object.keys(REPORT_POLICY_PATHS).every(function(key){return injectedPublicConfig[key] === 'https://zhixng.cn' + REPORT_POLICY_PATHS[key];});
   }
-  var REPORT_ASK_PRODUCTS = Object.freeze({ask_single_v1:{amount:290,credits:1},ask_pack_3_v1:{amount:600,credits:3}});
+  // Product semantics only. Prices are read from the policy projection.
+  var REPORT_ASK_PRODUCTS = Object.freeze({ask_single_v1:{credits:1},ask_pack_3_v1:{credits:3}});
+  function askOfferPriceMatches(productCode, amountFen) {
+    if (!Number.isSafeInteger(amountFen) || amountFen <= 0) return false;
+    var projected = projectedPriceFen(productCode);
+    return projected === null || amountFen === projected;
+  }
   async function paidAskCreateOrder(id, productCode, confirmation, idempotencyKey) {
     if (!paidReportPurchaseReady()) throw reportClientError('REPORT_SALES_NOT_APPROVED');
     if (!/MicroMessenger/i.test(navigator.userAgent || '')) throw reportClientError('WECHAT_BROWSER_REQUIRED');
@@ -587,15 +674,13 @@
     // Refresh both the owned report and its offer immediately before creating an order.
     var report = await privateReportApi('/paid-reports/' + id + '?view=status');
     currentOwner();
-    var expires = report.storage_expires_at || report.expires_at;
-    if (report.report_id !== id || report.readable !== true || report.entitlement_status !== 'active' || report.delivery_status !== 'ready' ||
-        report.unavailable_reason || !Number.isSafeInteger(expires) || expires <= Date.now()) throw reportClientError('ASK_REPORT_NOT_READY');
+    if (!report || report.report_id !== id || !paidReportUsable(report)) throw reportClientError('ASK_REPORT_NOT_READY');
     var catalog = await privateReportApi('/ask/products?report_id=' + id);
     currentOwner();
     var offers = catalog && Array.isArray(catalog.products) ? catalog.products.filter(function (item) { return item.product_code === productCode; }) : [];
     var offer = offers.length === 1 ? offers[0] : null;
     if (!catalog || catalog.payment_available !== true || !offer || offer.payment_available !== true || offer.purchase_eligible !== true ||
-        offer.currency !== 'CNY' || offer.amount_fen !== expected.amount || offer.question_credits !== expected.credits || !paidReportPurchaseReady()) throw reportClientError('ASK_PURCHASE_UNAVAILABLE');
+        offer.currency !== 'CNY' || !askOfferPriceMatches(productCode, offer.amount_fen) || offer.question_credits !== expected.credits || !paidReportPurchaseReady()) throw reportClientError('ASK_PURCHASE_UNAVAILABLE');
     return privateReportMutation('/payments/orders', {method:'POST',headers:{'Idempotency-Key':idempotencyKey},body:{
       product_code:productCode,paid_report_id:id,channel:'wechatpay_jsapi',consent:true,adult_confirmed:true,
       agreement_version:REPORT_PAYMENT_VERSIONS.agreementVersion,privacy_version:REPORT_PAYMENT_VERSIONS.privacyVersion,
@@ -625,10 +710,42 @@
       if (!privateReportServiceAvailable()) throw reportClientError('REPORT_SERVICE_UNAVAILABLE');
       if (!state.authenticated || state.identityKind !== 'wechat' || state.accountRef !== owner) throw reportClientError('REPORT_ACCOUNT_CHANGED');
     }
-    return freshAccessToken().then(function () {
+    return identifiedAccessToken().then(function () {
       sameOwner();
       // Never replay an irreversible confirmation under a newly refreshed owner.
       return api(path, Object.assign({}, options, {noSessionRetry:true}));
+    }).then(function (result) { sameOwner(); return result; });
+  }
+  // A refreshed access token can belong to another account (another tab may sign in
+  // as someone else). Whenever an owner-bound request needs a refresh, ask the server
+  // who the token belongs to; applyAccountState then publishes the actual owner.
+  function reidentifiedSession() {
+    dropSession(ACCESS_TOKEN_KEY);
+    dropSession(ACCESS_TOKEN_EXPIRES_KEY);
+    return refreshSession();
+  }
+  function identifiedAccessToken() {
+    return accessTokenData() ? Promise.resolve() : reidentifiedSession();
+  }
+  // Deleting a saved answer is irreversible. A 401 is retried once, and only after
+  // the refreshed session is confirmed to be the account that started the request.
+  function ownerBoundRequest(path, options) {
+    var owner = state.accountRef, sent = false, replayed = false;
+    if (!accountConsentGranted()) return Promise.reject(reportClientError('PRIVACY_CONSENT_REQUIRED'));
+    if (!state.authenticated || state.identityKind !== 'wechat' || !/^[a-f0-9]{64}$/.test(owner)) return Promise.reject(reportClientError('WECHAT_AUTHENTICATION_REQUIRED'));
+    function sameOwner() {
+      if (!accountConsentGranted()) throw reportClientError('PRIVACY_CONSENT_REQUIRED');
+      if (!state.authenticated || state.identityKind !== 'wechat' || state.accountRef !== owner) throw reportClientError('REPORT_ACCOUNT_CHANGED');
+    }
+    function send() {
+      sameOwner();
+      sent = true;
+      return api(path, Object.assign({}, options, { noSessionRetry: true }));
+    }
+    return identifiedAccessToken().then(send).catch(function (error) {
+      if (!sent || replayed || !error || error.status !== 401) throw error;
+      replayed = true;
+      return reidentifiedSession().then(send);
     }).then(function (result) { sameOwner(); return result; });
   }
   function checkedReportInput(input) {
@@ -678,26 +795,36 @@
       return privateReportMutation(path, read ? {method:'GET'} : {method:'POST',body:body});
     },
     synastryCall: function (path, body) {
-      var allowed = /^\/synastry\/(?:profile|records|lookup|invitations|invitations\/inspect|invitations\/accept|invitations\/[a-f0-9]{64}\/revoke|pairs\/[a-f0-9]{64}(?:\/(?:retry|unlink|support|report))?|managed-pairs(?:\/[a-f0-9]{64}(?:\/remove)?)?)$/;
+      var allowed = /^\/synastry\/(?:profile|records|lookup|participants(?:\/(?:self|revoke))?|pair-slot|invitations|invitations\/inspect|invitations\/accept|invitations\/[a-f0-9]{64}\/revoke|pairs\/[a-f0-9]{64}(?:\/(?:retry|unlink|support|report))?|managed-pairs(?:\/[a-f0-9]{64}(?:\/remove)?)?)$/;
       if (typeof path !== 'string' || path.length > 1200 || path.includes('#')) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
       var pathname = path.split('?')[0];
       if (!allowed.test(pathname)) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
       if (path.includes('?')) {
-        if (!['/synastry/records','/synastry/managed-pairs'].includes(pathname) || body !== undefined) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+        if (!['/synastry/records','/synastry/managed-pairs','/synastry/pair-slot'].includes(pathname) || body !== undefined) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
         var params = new URLSearchParams(path.slice(path.indexOf('?')+1)), seen = new Set(), invalid = false;
         params.forEach(function(value,key) {
           if (seen.has(key)) invalid = true;
           seen.add(key);
-          if (key === 'kind') { if (pathname !== '/synastry/records' || !['all','invitations','pairs','gifts'].includes(value)) invalid = true; }
+          if(pathname==='/synastry/pair-slot'){if(key!=='report_id'||!/^[a-f0-9]{48}$/.test(value))invalid=true;}
+          else if (key === 'kind') { if (pathname !== '/synastry/records' || !['all','invitations','pairs','gifts'].includes(value)) invalid = true; }
           else if (key === 'limit') { if (!/^[1-9][0-9]?$/.test(value) || Number(value)>50) invalid = true; }
           else if (key === 'cursor') { if (!/^[A-Za-z0-9_.-]{1,512}$/.test(value)) invalid = true; }
           else invalid = true;
         });
-        if (invalid || !seen.size) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+        if (invalid || !seen.size || pathname==='/synastry/pair-slot'&&(seen.size!==1||!seen.has('report_id'))) return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
       }
-      var read = pathname === '/synastry/profile' || pathname === '/synastry/records' || (pathname === '/synastry/managed-pairs' && body === undefined) || /^\/synastry\/(?:pairs|managed-pairs)\/[a-f0-9]{64}$/.test(pathname);
+      if(pathname==='/synastry/pair-slot'&&!path.includes('?')||pathname==='/synastry/participants/self'&&body!==undefined)return Promise.reject(reportClientError('SYN_REQUEST_INVALID'));
+      var read = pathname === '/synastry/pair-slot' || pathname === '/synastry/participants/self' || pathname === '/synastry/profile' || pathname === '/synastry/records' || (pathname === '/synastry/managed-pairs' && body === undefined) || /^\/synastry\/(?:pairs|managed-pairs)\/[a-f0-9]{64}$/.test(pathname);
       // Reuse account consent, current-owner guard, token refresh and no cross-account mutation replay.
       return privateReportMutation(path, read ? {method:'GET'} : {method:'POST',body:body || {}});
+    },
+    chartContinuationCall: function (path, body) {
+      if (typeof path !== 'string' || !/^\/chart-continuations(?:\/(?:consume|revoke))?$/.test(path) ||
+          !body || typeof body !== 'object' || Array.isArray(body)) return Promise.reject(reportClientError('CHART_CONTINUATION_REQUEST_INVALID'));
+      if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));
+      if (path === '/chart-continuations/consume') return privateReportMutation(path, {method:'POST',body:body});
+      // Creation and revocation bind only a short-lived opaque continuation, never an account session.
+      return api(path, {method:'POST',anonymous:true,noSessionRetry:true,body:body});
     },
     configured: function () { return !!API_BASE && accountConsentGranted(); },
     serviceConfigured: function () { return !!API_BASE; },
@@ -734,6 +861,7 @@
         return refreshAccessToken().then(sendLogout);
       }).then(function () {
         clearPaidAskSessionState();
+        clearAccountLocalTraces();
         blockAutomaticOauth();
         clearTokens();
         postAuthMessage({ type: 'clear-access' });
@@ -793,40 +921,14 @@
       var current = ls(PENDING_PAYMENT_KEY) || '';
       if (!orderNo || current === String(orderNo)) drop(PENDING_PAYMENT_KEY);
     },
-    enableCloudSync: function () {
-      return api('/account/cloud-sync', { method: 'POST', body: { enabled: true, confirmed: true } })
-        .then(function (data) { state.cloudSyncEnabled = true; return data; });
-    },
-    disableCloudSync: function () {
-      return api('/account/cloud-sync', { method: 'POST', body: { enabled: false } })
-        .then(function (data) { state.cloudSyncEnabled = false; return data; });
-    },
+    // The pre-report cloud-sync and legacy /reports archive methods were removed:
+    // no maintained page calls them, and base charts are no longer uploaded.
     profile: function () { return api('/account/profile'); },
     saveProfile: function (name) {
       return api('/account/profile', {
         method: 'POST',
         body: { profile_name: String(name || '').trim() }
       });
-    },
-    syncChart: function (payload) { return api('/charts/sync', { method: 'POST', body: { payload: payload } }); },
-    loadChart: function () { return api('/charts').then(function (data) { return data.chart; }); },
-    reports: function () { return api('/reports'); },
-    saveReport: function (input) {
-      input = input || {};
-      return api('/reports', {
-        method: 'POST',
-        body: {
-          display_name: String(input.displayName || ''),
-          relation_label: String(input.relation || ''),
-          is_primary: input.primary === true,
-          storage_confirmed: input.storageConfirmed === true,
-          permission_confirmed: input.permissionConfirmed === true,
-          payload: normalizeChartPayload(input.payload)
-        }
-      });
-    },
-    deleteReport: function (reportId) {
-      return api('/reports/' + encodeURIComponent(String(reportId || '')), { method: 'DELETE' });
     },
     paidReportPreview: function (input, confirmation) {
       if (!confirmation || confirmation.transferConfirmed !== true) return Promise.reject(reportClientError('REPORT_TRANSFER_CONFIRMATION_REQUIRED'));
@@ -907,8 +1009,11 @@
       return Promise.reject(error);
     },
     deepHistory: function () { return api('/deep/history'); },
-    deleteDeepAnswer: function (id) { return api('/deep/history/' + encodeURIComponent(id), { method: 'DELETE' }); },
-    clearDeepHistory: function () { return api('/deep/history', { method: 'DELETE' }); },
+    // No bulk history deletion is exposed; each answer is deleted after confirmation.
+    deleteDeepAnswer: function (id) {
+      if (typeof id !== 'string' || !/^[a-f0-9]{48}$/.test(id)) return Promise.reject(reportClientError('ASK_RESULT_NOT_FOUND'));
+      return ownerBoundRequest('/deep/history/' + id, { method: 'DELETE' });
+    },
     deleteAccount: function (confirmation) {
       var privateMode = privateReportsPage();
       var closureOwner = state.accountRef;
@@ -921,6 +1026,7 @@
         if (privateMode && result.status === 'closure_pending') return result;
         if (privateMode && (result.status !== 'completed' || result.ok !== true || result.recoverable !== false)) throw reportClientError('ACCOUNT_CLOSURE_RESPONSE_INVALID');
         clearPaidAskSessionState();
+        clearAccountLocalTraces();
         blockAutomaticOauth();
         clearTokens();
         postAuthMessage({ type: 'clear-access' });
