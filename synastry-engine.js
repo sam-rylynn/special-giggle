@@ -1,7 +1,7 @@
 /* Cultural relationship facts and an explicitly experimental type ordering. No compatibility probability. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SynastryEngine=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const VERSION='synastry-facts-20260912-v3',RANK_VERSION='synastry-type-codenames-20261013-v2',ASSESSMENT_VERSION='synastry-codenames-20261013-v2';
+  const VERSION='synastry-facts-20260912-v3',RANK_VERSION='synastry-type-codenames-20261016-v3',ASSESSMENT_VERSION='synastry-codenames-20261016-v3';
   const STEMS=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'], ELEMENTS=['木','火','土','金','水'];
   const SIGNS=['白羊','金牛','双子','巨蟹','狮子','处女','天秤','天蝎','射手','摩羯','水瓶','双鱼'];
   const COMBINE=['甲己','乙庚','丙辛','丁壬','戊癸'],BRANCH_COMBINE=['子丑','寅亥','卯戌','辰酉','巳申','午未'],BRANCH_OPPOSE=['子午','丑未','寅申','卯酉','辰戌','巳亥'];
@@ -40,9 +40,9 @@
   }
   const ASTRO_ELEMENTS=['火','土','风','水'];
   const CODENAMES={
-    heming:{name:'和鸣',en:'HARMONY',title:'心有灵犀',tagline:'不必说尽，也能懂得彼此。'},
-    yinghe:{name:'应和',en:'RESONANCE',title:'相得益彰',tagline:'各有所长，在一起相互成全。'},
-    tiaoxian:{name:'调弦',en:'ATTUNEMENT',title:'和而不同',tagline:'各有自己的节奏，在差异里寻找默契。'}
+    heming:{name:'和鸣',en:'HARMONY',title:'心有灵犀',tagline:'半句话被接住的时候，靠近有了回声。'},
+    yinghe:{name:'应和',en:'RESONANCE',title:'相得益彰',tagline:'两边都有回应，心意才有往返。'},
+    tiaoxian:{name:'调弦',en:'ATTUNEMENT',title:'和而不同',tagline:'节奏不同，默契在一次次商量里慢慢长出来。'}
   };
   const MOTIFS={
     甲:{image:'树',detail:'把方向说清，让共同的期待有一条可以走的路'},
@@ -51,11 +51,13 @@
     丁:{image:'灯火',detail:'记住不显眼的小事，让关照落在恰好的地方'},
     戊:{image:'山',detail:'把答应的事接稳，让一起做的事有可靠的落点'},
     己:{image:'田',detail:'把日常照料做好，让彼此都留有休息的余地'},
-    庚:{image:'金铁',detail:'把边界和办法讲明，让犹豫有一个可以开始的动作'},
+    庚:{image:'金铁',detail:'把边界和办法讲明，让犹豫有个能开始的地方'},
     辛:{image:'玉',detail:'认真对待分寸与细节，让用心有值得珍惜的质地'},
     壬:{image:'江河',detail:'带来新的去处，也把共同的约定留在行程里'},
     癸:{image:'雨露',detail:'照见细小的感受，再把猜测变成能够回答的问题'}
   };
+  // Return a value, not the mutable editorial table. Chapters share this vocabulary.
+  function stemImage(stem){if(!STEMS.includes(stem))throw new Error('INVALID_STEM');return MOTIFS[stem].image;}
   const SOLAR_MOTIFS=[
     ['先迈一步','提起一个新鲜想法时，愿不愿意一起试一次'],
     ['慢慢安定','一起吃饭、散步时，能不能照顾彼此舒服的节奏'],
@@ -75,24 +77,24 @@
   function friendly(a,b){return a===b||(a==='火'&&b==='风')||(a==='风'&&b==='火')||(a==='土'&&b==='水')||(a==='水'&&b==='土');}
   function pairSigns(item,participants){if(!Number.isFinite(item?.value?.degrees)||item.value.degrees<0||item.value.degrees>180)return null;const signs=participants.map(id=>item?.value?.signs?.[id]);return signs.every(validSign)?signs.sort((a,b)=>a.index-b.index):null;}
   function partial(scope='pair'){
-    return {version:ASSESSMENT_VERSION,scope,status:'partial',code:null,name:'资料待补充',en:'',title:'先读已知的你们',tagline:'把资料补齐，再看彼此的呼应。',summary:'先从真实的相处开始了解彼此。',east:{title:'先留下东方的线索',identity:'',paragraphs:['补充并确认出生资料后，再展开属于这两张盘的古典意象。'],sourceIds:[]},west:{title:'等星辰的位置清晰',identity:'',paragraphs:['出生时间或星体位置还未确认，暂不判断彼此的呼应。'],sourceIds:[]},ease:'先说一件彼此喜欢的小事，让了解有一个具体的开场。',friction:'有疑问就直接询问，不必替对方猜完答案。',sourceIds:[]};
+    return {version:ASSESSMENT_VERSION,scope,status:'partial',code:null,name:'资料待补充',en:'',title:'先读已知的你们',tagline:'资料还没齐，先从两个人的真实相处聊起。',summary:'先从真实的相处开始了解彼此。',east:{title:'先留下东方的线索',identity:'',paragraphs:['补充并确认出生资料后，再展开属于这两张盘的古典意象。'],sourceIds:[]},west:{title:'等星辰的位置清晰',identity:'',paragraphs:['出生时间或星体位置还未确认，暂不判断彼此的呼应。'],sourceIds:[]},ease:'先说一件彼此喜欢的小事，让了解有一个具体的开场。',friction:'有疑问就直接询问，不必替对方猜完答案。',sourceIds:[]};
   }
   function eastCopy(stems,rel,branch,combine){
     const [a,b]=stems,ma=MOTIFS[a],mb=MOTIFS[b],identity=a+element(a)+' × '+b+element(b);
     let title,paragraphs,ease,friction;
     if(rel==='同气'){
-      title=ma.image+'与'+mb.image+'，同声相近';
-      paragraphs=[identity+'借同一种五行意象，照见相近的出发点。'+ma.image+'与'+mb.image+'可以彼此映照，也仍有各自的形状。',a===b?'借同一个'+ma.image+'的意象，可以从'+ma.detail+'开始。相近的出发点，不会替两个人决定各自喜欢什么。':'在一起时，可以从'+ma.detail+'开始，再听听另一种做法：'+mb.detail+'。熟悉感之外，仍值得认真问一次对方真正喜欢什么。'];
+      title=a===b?'同借'+ma.image+'作意象，仍各有自己的喜欢':ma.image+'与'+mb.image+'，同属'+element(a)+'，各有形状';
+      paragraphs=[a===b?identity+'：两个人都借'+ma.image+'作意象。同一种五行，并不能替两个人决定各自喜欢什么。':identity+'：同属'+element(a)+'，'+a+'借'+ma.image+'作意象，'+b+'借'+mb.image+'作意象。相近的出发点，也容得下不同的去向。',a===b?'借同一个'+ma.image+'的意象，可以从'+ma.detail+'开始。相近的出发点，不会替两个人决定各自喜欢什么。':'在一起时，可以从'+ma.detail+'开始，再听听另一种做法：'+mb.detail+'。熟悉感之外，仍值得认真问一次对方真正喜欢什么。'];
       ease='从相近的关注点开始聊天，容易找到两个人都愿意参与的一件事。';
       friction='觉得“我们很像”时，也各自说清预算、时间与偏好，不用默契省去确认。';
     }else if(rel==='我生'||rel==='生我'){
       const giver=rel==='我生'?a:b,receiver=rel==='我生'?b:a;
-      title=(stems.includes('戊')&&stems.includes('辛'))?'山藏玉，有所托':MOTIFS[giver].image+'有回响，'+MOTIFS[receiver].image+'有所托';
+      title=(stems.includes('戊')&&stems.includes('辛'))?'山藏玉，有所托':MOTIFS[giver].image+'与'+MOTIFS[receiver].image+'，相生也有往返';
       paragraphs=[(stems.includes('戊')&&stems.includes('辛'))?'一座山，给玉一处安放；一块玉，让山有了值得珍惜的光。':identity+'的相生意象，像把一份力量交到另一种形状里：有了托举，也有了可以回应的去处。',giver+element(giver)+'这一侧，可以试着'+MOTIFS[giver].detail+'；'+receiver+element(receiver)+'这一侧，也可以'+MOTIFS[receiver].detail+'。好相处的地方，在于支持能被接住，回应也能回到彼此身上。'];
       ease='一份主动遇见另一份认真，喜欢可以变成两个人共同参与的安排。';
       friction='别让主动慢慢变成固定分工；轮流提议、准备和收尾，让两个人都能表达需要。';
     }else{
-      title=ma.image+'与'+mb.image+'，相异成景';
+      title=ma.image+'与'+mb.image+'，各有形状，也各有分寸';
       paragraphs=[identity+'带来不同的用力方向。'+ma.image+'有'+ma.image+'的形状，'+mb.image+'有'+mb.image+'的质地；这份不同，适合用来认识彼此在意什么。','一方可以'+ma.detail+'，另一方可以'+mb.detail+'。愿意先听懂对方为什么这样选择，差异就有机会变成新的办法。'];
       ease='不同的办法可以替共同生活打开另一个角度，让各自的长处有发挥的位置。';
       friction='提出更好的办法前，先问对方最想保留什么；把共同底线与个人习惯分开商量。';
@@ -105,9 +107,9 @@
   function westCopy(suns,moons){
     const [a,b]=suns,same=a.element===b.element,compatible=friendly(a.element,b.element);
     const identity='太阳'+a.name+' × 太阳'+b.name;
-    const titles={火:'星火相映，兴致相接',土:'脚步相近，日常有着落',风:'清风相会，话语有回声',水:'水光相照，心事有人听'};
+    const titles={火:'星火相映，兴致在回应里生长',土:'脚步相近，踏实落在日常里',风:'清风相会，好奇让话题有下文',水:'水光相照，心事值得被听见'};
     const pairedTitle=[a.element,b.element].sort().join('')==='火风'?'风助星火，把兴致带远':'水润沃土，让关照生长';
-    const title=same?titles[a.element]:compatible?pairedTitle:'星光各有方向，靠近需要听见';
+    const title=same?titles[a.element]:compatible?pairedTitle:'星光各有方向，彼此在意的未必相同';
     const first=same?({火:'一句“走，我们去”，容易成为两个人故事的开场。',土:'一起把一件小事做好，也可以是一种踏实的靠近。',风:'从一句有意思的话开始，给彼此留下继续聊下去的兴致。',水:'愿意认真听一句心里话，就给亲近留下了一个入口。'})[a.element]:compatible?'一种节奏带来邀请，另一种节奏让邀请有了新的去处。':'一人先看见的，未必是另一人最在意的；愿意交换视角，是靠近的第一步。';
     const motifReading=a.index===b.index
       ?identity+'可以从“'+SOLAR_MOTIFS[a.index][0]+'”这个意象展开。看看'+SOLAR_MOTIFS[a.index][1]+'。'
@@ -118,7 +120,7 @@
   }
   function openingFor({scope,stems,rel,branch,combine,suns,moons,code}){
     const {east,ease,friction}=eastCopy(stems,rel,branch,combine),west=westCopy(suns,moons);
-    const summary=code==='heming'?'从靠近到回应，有多处值得一起珍惜的默契。':code==='tiaoxian'?'吸引里带着不同，理解要落在每一次具体的商量。':'彼此有回应，也各有自己的节奏。';
+    const summary=code==='heming'?'相近的线索给了解留了开场，真实的默契还在彼此的回应里。':code==='tiaoxian'?'差异有了位置，理解才有继续往前的余地。':'支持落到两个人身上，才有继续靠近的余地。';
     return {version:ASSESSMENT_VERSION,scope,status:'ready',code,...CODENAMES[code],summary,east,west,ease,friction,sourceIds:[...east.sourceIds,...west.sourceIds]};
   }
   function assess(f){
@@ -155,5 +157,5 @@
     const seen=new Set(),suns=new Set(),top=rows.filter(row=>{if(seen.has(row.stem)||suns.has(row.sun))return false;seen.add(row.stem);suns.add(row.sun);return true;}).slice(0,5);
     return {version:RANK_VERSION,space:120,status:exact?'ready':'partial',tieBreak:'同一代号内并列，按天干与黄道顺序稳定展示；从中选出日主与太阳星座均不同的五种类型，不表示精确前五名。',rules:'知星的文化意象分类：日主关系为主、太阳元素为参照。类型没有另一人的日支与月亮；实际双盘另按双方完整的已知资料解读。',rows:top,allRows:rows};
   }
-  return Object.freeze({VERSION,RANK_VERSION,ASSESSMENT_VERSION,STEMS,SIGNS,element,relation,angle,facts,assess,rank});
+  return Object.freeze({VERSION,RANK_VERSION,ASSESSMENT_VERSION,STEMS,SIGNS,element,stemImage,relation,angle,facts,assess,rank});
 });

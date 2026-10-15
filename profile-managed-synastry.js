@@ -53,7 +53,7 @@
     if(target.disabled||ctx.busy)return;ctx.busy=true;target.disabled=true;
     try{current(ctx);await fn();}catch(e){handle(ctx,e);}finally{ctx.busy=false;if(active===ctx&&target.isConnected)target.disabled=false;}
   });return target;}
-  function start(ctx,title){current(ctx,false);ctx.title.textContent=title;ctx.body.replaceChildren();ctx.dialog.scrollTop=0;ctx.notice=node('p','','managed-note');ctx.notice.setAttribute('role','status');ctx.body.append(ctx.notice);}
+  function start(ctx,title){current(ctx,false);ctx.dialog.classList.remove('synastry-reading-dialog');ctx.title.textContent=title;ctx.body.replaceChildren();ctx.dialog.scrollTop=0;ctx.notice=node('p','','managed-note');ctx.notice.setAttribute('role','status');ctx.body.append(ctx.notice);}
   async function refreshReports(ctx){
     const items=[],seen=new Set();let before;
     do{current(ctx);const page=await window.zxMember.paidReportList(before?{before}:undefined);current(ctx);
@@ -124,6 +124,7 @@
   function reading(ctx,result){
     if(result?.status!=='ready'||!PAIR_ID.test(result.id||'')||!Array.isArray(result.report?.chapters)||result.report.chapters.length!==4)throw error('PAIR_UNAVAILABLE');
     start(ctx,'本账号的合盘');
+    ctx.dialog.classList.add('synastry-reading-dialog');
     const ids=result.reportIds||[],names=ids.map((id,i)=>name(ctx.reports.find(r=>r.report_id===id)||{title:i?'第二张图谱':'第一张图谱'}));
     const opening=window.ZxSynastryOpening?.create(result.report.opening,{names});
     if(opening)ctx.body.append(opening);

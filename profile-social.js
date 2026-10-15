@@ -145,6 +145,7 @@
   }
   function startView(ctx, title) {
     check(ctx);
+    ctx.dialog.classList.remove('synastry-reading-dialog');
     ctx.view++;
     ctx.requestKey = '';
     ctx.token = '';
@@ -496,6 +497,7 @@
     if(window.ZxSponsoredPair?.isIncluded(result)&&result.participantNames){const names=result.participantNames,reader=result.reader,other=reader==='person-a'?'person-b':'person-a';if(['person-a','person-b'].includes(reader))ctx.body.append(el('p','你（'+window.ZxSponsoredPair.safeName(names[reader])+'） × 对方（'+window.ZxSponsoredPair.safeName(names[other])+'）','social-reading-headline'));}
     notice(ctx,status(result.status)+(date(result.expiresAt) ? ' · '+date(result.expiresAt)+'到期' : ''));
     if (result.status==='ready' && result.report && Array.isArray(result.report.chapters)) {
+      ctx.dialog.classList.add('synastry-reading-dialog');
       const opening=window.ZxSynastryOpening?.create(result.report.opening);
       if(opening)ctx.body.append(opening);
       if (typeof result.report.precisionNotice==='string' && result.report.precisionNotice.trim()) ctx.body.append(el('p',result.report.precisionNotice,'social-note'));
