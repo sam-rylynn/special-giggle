@@ -72,3 +72,69 @@ dialog.synastry-reading-dialog{width:min(44rem,calc(100vw - 24px));max-width:cal
 .synastry-reading-dialog .synastry-opening__reason-title{text-wrap:balance}
 @media(max-width:600px){.synastry-reading-dialog .dialog-body{padding:1.25rem}.synastry-reading-dialog .synastry-opening__balance{padding:1.125rem}.synastry-reading-dialog :is(.managed-chapter,.social-reading)>h3{font-size:1.375rem}}
 @media(max-width:350px){.synastry-reading-dialog .dialog-body{padding:1rem}}
+
+/* Profile essentials: static navigation, readable identity and secondary management. */
+.zx-profile .profile-shell{width:min(calc(100% - 32px),960px);padding-inline:0}
+.zx-profile .topbar{position:static;background:transparent;min-height:60px;padding-block:8px;border-color:#c9a85c29}
+.zx-profile .topbar .brand img{mix-blend-mode:screen;border-radius:50%;-webkit-user-select:none;user-select:none}
+.zx-profile .page-heading{margin-top:0;padding:24px 0 4px}
+.zx-profile .page-heading h1{font-size:26px}
+.zx-profile .account-number-row{display:flex;align-items:center;flex-wrap:wrap;gap:0 12px;min-height:44px;margin-bottom:16px;color:var(--mist);font-size:14px}
+.zx-profile #profile-number{font:500 17px/1.5 var(--sans);color:var(--moon);font-variant-numeric:tabular-nums;letter-spacing:.06em;white-space:nowrap}
+.zx-profile .account-number-status{font-size:12px}
+.zx-profile .identity,.zx-observatory.zx-profile .identity{grid-template-columns:88px minmax(0,1fr) auto;gap:0 16px;min-height:0;padding-bottom:20px;margin-bottom:0}
+.zx-observatory.zx-profile .zx-ob-profile-art{width:88px}
+.zx-profile .identity-copy{min-width:0}
+.zx-profile .identity-copy h2,.zx-observatory.zx-profile .identity-copy h2{font:500 20px/1.5 var(--sans);margin:4px 0;word-break:normal;overflow-wrap:anywhere}
+.zx-profile .chart-title-date{white-space:nowrap;font-variant-numeric:tabular-nums}
+.zx-profile .chart-title-place{display:inline-block;max-width:100%;word-break:normal;overflow-wrap:anywhere}
+.zx-observatory.zx-profile .zx-ob-stem-label{font-size:16px;margin-top:4px}
+.zx-profile .identity>.switch-chart,.zx-observatory.zx-profile .identity>.switch-chart{grid-column:3;grid-row:2;justify-self:start}
+.zx-profile .overview-grid{gap:24px}
+.zx-profile .section-heading{margin-bottom:10px;flex-wrap:wrap}
+.zx-profile .panel{padding:20px 0}
+.zx-profile .credit-value{margin:4px 0}.zx-profile .credit-value strong{font-size:32px}
+.zx-observatory.zx-profile .shared-reading-panel{padding:20px 0;min-height:0}
+.zx-profile .shared-reading-panel>.section-heading,.zx-profile .shared-reading-panel>.section-description{padding-right:110px}
+.zx-profile .shared-reading-panel>.button{margin-top:12px}
+.zx-observatory.zx-profile .zx-ob-pair{width:100px;height:70px;top:26px;right:0}
+.zx-profile .profile-secondary>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;cursor:pointer;list-style:none;font:500 16px/1.6 var(--sans);color:var(--moon)}
+.zx-profile .profile-secondary>summary::-webkit-details-marker{display:none}
+.zx-profile .profile-secondary>summary::after{content:'⌄';color:var(--gold);flex:none}
+.zx-profile .profile-secondary[open]>summary::after{content:'⌃'}
+.zx-profile .profile-secondary>summary .small-label{margin-left:auto}
+.zx-profile .relationship-panel{margin-top:14px;border-top:1px solid var(--line)}
+.zx-profile .relationship-panel[open]>summary{margin-bottom:12px}
+.zx-profile details.chart-library{padding:0}
+.zx-profile .chart-library-copy strong{font:500 16px/1.6 var(--sans);word-break:normal}
+.zx-profile .chart-library-copy{min-width:0}
+.zx-profile .chart-library-actions{flex-wrap:wrap;gap:8px 16px}
+.zx-profile .discovery{margin-top:0;border-top:1px solid var(--line)}
+.zx-profile .profile-shell main [id]{scroll-margin-top:16px}
+.zx-profile #profile-number{user-select:text;-webkit-user-select:text}
+@media(max-width:600px){
+ .zx-profile .brand{font-size:20px;gap:6px}.zx-profile .brand img{width:28px;height:28px}
+ .zx-profile .topbar{gap:8px}.zx-profile .profile-home-actions{gap:10px}
+ .zx-profile .profile-new-chart{padding-inline:8px;font-size:13px}.zx-profile .profile-home-actions .back-link{font-size:13px}
+ .zx-profile .page-heading{padding-top:20px}
+ .zx-profile .identity,.zx-observatory.zx-profile .identity{grid-template-columns:72px minmax(0,1fr);column-gap:12px}
+ .zx-observatory.zx-profile .zx-ob-profile-art{width:72px;grid-row:1 / 4}
+ .zx-profile .identity-copy h2,.zx-observatory.zx-profile .identity-copy h2{font-size:18px}
+ .zx-profile .identity>.text-button,.zx-observatory.zx-profile .identity>.text-button{grid-column:2;grid-row:2;justify-self:start;min-height:44px}
+ .zx-profile .identity>.switch-chart,.zx-observatory.zx-profile .identity>.switch-chart{grid-row:2;justify-self:end}
+ .zx-profile .identity-copy{grid-column:2;grid-row:1}
+ .zx-profile .overview-grid{gap:0}
+ .zx-profile .section-heading h2{font-size:20px}
+ .zx-profile .identity-note{grid-column:1 / -1}
+ .zx-profile :is(.social-field,.managed-field,.profile-purchase-field) :is(input,select,textarea){font-size:16px}
+}
+
+@media(min-width:360px) and (max-width:600px){
+ .zx-profile .overview-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+ .zx-profile .overview-grid .actions{gap:4px 10px;flex-wrap:wrap}
+ .zx-profile .overview-grid .section-heading h2{font-size:18px}
+ .zx-profile .overview-grid .button{padding-inline:12px}
+ .zx-profile .overview-grid .report-panel>.button{margin-top:16px;align-self:flex-start}
+}
+
+.zx-static-brand img{mix-blend-mode:screen;border-radius:50%;-webkit-user-select:none;user-select:none}

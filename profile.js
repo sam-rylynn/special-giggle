@@ -113,6 +113,9 @@
   function updateName() {
     const selected=choice(), name=chartName(selected);
     txt('profile-name',name||'还没有设置昵称');txt('profile-avatar',Array.from(name)[0]||'我');txt('edit-profile-name',name?'修改昵称':'设置昵称');
+    // Keep dates and short place names whole instead of splitting a city glyph.
+    const parts=name.match(/^(\d{4}-\d{2}-\d{2})\s*[·・]\s*(.+)$/);
+    if(parts){const date=node('span',parts[1],'chart-title-date'),place=node('span',parts[2],'chart-title-place');$('profile-name').replaceChildren(date,document.createTextNode(' · '),place);}
     txt('profile-name-note','');
   }
   function node(tag,text,cls){const item=document.createElement(tag);if(text!=null)item.textContent=String(text);if(cls)item.className=cls;return item;}
@@ -136,7 +139,7 @@
       const title=node('strong',kind==='local'?(data.name||'未命名图谱'):chartName(selection));
       const detail=kind==='local'?[data.input.d,data.input.t||'时间待补全',data.input.c].join(' · '):data.title||'账号中的深度报告';
       const status=kind==='local'?'深度报告待解锁':usable(data)?'深度报告已解锁':data.unavailable_reason?'报告已到期':'报告待确认';
-      content.append(title,node('p',detail),node('small',(picked?'当前 · ':'')+status));
+      content.append(title);if(detail!==title.textContent)content.append(node('p',detail));content.append(node('small',(picked?'当前 · ':'')+status));
       const controls=node('div',null,'chart-library-actions');
       const choose=action(picked?'当前图谱':'选择这张',()=>select(selection));choose.disabled=picked;choose.hidden=picked;choose.setAttribute('aria-pressed',String(picked));
       const home=node('a',kind==='local'||usable(data)?'进入日主页':'查看报告状态','text-button');home.href=kind==='local'||usable(data)?homeFor(selection):route('account',id,'report-purchase');
@@ -199,7 +202,17 @@
     }
     if(libraryError){txt('profile-notice',libraryError);txt('chart-capacity','本机存档待读取');txt('chart-capacity-help','恢复读取后再添加或修改，原有存档不会被替换。');}
   }
-  function clearPaid(message){++revision;++balanceRevision;reports=[];paidSeals.clear();currentId='';owner='';loading=false;serviceState='login';fallbackSelection=null;nameTarget=null;$('profile-name-dialog').close();render();txt('profile-notice',message);}
+  function resetNumber(){txt('profile-number','登录后显示');txt('profile-number-status','');$('copy-profile-number').hidden=true;}
+  async function refreshNumber(epoch,account){
+    txt('profile-number','读取中…');
+    try{
+      const result=await client().synastryCall('/synastry/profile');
+      if(!unchanged(epoch,account))return;
+      if(!/^[1-9][0-9]{5}$/.test(result?.code||''))throw new Error('ACCOUNT_NUMBER_UNAVAILABLE');
+      txt('profile-number',result.code);$('copy-profile-number').hidden=false;
+    }catch(_){if(unchanged(epoch,account))txt('profile-number','暂未读取，请刷新');}
+  }
+  function clearPaid(message){++revision;++balanceRevision;reports=[];paidSeals.clear();currentId='';owner='';loading=false;serviceState='login';fallbackSelection=null;nameTarget=null;resetNumber();$('profile-name-dialog').close();render();txt('profile-notice',message);}
   function unchanged(epoch,account){if(revision!==epoch)return false;const state=snapshot();if(signedIn(state)&&state.accountRef===account&&hasConsent('device_account'))return true;clearPaid('账号已变化，请刷新后恢复当前账号的资料。');return false;}
   async function refreshBalance(){
     const sequence=++balanceRevision,epoch=revision,account=owner,id=currentId;
@@ -217,14 +230,14 @@
     if(awaitingLinkedChart()&&entries().some(item=>item.id===incomingLocalId)){
       incomingApplied=true;reconciling=true;try{select({kind:'local',id:incomingLocalId});}finally{reconciling=false;}
     }
-    const preferred=choice(), epoch=++revision;++balanceRevision;paidSeals.clear();reports=[];currentId='';owner='';loading=true;
+    const preferred=choice(), epoch=++revision;++balanceRevision;paidSeals.clear();reports=[];currentId='';owner='';loading=true;resetNumber();
     serviceState=client()&&client().paidReportServiceAvailable()?'login':'closed';render();
     if(serviceState==='closed'){txt('profile-notice',libraryError||'');loading=false;return;}
     if(!hasConsent('device_account')){txt('profile-notice','');loading=false;return;}
     try{
       await client().start();if(revision!==epoch)return;const state=snapshot();
       if(!signedIn(state)){txt('profile-notice','');return;}
-      owner=state.accountRef;let before,next,items=[];
+      owner=state.accountRef;refreshNumber(epoch,owner);let before,next,items=[];
       do{const page=await client().paidReportList(before?{before}:undefined);if(!unchanged(epoch,owner))return;
         if(!page||!Array.isArray(page.items))throw new Error('INVALID_REPORTS');items.push(...page.items.filter(item=>item&&REPORT_ID.test(item.report_id||'')));
         next=page.next_before;if(next!=null&&next!==0&&(!Number.isSafeInteger(next)||next<1||(before&&next>=before)))throw new Error('INVALID_PAGINATION');before=next;
@@ -275,6 +288,7 @@
     }catch(_){txt('chart-export-status','导出未完成，请检查浏览器存储设置后重试。');}
   }
   function openAccountTarget(){
+    if(['#chart-library','#chart-library-title'].includes(location.hash))$('chart-library').open=true;
     if(['#account-status','#order-center','#report-purchase','#delete-account','#member-upgrade'].includes(location.hash)){
       $('profile-account').open=true;
       if(location.hash==='#delete-account')$('delete-account').closest('details').open=true;
@@ -331,6 +345,15 @@
   }
   function mount(){
     if(!$('profile-content'))return;mountStars();openAccountTarget();root.addEventListener('hashchange',openAccountTarget);
+    const revealCharts=()=>{$('chart-library').open=true;$('chart-library').scrollIntoView({block:'start'});};
+    $('switch-profile-chart').addEventListener('click',revealCharts);
+    document.addEventListener('click',event=>{if(event.target.closest('a[href="#chart-library-title"]'))revealCharts();});
+    $('copy-profile-number').addEventListener('click',async()=>{
+      const epoch=revision,account=snapshot().accountRef,code=$('profile-number').textContent;
+      if(!/^[1-9][0-9]{5}$/.test(code)||!unchanged(epoch,account))return;
+      try{await navigator.clipboard.writeText(code);if(unchanged(epoch,account))txt('profile-number-status','已复制');}
+      catch(_){if(unchanged(epoch,account))txt('profile-number-status','可长按号码复制');}
+    });
     if(root.ZxPaidReports&&root.ZxPaidReports.mountAccount)root.ZxPaidReports.mountAccount().then(()=>{
       const selected=choice();if($('report-purchase'))$('report-purchase').hidden=!(selected&&selected.kind==='report'&&selected.id===params.get('report'));
       openAccountTarget();const section=$((location.hash||'').slice(1));if(section&&!section.hidden&&['#account-status','#order-center','#report-purchase'].includes(location.hash)&&section.scrollIntoView)section.scrollIntoView({block:'start'});

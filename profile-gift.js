@@ -64,7 +64,7 @@
   function checkedOrder(value,id){const g=readGift(value?.gift,id),o=value?.order,fen=giftFen();if(!o||!ORDER.test(o.order_no||'')||g.orderId!==o.order_no||o.product_code!=='gift_report_v1'||fen===null||o.amount_fen!==fen||o.currency!=='CNY'||o.paid_report_id!=null)throw error('ORDER_RESPONSE_INVALID');return {gift:g,order:o,checkout:value.checkout};}
   function giftUrl(token){const source=/\/(web|v1)\/[^/]*$/.test(location.pathname),url=new URL(source?'../web/synastry.html':'./synastry.html',location.href);url.search='';if(/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)&&window.ZxPaidReports?.isPrivate?.())url.searchParams.set('private-report','1');url.hash='gift='+token;return url.href;}
   function existingReport(ctx,e){const id=e.data?.reportId,code=e.data?.senderCode;if(!REPORT.test(id||''))return;ctx.existingLink?.remove();
-    if(/^ZX[A-F0-9]{16}$/.test(code||'')&&typeof window.ZxProfileSocial?.open==='function')ctx.existingLink=action(ctx,'使用已有报告发起合盘',()=>{current(ctx);close();return window.ZxProfileSocial.open({compose:true,channel:'internal',lookupCode:code,reportId:id});});
+    if(/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(code||'')&&typeof window.ZxProfileSocial?.open==='function')ctx.existingLink=action(ctx,'使用已有报告发起合盘',()=>{current(ctx);close();return window.ZxProfileSocial.open({compose:true,channel:'internal',lookupCode:code,reportId:id});});
     else{const url=new URL(giftUrl(''));url.hash='home';url.searchParams.set('report',id);ctx.existingLink=el('a','使用已有报告进入合盘','gift-button');ctx.existingLink.href=url.href;}
     ctx.body.append(ctx.existingLink);
   }

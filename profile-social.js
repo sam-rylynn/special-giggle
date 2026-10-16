@@ -268,7 +268,7 @@
     startView(ctx,internal?'站内邀请':external?'微信邀请':'发起合盘邀请');
     const form = approvalForm(ctx,ctx.body,false,true);
     const targetLabel = el('label',internal?'对方的知星号':'对方的知星号（选填）','social-field');
-    const target = el('input'); target.maxLength=18; target.autocomplete='off'; target.placeholder=internal?'请输入对方的完整知星号':'不填则使用链接邀请';
+    const target = el('input'); target.maxLength=18; target.autocomplete='off';target.inputMode='numeric'; target.placeholder=internal?'请输入对方的6位知星号':'不填则使用链接邀请';
     targetLabel.append(target);
     const found = el('p','','social-note');
     const output = el('div');
@@ -279,7 +279,7 @@
     form.change(()=>output.replaceChildren());
     const lookupAccount = async view => {
       const code=target.value.trim().toUpperCase();
-      if (!/^ZX[A-F0-9]{16}$/.test(code)) throw Object.assign(new Error(),{code:'ACCOUNT_UNAVAILABLE'});
+      if (!/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(code)) throw Object.assign(new Error(),{code:'ACCOUNT_UNAVAILABLE'});
       lookingUp=true; target.disabled=true;
       try { const result=await call(ctx,'/synastry/lookup',{code},view); lookedUp=code; found.textContent=String(result.name || '知星用户')+' · '+String(result.code || code); }
       finally { if (isCurrent(ctx,view)) { lookingUp=false; target.disabled=false; } }
@@ -289,7 +289,7 @@
       if (lookingUp || ctx.creating) return;
       const body=form.value();
       const code=target.value.trim().toUpperCase();
-      if ((internal&&!code) || (code && (!/^ZX[A-F0-9]{16}$/.test(code) || lookedUp!==code))) { notice(ctx,internal?'请先输入并核对对方的知星号。':'请先核对对方的知星号，或留空使用链接邀请。'); return; }
+      if ((internal&&!code) || (code && (!/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(code) || lookedUp!==code))) { notice(ctx,internal?'请先输入并核对对方的知星号。':'请先核对对方的知星号，或留空使用链接邀请。'); return; }
       ctx.requestKey=ctx.requestKey || requestKey();
       ctx.creating=true; form.disable(true); target.disabled=true; lookup.disabled=true; back.disabled=true;
       try {
@@ -327,16 +327,16 @@
     ctx.reports.filter(usableReport).forEach(row=>{const option=el('option',String(row.title||'我的深度报告')+' · '+date(reportExpiry(row))+'到期');option.value=row.report_id;picker.append(option);});
     picker.value=ctx.reports.some(row=>row.report_id===ctx.reportId)?ctx.reportId:ctx.reports.length===1?ctx.reports[0].report_id:'';
     pickerLabel.append(picker);ctx.body.append(pickerLabel);
-    const content=el('div'),targetLabel=el('label',internal?'对方的知星号':'对方的知星号（选填）','social-field'),target=el('input');target.maxLength=18;target.autocomplete='off';target.placeholder=internal?'请输入对方的完整知星号':'不填则使用链接邀请';targetLabel.append(target);
+    const content=el('div'),targetLabel=el('label',internal?'对方的知星号':'对方的知星号（选填）','social-field'),target=el('input');target.maxLength=18;target.autocomplete='off';target.inputMode='numeric';target.placeholder=internal?'请输入对方的6位知星号':'不填则使用链接邀请';targetLabel.append(target);
     const found=el('p','','social-note'),output=el('div'),toolbar=el('div',undefined,'social-toolbar');
     let prepared=null,sequence=0,lookedUp='',lookingUp=false;
-    const lookupAccount=async currentView=>{const code=target.value.trim().toUpperCase();if(!/^ZX[A-F0-9]{16}$/.test(code))throw Object.assign(new Error(),{code:'ACCOUNT_UNAVAILABLE'});
+    const lookupAccount=async currentView=>{const code=target.value.trim().toUpperCase();if(!/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(code))throw Object.assign(new Error(),{code:'ACCOUNT_UNAVAILABLE'});
       lookingUp=true;target.disabled=true;try{const result=await call(ctx,'/synastry/lookup',{code},currentView);lookedUp=code;found.textContent=included.safeName(result.name)+' · '+String(result.code||code);}finally{if(isCurrent(ctx,currentView)){lookingUp=false;target.disabled=false;}}};
     const lookup=action(ctx,button('核对知星号'),lookupAccount);
     const create=action(ctx,button(internal?'确认本人资料并发送邀请':'确认本人资料并生成邀请链接'),async currentView=>{
       if(!prepared||ctx.creating||lookingUp)return;
       const code=external?'':target.value.trim().toUpperCase();
-      if((internal&&!code)||(code&&(!/^ZX[A-F0-9]{16}$/.test(code)||lookedUp!==code))){notice(ctx,'请先输入并核对对方的知星号，或选择微信链接邀请。');return;}
+      if((internal&&!code)||(code&&(!/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(code)||lookedUp!==code))){notice(ctx,'请先输入并核对对方的知星号，或选择微信链接邀请。');return;}
       const selected=picker.value,selectedSequence=sequence;check(ctx,currentView);
       ctx.creating=true;prepared.disable(true);picker.disabled=true;target.disabled=true;lookup.disabled=true;back.disabled=true;
       try{
@@ -579,7 +579,7 @@
     if (!dialog || !title || !body) return;
     if (active) clearSensitive(active);
     injectStyle();
-    const ctx={dialog,title,body,generation:++generation,view:0,owner:'',profile:{},senderName:typeof options.senderName==='string'?options.senderName:'',senderOwner:options.senderOwner||'',onInvitationCreated:options.onInvitationCreated,reports:[],reportId:REPORT_ID.test(options.reportId || '') ? options.reportId : '',token:'',requestKey:'',incomingToken:ID.test(options.token || '')?options.token:'',creating:false,lookupCode:/^ZX[A-F0-9]{16}$/.test(options.lookupCode || '')?options.lookupCode:'',channel:['internal','external'].includes(options.channel)?options.channel:''};
+    const ctx={dialog,title,body,generation:++generation,view:0,owner:'',profile:{},senderName:typeof options.senderName==='string'?options.senderName:'',senderOwner:options.senderOwner||'',onInvitationCreated:options.onInvitationCreated,reports:[],reportId:REPORT_ID.test(options.reportId || '') ? options.reportId : '',token:'',requestKey:'',incomingToken:ID.test(options.token || '')?options.token:'',creating:false,lookupCode:/^(?:[1-9][0-9]{5}|ZX[A-F0-9]{16})$/.test(options.lookupCode || '')?options.lookupCode:'',channel:['internal','external'].includes(options.channel)?options.channel:''};
     active=ctx;
     title.textContent=options.token ? '收到合盘邀请' : options.kind==='records' ? '合盘记录' : '我的邀请';
     body.replaceChildren();
