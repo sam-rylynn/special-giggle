@@ -930,6 +930,11 @@
         body: { profile_name: String(name || '').trim() }
       });
     },
+    testingStatus: function () { return privateReportApi('/account/testing'); },
+    testingGrantReport: function (reportId, confirmation) {
+      return privateReportMutation('/account/testing/reports',{method:'POST',body:Object.assign({},confirmation,{reportId:checkedPaidReportId(reportId)})});
+    },
+    testingGift: function (body) { return privateReportMutation('/account/testing/gifts',{method:'POST',body:body}); },
     paidReportPreview: function (input, confirmation) {
       if (!confirmation || confirmation.transferConfirmed !== true) return Promise.reject(reportClientError('REPORT_TRANSFER_CONFIRMATION_REQUIRED'));
       if (!privateReportServiceAvailable()) return Promise.reject(reportClientError('REPORT_SERVICE_UNAVAILABLE'));

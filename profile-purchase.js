@@ -103,6 +103,9 @@
   }
   function statusMessage(error) {
     const code = String(error && error.code || '');
+    if(code==='TEST_ACCESS_FORBIDDEN')return '测试权限已关闭，请刷新后使用正常购买流程。';
+    if(code==='TEST_REPORT_HAS_ORDER')return '这份报告已有订单，请先到报告与订单确认状态。测试授权不会覆盖已有订单。';
+    if(code==='TEST_DAILY_LIMIT')return '今天的测试报告数量已用完，请明天再试。';
     if (/AUTH|SESSION|TOKEN|ACCOUNT_CHANGED|PRIVACY_CONSENT/.test(code)) return '登录状态已变化，请关闭后登录原微信账号再继续。';
     if (/EXPIRED|CONTENT_DELETED/.test(code)) return '这份报告已到期或内容已删除，请先到报告与订单中确认状态。';
     if (/NOT_FOUND|NOT_OWNED/.test(code)) return '当前账号无法确认这份报告，请登录原微信账号后查看。';
@@ -124,6 +127,7 @@
       const action = button(result.entitlement_status === 'unpaid' ? '继续购买这份报告' : '查看已有报告', () => checkout(view, id));
       if (result.entitlement_status === 'unpaid' && !purchasable()) { action.disabled = true; action.textContent = '购买暂未开放'; }
       view.body.append(action);
+      if(view.testAccess&&result.entitlement_status==='unpaid')testUnlock(view,id);
     } catch (error) {
       if (!same(view)) return;
       live.textContent = statusMessage(error) || '暂时无法确认这份报告。请先查看已有报告与订单，确认后再继续。';
@@ -133,6 +137,27 @@
   function check(view, label) {
     const wrap = node('label', null, 'check'), input = node('input'); input.type = 'checkbox';
     wrap.append(input, node('span', label)); view.body.append(wrap); return { wrap, input };
+  }
+  function testUnlock(view,id) {
+    view.body.append(node('p','当前账号可免费测试：完整报告、100 次本盘问星及一个指定配对。测试解锁不收款。','note'));
+    const adult=check(view,'我已满 18 周岁'),agree=check(view,'我已阅读并同意本次报告的用户协议、隐私、报告、退款、购买须知及 AI 说明。');
+    [['用户协议','terms'],['隐私政策','privacy'],['报告规则','membership-rules'],['退款规则','refund-policy'],['购买须知','purchase-notice'],['AI 说明','ai-disclosure']].forEach(([label,page])=>view.body.append(link(label,route(page))));
+    const live=node('p','','status');live.setAttribute('role','status');view.body.append(live);
+    let busy=false;
+    const unlock=button('测试解锁（不收款）',async()=>{
+      if(busy||!same(view)||!adult.input.checked||!agree.input.checked)return;
+      busy=true;update();live.textContent='正在发放测试授权并生成报告…';
+      try{
+        const result=await sdk().testingGrantReport(id,{...sdk().giftPaymentVersions(),consent:true,adultConfirmed:true,idempotencyKey:'test-report:'+id});
+        if(!same(view))return;
+        if(result?.testAccess!==true||result.report_id!==id)throw fail('REPORT_RESPONSE_INVALID');
+        if(typeof view.options.onChanged==='function')view.options.onChanged();
+        location.assign(root.ZxPaidReports?.reportUrl?.(id)||route('report',id));
+      }catch(e){if(same(view))live.textContent=statusMessage(e)||'测试授权结果尚未确认，请重试同一份报告。';}
+      finally{busy=false;if(same(view))update();}
+    });
+    function update(){unlock.disabled=busy||!adult.input.checked||!agree.input.checked;unlock.textContent=busy?'正在准备报告…':'测试解锁（不收款）';}
+    adult.input.addEventListener('change',update);agree.input.addEventListener('change',update);view.body.append(unlock);update();
   }
   async function bindPrepared(view, record) {
     if (!same(view) || !record.reportId) return false;
@@ -166,12 +191,12 @@
     const permission = check(view, '我已获得资料主体授权，可为其上传、保存出生资料并购买本报告。'); permission.wrap.hidden = true;
     const transfer = check(view, '我同意将上方出生日期、时间、地点及排盘性别传至知星服务端，用于准备这张盘的报告。');
     const storage = check(view, '我同意在当前账号中保存必要出生资料与报告草稿。未购买草稿保存24小时；购买并成功交付后，报告与相关问答保存6个北京时间日历月。');
-    view.body.append(node('p', '下一步将核对正式条款与购买人年满18周岁的确认，再进入支付。首次使用 AI 问星另行确认。', 'note'));
+    view.body.append(node('p', view.testAccess?'下一步将核对正式条款与年满18周岁的确认，可选择测试解锁或正常购买。首次使用 AI 问星另行确认。':'下一步将核对正式条款与购买人年满18周岁的确认，再进入支付。首次使用 AI 问星另行确认。', 'note'));
     const live = node('p', record.phase === 'unknown' ? '上次准备结果尚未确认。继续核对会恢复同一盘面，请勿换一张盘重复操作。' : '', 'status');
     live.setAttribute('role', 'status'); view.body.append(live);
     const submit = button('核对并继续购买', async () => {
       if (!same(view) || !valid() || !purchasable() || record.phase === 'pending') return;
-      if (record.reportId) { if (await bindPrepared(view, record)) checkout(view, record.reportId); return; }
+      if (record.reportId) { if (await bindPrepared(view, record)) { if(view.testAccess)await readBound(view,record.reportId);else checkout(view,record.reportId); } return; }
       const account = view.owner;
       record.phase = 'pending'; update(); live.textContent = '正在为当前账号核对这张盘…';
       // Preserve this attempt across closing/reopening the dialog. The server
@@ -192,7 +217,10 @@
         await record.promise;
         if (!await bindPrepared(view, record)) return;
         if (typeof view.options.onChanged === 'function') view.options.onChanged();
-        checkout(view, record.reportId);
+        if(view.testAccess){
+          view.body.replaceChildren(node('p',(entry.name||'当前图谱')+' · '+entry.input.d+' '+entry.input.t+' · '+entry.input.c,'chart'));
+          await readBound(view,record.reportId);
+        }else checkout(view, record.reportId);
       } catch (error) {
         if (!record.reportId) record.phase = 'unknown';
         if (!same(view)) return;
@@ -203,7 +231,7 @@
     function update() {
       permission.wrap.hidden = subject.value !== 'other';
       submit.disabled = !valid() || record.phase === 'pending' || !purchasable();
-      submit.textContent = record.phase === 'pending' ? '正在核对这张盘…' : record.phase === 'unknown' ? '继续核对同一盘面' : '核对并继续购买';
+      submit.textContent = record.phase === 'pending' ? '正在核对这张盘…' : record.phase === 'unknown' ? '继续核对同一盘面' : view.testAccess?'确认资料，继续测试解锁或购买':'核对并继续购买';
     }
     [subject, permission.input, transfer.input, storage.input].forEach(input => input.addEventListener('change', update));
     view.body.append(submit); update();
@@ -211,6 +239,7 @@
       live.textContent = '上次确认仍在处理中，正在等待同一盘面的结果…';
       record.promise.then(async () => {
         if (!await bindPrepared(view, record)) return;
+        if(view.testAccess){view.body.replaceChildren();await readBound(view,record.reportId);return;}
         live.textContent = '这张盘已核对完成，可以继续购买。';
         submit.remove(); view.body.append(button('继续购买这份报告', () => checkout(view, record.reportId)));
       }).catch(error => {
@@ -259,6 +288,9 @@
       body.append(node('p', '请先使用微信登录并确认账号功能，再为当前选中的图谱购买报告。登录后可从“我的资料”继续选择这张盘。', 'status'),
         link('登录并继续购买', purchaseLoginUrl(entry))); return;
     }
+    try{view.testAccess=(await sdk().testingStatus?.())?.enabled===true;}catch(_){view.testAccess=false;}
+    if(!same(view))return;
+    if(view.testAccess)body.append(node('p','全功能测试权限已开通 · 可选择免费测试解锁。','note'));
     if (entry.reportId) return readBound(view, entry.reportId);
     if (!purchasable()) {
       const disabled = button('购买暂未开放', () => {}); disabled.disabled = true;

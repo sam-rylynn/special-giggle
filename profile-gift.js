@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const ID=/^[a-f0-9]{64}$/,REPORT=/^[a-f0-9]{48}$/,ORDER=/^[a-f0-9]{32}$/,CURSOR=/^[A-Za-z0-9_-]+\.[a-f0-9]{64}$/;
-  const PENDING='zx_gift_pending_v1',CLAIM='zx_gift_claim_pending_v1',TTL=30*60*1000;
+  const PENDING='zx_gift_pending_v1',CLAIM='zx_gift_claim_pending_v1',TEST_PENDING='zx_test_gift_pending_v1',TTL=30*60*1000;
   const LABELS={created:'待付款',funded:'待领取',claimed:'报告准备中',delivery_failed:'报告待重试',delivered:'已交付',expired:'领取已过期',refund_requested:'退款处理中',refund_pending:'退款处理中',refunded:'已退款',cancelled:'订单已关闭'};
   const MESSAGES={GIFT_DISABLED:'赠送服务暂未开放。',GIFT_SERVICE_UNAVAILABLE:'赠送服务暂未开放。',REPORT_SERVICE_UNAVAILABLE:'账号服务暂未开放。',REPORT_SALES_NOT_APPROVED:'赠送购买暂未开放。',
     GIFT_UNAVAILABLE:'这份礼物已过期或当前不可领取。',GIFT_NOT_FOUND:'这份礼物当前不可查看。',GIFT_ALREADY_CLAIMED:'这份礼物已经领取。',GIFT_SELF_CLAIM:'请把礼物发给朋友，不能领取自己送出的报告。',
@@ -68,8 +68,9 @@
     else{const url=new URL(giftUrl(''));url.hash='home';url.searchParams.set('report',id);ctx.existingLink=el('a','使用已有报告进入合盘','gift-button');ctx.existingLink.href=url.href;}
     ctx.body.append(ctx.existingLink);
   }
-  async function loadGift(ctx,id,refreshOrder=false){const result=refreshOrder?await call(ctx,'/synastry/gifts/'+id+'/order'):await call(ctx,'/synastry/gifts/'+id);const gift=refreshOrder?checkedOrder(result,id).gift:readGift(result,id);if(!refreshOrder&&gift.status==='created'&&ORDER.test(gift.orderId||''))return loadGift(ctx,id,true);showGift(ctx,gift,refreshOrder?result:null);}
+  async function loadGift(ctx,id,refreshOrder=false){const result=refreshOrder?await call(ctx,'/synastry/gifts/'+id+'/order'):await call(ctx,'/synastry/gifts/'+id);const gift=refreshOrder?(result.testAccess===true?readGift(result.gift,id):checkedOrder(result,id).gift):readGift(result,id);if(!refreshOrder&&gift.status==='created'&&ORDER.test(gift.orderId||''))return loadGift(ctx,id,true);showGift(ctx,gift,refreshOrder?result:null);}
   function showGift(ctx,value,payment){let gift=readGift(value);if(gift.status==='created'&&payment?.order?.status==='closed')gift={...gift,status:'cancelled'};ctx.giftId=gift.id;start(ctx,LABELS[gift.status]);
+    if(gift.testAccess){if(['refund_requested','refund_pending'].includes(gift.status))ctx.title.textContent='测试礼物取消中';ctx.body.append(el('p','测试礼物 · 未收款。领取后含 100 次本盘问星；未领取时取消或到期均不产生退款。','gift-note'));}
     const payer=ctx.mode==='purchase'||ORDER.test(gift.orderId||'');if(gift.status!=='created'){const pending=stored(PENDING);if(pending?.giftId===gift.id)drop(PENDING);}if(gift.status==='delivered')drop(CLAIM);
     const line={created:'赠送深度报告 · '+(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认'),funded:'礼物已备好，发给你想了解的人。',claimed:'领取已确认，正在准备报告。',delivery_failed:'领取已确认，报告暂未生成成功。',delivered:payer?'朋友的报告已交付。':'你的深度报告已准备好。',expired:'领取时间已过，未领取的付款将原路退回。',refund_requested:'退款申请已提交。',refund_pending:'正在原路退款。',refunded:'退款已完成。',cancelled:'这笔订单已关闭。'}[gift.status];ctx.body.append(el('p',line,'gift-lead'));
     if(payer&&gift.status==='cancelled'){const again=profileLink('重新赠送深度报告'),url=new URL(again.href);url.searchParams.set('open','gift');again.href=url.href;ctx.body.append(again);}
@@ -110,7 +111,7 @@
       if(!gift.pairId)ctx.body.append(el('p','共同解读将在双方报告备齐后生成，也可随时从“我的资料”查看。','gift-note'));
     }
     if(!payer&&['claimed','delivery_failed'].includes(gift.status))ctx.body.append(action(ctx,gift.status==='claimed'?'查看生成结果':'重试生成',async()=>showGift(ctx,readGift(await call(ctx,'/synastry/gifts/'+gift.id+'/retry',{}),gift.id))));
-    if(payer&&['funded','expired'].includes(gift.status))ctx.body.append(action(ctx,'申请退款',async()=>{const box=el('div',undefined,'gift-confirm');box.append(el('p','确认收回未领取的礼物并原路退款？'),action(ctx,'确认退款',async()=>showGift(ctx,readGift(await call(ctx,'/synastry/gifts/'+gift.id+'/refund',{confirmed:true}),gift.id))),button('保留礼物',()=>box.remove()));ctx.body.append(box);}));
+    if(payer&&['funded','expired'].includes(gift.status))ctx.body.append(action(ctx,gift.testAccess?'取消测试礼物':'申请退款',async()=>{const box=el('div',undefined,'gift-confirm');box.append(el('p',gift.testAccess?'确认收回未领取的测试礼物？本次没有支付款项。':'确认收回未领取的礼物并原路退款？'),action(ctx,gift.testAccess?'确认取消':'确认退款',async()=>showGift(ctx,readGift(await call(ctx,'/synastry/gifts/'+gift.id+'/refund',{confirmed:true}),gift.id))),button('保留礼物',()=>box.remove()));ctx.body.append(box);}));
     if(gift.supportRequired)ctx.body.append(profileLink('前往我的资料联系售后'));
     if(gift.pairStatus==='waiting_reports')ctx.body.append(el('p','双方深度报告齐备后即可看合盘。','gift-note'));
     ctx.body.append(action(ctx,'刷新状态',()=>loadGift(ctx,gift.id,payer)),rules());
@@ -119,6 +120,20 @@
   function purchase(ctx){start(ctx,'送一份深度报告');ctx.body.append(el('p','一份写给 TA 的自我探索。','gift-lead'),el('p',(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认')+' · 深度报告 + 1 次问星','gift-price'));
     if(!ctx.options.senderName?.trim()){ctx.body.append(el('p',MESSAGES.DISPLAY_NAME_INVALID,'gift-note'),profileLink());return;}
     const adult=check('我已满 18 周岁'),agree=check('我已阅读并同意购买与合盘规则');ctx.body.append(adult.label,agree.label,rules());
+    member().testingStatus?.().then(access=>{
+      current(ctx);if(access?.enabled!==true)return;
+      ctx.body.append(el('p','全功能测试权限：可免费赠送测试报告，领取后含 100 次本盘问星。','gift-note'));
+      const before=stored(TEST_PENDING),senderReportId=ctx.options.senderReportId||null,senderName=ctx.options.senderName.trim();
+      const key=before?.senderReportId===senderReportId&&before.senderName===senderName&&ORDER.test(before.key||'')?before.key:randomKey();
+      ctx.body.append(action(ctx,'测试赠送（不收款）',async()=>{
+        if(!adult.input.checked||!agree.input.checked)throw error('PAYMENT_CONSENT_REQUIRED');
+        save(TEST_PENDING,{key,senderReportId,senderName});
+        const response=await member().testingGift({senderReportId:ctx.options.senderReportId||null,senderName:ctx.options.senderName.trim(),idempotencyKey:key,
+          consent:true,adultConfirmed:true,...member().giftPaymentVersions(),synastryConsent:{confirmed:true,version:policy().VERSION}});
+        current(ctx);if(response?.testAccess!==true||response.gift?.testAccess!==true)throw error('ORDER_RESPONSE_INVALID');
+        drop(TEST_PENDING);showGift(ctx,readGift(response.gift));
+      },'gift-button primary'));
+    }).catch(()=>{});
     ctx.body.append(action(ctx,'确认赠送 '+(window.ZxReportOffer?.price('gift_report_v1')||'价格待确认'),async()=>{if(!adult.input.checked||!agree.input.checked)throw error('PAYMENT_CONSENT_REQUIRED');if(!member().paidReportPurchaseReady?.())throw error('REPORT_SALES_NOT_APPROVED');
       const versions=member().giftPaymentVersions(),p=policy(),senderReportId=ctx.options.senderReportId||null,senderName=ctx.options.senderName.trim();
       let pending=stored(PENDING);if(!pending||pending.senderReportId!==senderReportId||pending.senderName!==senderName||!ORDER.test(pending.key||''))pending={key:randomKey(),senderReportId,senderName};
@@ -185,7 +200,7 @@
   async function openOrder(orderNo){const ctx=make('gift');try{if(!ORDER.test(orderNo||''))throw error('ORDER_RESPONSE_INVALID');const bytes=await window.crypto.subtle.digest('SHA-256',new TextEncoder().encode('gift-order:'+orderNo));current(ctx,!!ctx.owner);await openGift(Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join(''));}catch(e){handle(ctx,e);}}
   async function resume(){if(!window.ZxPaidReports?.hasGiftReturn?.())return;try{if(!enabled())return;await member().start();const context=window.ZxPaidReports.consumeGiftReturn();if(!context)return;if(context.mode==='incoming')await showIncoming(context.token);else if(context.mode==='gift')await openGift(context.giftId);else if(context.mode==='records')await openRecords();else await open(context);}catch(_){}}
   function init(){const entry=document.getElementById?.('gift-records-action');if(entry){entry.hidden=!enabled();entry.addEventListener('click',()=>openRecords());}resume();}
-  ['zx-private-session-cleared','zx-account-consent-revoked','zx-local-data-cleared'].forEach(event=>window.addEventListener(event,()=>{drop(PENDING);drop(CLAIM);close();}));
+  ['zx-private-session-cleared','zx-account-consent-revoked','zx-local-data-cleared'].forEach(event=>window.addEventListener(event,()=>{drop(PENDING);drop(CLAIM);drop(TEST_PENDING);close();}));
   window.addEventListener('focus',()=>{if(active?.owner&&active.owner!==owner()){drop(PENDING);drop(CLAIM);close();}});
   window.ZxProfileGift=Object.freeze({open,showIncoming,openGift,openOrder,openRecords,close,resume});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
