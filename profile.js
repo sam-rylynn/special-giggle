@@ -123,8 +123,10 @@
     txt('chart-capacity',`基础图谱 ${rows.length} / ${vault()?.LIMIT||5}`);
     txt('chart-library-note','免费保存5张基础图谱，主动删除前一直保留。已购报告另行保存，不占名额。');
     setLink('add-chart-action','添加图谱',homeFor(null,'new-chart'));
+    setLink('profile-new-chart','填写新资料',homeFor(null,'new-chart'));
     const room=hasRoom();
     $('add-chart-action').setAttribute('aria-disabled',String(!room));
+    $('profile-new-chart').setAttribute('aria-disabled',String(!room));
     txt('chart-capacity-help',room?'':'基础图谱已存满。请主动删除一张后再添加；已购报告按账号另存。');
     function row(data,kind){
       const id=kind==='local'?data.id:data.report_id, picked=!!(selected&&selected.kind===kind&&selected.id===id);
@@ -186,7 +188,7 @@
     txt('invite-description','');
     txt('synastry-records','');
     txt('profile-account-label',serviceState==='ready'?'已登录':serviceState==='closed'?'暂未开放':'登录 / 恢复记录');
-    document.querySelectorAll('[data-home-link]').forEach(link=>{link.href=homeFor(null);});
+    document.querySelectorAll('[data-home-link]').forEach(link=>{link.href=homeFor(entry||item?selected:null);});
     renderLibrary();updateName();$('edit-profile-name').disabled=awaitingLinkedChart();
     if(awaitingLinkedChart()){
       txt('profile-name','原图谱待恢复');txt('profile-status',serviceState==='ready'?'当前账号暂未找到这张图谱':'请恢复链接指定的图谱');txt('profile-name-note','请登录购买时的账号，或选择其他图谱。');
@@ -355,7 +357,7 @@
       try{await vault().remove(id);removeTarget='';$('remove-chart-dialog').close();render();refreshBalance();}
       catch(error){txt('remove-chart-error',error.message||'删除暂未完成，请重试。');}finally{button.disabled=false;}
     });
-    $('add-chart-action').addEventListener('click',event=>{if(!hasRoom()){event.preventDefault();txt('profile-notice',libraryError||'本机已保存5张基础图谱。请先主动删除一张后再添加；已购报告按账号另存。');}});
+    for(const id of ['add-chart-action','profile-new-chart'])$(id).addEventListener('click',event=>{if(!hasRoom()){event.preventDefault();txt('profile-notice',libraryError||'本机已保存5张基础图谱。请先主动删除一张后再添加；已购报告按账号另存。');$('profile-notice').scrollIntoView({block:'center'});}});
     $('report-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);}});
     $('ask-action').addEventListener('click',event=>{const entry=selectedEntry();if(entry){event.preventDefault();openPurchase(entry);}});
     $('report-select').addEventListener('change',()=>{const id=$('report-select').value;if(reports.some(item=>item.report_id===id&&usable(item)))select({kind:'report',id,accountRef:owner});});
