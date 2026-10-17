@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /report.html
+Disallow: /checkout.html
+Disallow: /account.html
+Disallow: /profile.html

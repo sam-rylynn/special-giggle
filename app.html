@@ -4,7 +4,7 @@
 <script>window.ZX_PRIVATE_REPORT_BUILD=true;</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-IX6H4IuFs+aKF5G3tTWR+g8qcChJgdlV+UDts9mbhpQ=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-8BXrcmFfrEI59JhF6uyXI3iGwA/fsUb+PZDwEBGsMfk='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-BvR2bOARYQaI/gX9L65kpoBA5Q0EM5ugwgNojrwZE1o=' 'sha256-IX6H4IuFs+aKF5G3tTWR+g8qcChJgdlV+UDts9mbhpQ=' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4=' 'sha256-nphrOnKc7lHXPOCPLCa4DbJVqelZIua0ptr+ToO8YKs='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
 <script data-zx-runtime-load-guard>(function runtimeLoadGuard(required) {
   'use strict';
   const allowed = new Set(required.map(src => new URL(src, location.href).href));
@@ -659,7 +659,7 @@
     <div class="field"><label for="bDate">出生日期</label><input type="date" id="bDate" min="1940-01-01" max="2026-12-31" aria-describedby="ageHint ageError"><div class="age-hint" id="ageHint">本服务仅向已满 14 周岁的用户提供。</div><div class="field-error" id="ageError" role="alert" hidden></div></div>
     <div class="row2">
       <div class="field"><label for="bTime">出生时间<span class="optional">不确定可留空；节气交界日需补充</span></label><input type="time" id="bTime" aria-describedby="timeError"><div class="field-error" id="timeError" role="alert" hidden></div></div>
-      <div class="field"><label for="bGender">排盘性别<span class="optional">用于当前传统排盘规则</span></label><select id="bGender"><option value="">不填</option><option>女</option><option>男</option><option>其他</option></select></div>
+      <div class="field"><label for="bGender">排盘性别<span class="optional">日主可不填；深度报告需要</span></label><select id="bGender"><option value="">不填</option><option>女</option><option>男</option><option>其他</option></select></div>
     </div>
     <div class="field"><label for="bCity">出生地点<span class="optional">用于时间与地理位置换算</span></label><input type="text" id="bCity" data-birth-location placeholder="输入省、市、区县，例如贵州黔南" maxlength="60" autocomplete="off"></div>
     <button class="cta" id="goBtn" type="button">生成我的日主图谱</button>
@@ -1623,6 +1623,7 @@ async function loadPrivateHomePreview(){
   $('reportPurchaseBtn').disabled=true;
   $('reportPurchaseBtn').textContent=publicReportPurchaseLabel();
   $('reportPreviewRetry').hidden=true;
+  delete $('reportPreviewRetry').dataset.fill;
   try{
     if(!privatePreviewConsent){
       const excerpt=window.ZhixingHomeDecadePreview&&ZhixingHomeDecadePreview.buildTeaser(target.chart);
@@ -1643,7 +1644,7 @@ async function loadPrivateHomePreview(){
         ?'请补充出生时间与性别，才能生成对应的时间解读。'
         :missing.includes('birth_time')?'请补充出生时间，才能生成对应的时间解读。'
         :missing.includes('gender')?'请补充性别，才能生成对应的时间解读。':'这组资料暂时没有可用的年度节选，请核对资料后重试。';
-      $('reportOfferStatus').textContent='请返回资料表单补充后再继续。';
+      $('reportOfferStatus').textContent=offerMissingInput(missing.includes('birth_time'),missing.includes('gender'))||'请返回资料表单补充后再继续。';
       return;
     }
     if(typeof excerpt.body!=='string'||typeof excerpt.title!=='string'||typeof excerpt.source!=='string')throw new Error('REPORT_PREVIEW_INVALID');
@@ -1667,6 +1668,7 @@ async function loadPrivateHomePreview(){
         :missingTime?'请补充出生时间，才能生成对应的时间解读。'
         :missingGender?'请补充性别，才能生成对应的时间解读。':'请核对出生资料后重新生成。';
       $('reportPreviewRetry').hidden=missingTime||missingGender;
+      offerMissingInput(missingTime,missingGender);
     }
     $('reportPurchaseBtn').disabled=false;
     $('reportPurchaseBtn').textContent=publicReportPurchaseLabel();
@@ -1676,7 +1678,26 @@ async function loadPrivateHomePreview(){
   }
 }
 
-$('reportPreviewRetry').onclick=()=>loadPrivateHomePreview();
+// 深度报告需要出生时间与排盘性别；缺失时把节选卡按钮变成直达表单的补充入口。
+function offerMissingInput(missingTime,missingGender){
+  if(!missingTime&&!missingGender)return '';
+  const need=missingTime&&missingGender?'出生时间与排盘性别':missingTime?'出生时间':'排盘性别';
+  const retry=$('reportPreviewRetry');
+  retry.dataset.fill=missingTime?'bTime':'bGender';
+  retry.textContent='补充'+need;
+  retry.hidden=false;
+  return '深度报告需要'+need+'；补充后即可查看节选与购买信息。';
+}
+function focusChartField(id){
+  const current=CUR;
+  if(window.ZxHomeCharts&&current&&current.libraryId&&!current.ownedReport)ZxHomeCharts.edit(current.libraryId);
+  else showFormDirect();
+  setTimeout(()=>{const field=$(id);if(!field)return;field.scrollIntoView({behavior:preferredScrollBehavior(),block:'center'});field.focus({preventScroll:true});},120);
+}
+$('reportPreviewRetry').onclick=()=>{
+  const field=$('reportPreviewRetry').dataset.fill;
+  if(field)focusChartField(field);else loadPrivateHomePreview();
+};
 function resetReportPrepare(){
   document.querySelectorAll('input[name="reportSubject"]').forEach(node=>{node.checked=false});
   $('reportStorageConsent').checked=false;
