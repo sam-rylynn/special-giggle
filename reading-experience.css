@@ -84,10 +84,11 @@ html.zx-reading{background:#050e11;color-scheme:dark}
 .zx-reading #deepAsk:disabled{background:#1c2924;color:#aab7b0}
 .zx-reading :focus-visible{outline:2px solid #efd5a0;outline-offset:4px}
 @media(max-width:760px){
-  .zx-reading .report-hero{padding:80px 4px 28px;margin-bottom:0}
+  .zx-reading .report-hero{padding:72px 4px 24px;margin-bottom:0}
   .zx-reading .report-hero::before{width:34px;height:34px;margin-bottom:16px}
-  .zx-reading #reportTitle{font-size:30px}
-  .zx-reading #reportJudgement{font-size:21px;line-height:1.7}
+  .zx-reading #reportTitle{font-size:26px;margin-block:10px 12px}
+  .zx-reading #reportIdentity{font-size:16px}
+  .zx-reading #reportJudgement{font-size:18px;line-height:1.7;margin-top:14px}
   .zx-reading .report-reader{display:block}
   .zx-reading .reader-rail{display:block;top:0;margin:0 -4px 26px;padding:12px 4px;background:#050e11;border-bottom:1px solid #31413f}
   .zx-reading .reader-rail-inner{padding:0;border:0}
@@ -109,11 +110,18 @@ html.zx-reading{background:#050e11;color-scheme:dark}
      preserves that contract while keeping the heading below the sticky rail. */
   .zx-reading :is(.report-chapter,.reader-tool-page){padding-top:78px;margin-top:-78px}
   .zx-reading .report-chapter>.pad>h2{margin-bottom:20px;scroll-margin-top:90px}
-  .zx-reading .chapter-block h3{font-size:23px}
-  .zx-reading .chapter-block p{line-height:1.95}
-  .zx-reading .action-pair{grid-template-columns:1fr;gap:24px}
-  .zx-reading .action-pair>section+section{border:0;border-top:1px solid #31413f;padding:24px 0 0}
-  .zx-reading .time-year-heading h4{font-size:22px}
+  .zx-reading .chapter-block{margin-top:24px}
+  .zx-reading .chapter-block h3{font-size:20px;line-height:1.5;margin-bottom:12px;text-wrap:pretty}
+  .zx-reading .chapter-block h4{font-size:16px;margin-top:20px}
+  .zx-reading .chapter-block p{line-height:1.8;margin-bottom:12px}
+  .zx-reading .chapter-block blockquote{font-size:18px;line-height:1.8;padding-block:14px}
+  .zx-reading .action-opening>p:first-child{font-size:19px;line-height:1.7}
+  .zx-reading .action-pair{grid-template-columns:1fr;gap:20px;padding-block:24px;margin-block:24px}
+  .zx-reading .action-pair>section+section{border:0;border-top:1px solid #31413f;padding:20px 0 0}
+  .zx-reading .time-year-heading h4{font-size:20px}
+  .zx-reading .time-focus-year{padding-top:28px}
+  .zx-reading .time-turning{margin-top:24px;padding-top:20px}
+  .zx-reading #sec-deep h2{font-size:24px}
   .zx-reading #sec-deep>.pad{padding:0 4px}
 }
 @media(prefers-reduced-motion:reduce){.zx-reading .reader-page.is-active{animation:none}.zx-reading *{scroll-behavior:auto!important}}

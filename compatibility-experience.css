@@ -136,5 +136,22 @@
   .zx-compatibility body[data-route=connections] .archive-open-record{grid-template-columns:minmax(0,1.2fr) minmax(200px,.8fr);gap:40px;align-items:center}
   .zx-compatibility body[data-route=connections] .archive-open-record>img{width:100%;max-width:none;height:auto;margin:0;aspect-ratio:3/2}
 }
-@media(max-width:359px){.zx-compatibility .site-wrap{width:calc(100% - 32px)}.zx-compatibility .header-links{gap:12px}.zx-compatibility .brand{font-size:21px}.zx-chapter-copy strong{font-size:18px}.zx-invite-steps{gap:10px}.zx-invite-steps strong{font-size:15px}.zx-compatibility .type-name small{display:block;margin:0}.zx-compatibility .type-toggle{gap:10px}}
+@media(max-width:759px){
+ .zx-static-home .zx-report-offer{padding-block:24px;margin-top:24px}
+ .zx-report-offer #reportOfferTitle{font-size:22px}
+ .zx-chapter-copy strong{font-size:18px}
+ .zx-chapter-preview>summary{padding-block:14px;gap:10px}
+ .zx-compatibility main{padding-top:20px}
+ .zx-compatibility body[data-route] #app h1{font-size:26px;line-height:1.4}
+ .zx-compatibility body[data-route] #app h2{font-size:20px;line-height:1.5}
+ .zx-compatibility .type-name{font-size:18px}
+ .zx-compatibility .type-toggle{min-height:88px;padding-block:14px}
+ .zx-compatibility .type-detail .synastry-opening__title{font-size:20px}
+ .zx-compatibility .synastry-opening__reason-title{font-size:17px}
+ .zx-compatibility .synastry-opening__reason p,.zx-compatibility .type-detail .synastry-opening__balance p{line-height:1.8}
+ .zx-compatibility .invite-channel-page .channel-choice h2,.zx-compatibility .send-actions h2,.zx-compatibility .archive-state-body h2{font-size:20px}
+ .zx-invite-steps{margin-block:16px 24px;padding-block:16px}
+ .zx-compatibility .rank-dock{margin-top:20px;padding-top:20px}
+}
+@media(max-width:359px){.zx-compatibility .site-wrap{width:calc(100% - 32px)}.zx-compatibility .header-links{gap:12px}.zx-compatibility .brand{font-size:21px}.zx-invite-steps{gap:10px}.zx-invite-steps strong{font-size:15px}.zx-compatibility .type-name small{display:block;margin:0}.zx-compatibility .type-toggle{gap:10px}}
 @media(prefers-reduced-motion:reduce){.zx-chapter-preview,.zx-compatibility *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

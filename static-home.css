@@ -109,10 +109,56 @@ body.zx-static-home[data-view-state="new"][data-new-mode="form"] .wrap { padding
 .zx-static-home .card input, .zx-static-home .card select { background-color: #08171b; color: #f4edde; border-color: #566666; }
 .zx-static-home #cancelChartForm { position: static; margin: 0 28px; }
 .zx-static-home footer { max-width: 620px; margin: 34px auto 0; padding-inline: 28px; }
+/* Mobile reading: preserve the artwork, give the text more usable line width. */
+@media (max-width: 759px) {
+  .zx-static-nav { min-height: 64px; padding: 10px 20px; }
+  .zx-static-brand { font-size: 22px; }
+  .zx-static-title { padding: 12px 20px 0; }
+  .zx-static-home #resultTitle { font-size: 13px; margin-bottom: 6px; }
+  .zx-static-home #rzChars { font-size: 56px; }
+  .zx-static-home #rzImage { font-size: 18px; }
+  .zx-static-home .zx-static-result-hero { grid-template-rows: auto 224px auto; }
+  .zx-static-home #zx-static-art { height: 274px; }
+  .zx-static-home [data-stem="ren"] #zx-static-art { height: 234px; }
+  .zx-static-home .confirmed-hero { padding: 4px 20px 0; }
+  #zx-static-source { font-size: 14px; margin-bottom: 8px; }
+  .zx-static-home #confirmedJudgement { font-size: 24px; line-height: 1.4; }
+  .zx-static-home .idiom-composition { margin-bottom: 10px; }
+  .zx-static-home #confirmedExplanation { font-size: 15px; line-height: 1.8; }
+  .zx-static-links { margin-top: 16px; }
+  .zx-report-link, .zx-static-home #scrollCue { min-height: 48px; font-size: 16px; }
+  .zx-save-link { font-size: 14px; margin-top: 4px; }
+  .zx-static-home #confirmedHome { padding: 24px 20px 0; }
+  .zx-static-home .confirmed-section { padding: 24px 0; }
+  .zx-static-home .confirmed-entry { padding-top: 0; }
+  .zx-static-home .confirmed-section h3 { font-size: 20px; line-height: 1.5; margin-bottom: 14px; }
+  .zx-static-home .confirmed-scenes { gap: 22px; margin-top: 0; }
+  .zx-static-home .confirmed-scene { padding-left: 26px; }
+  .zx-static-home .confirmed-scene h4 { font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+  .zx-static-home :is(.confirmed-scene p,.confirmed-overuse-item p,.reading-preview-questions) { font-size: 15px; line-height: 1.8; }
+  .zx-static-home .confirmed-scene p { margin-top: 6px; }
+  .zx-static-home .confirmed-meta { margin-top: 16px; }
+  .zx-static-home .reading-preview-questions { gap: 10px; padding-left: 1.4em; }
+  .zx-static-home .reading-preview-questions li { padding-left: 3px; }
+  .zx-static-home .reading-preview-note { margin-top: 14px; font-size: 14px; line-height: 1.8; }
+  .zx-static-home #confirmedReadingPreview { padding-bottom: 16px; }
+  .zx-static-home .zx-static-method { padding: 8px 0 12px; }
+  .zx-static-home .zx-static-name { padding: 0; margin: 0; }
+  .zx-static-home .zx-static-method .method-reference { margin-top: 8px; text-align: left; }
+  .zx-static-home #reportPreview, .zx-static-home #shareGate { margin: 20px 20px 0; }
+  .zx-static-home #reportPreview { padding-top: 24px; }
+  .zx-static-home #reportPreviewTitle { font-size: 20px; line-height: 1.5; }
+  .zx-static-home .report-excerpt { font-size: 15px; line-height: 1.8; }
+  .zx-static-home .report-excerpt.is-annual .report-excerpt-context { font-size: 15px; line-height: 1.8; }
+  .zx-static-home #introSection { margin-block: 20px 16px; padding-inline: 20px; }
+  .zx-static-home #formCard, .zx-static-home #chartChooser, .zx-static-home #resumePanel { margin-block: 16px; padding: 20px; }
+  .zx-static-home #formCard h2 { font-size: 24px; }
+  .zx-static-home footer { margin-top: 24px; padding-inline: 20px; }
+}
 @media (max-width: 359px) {
   .zx-static-nav { padding-inline: 20px; gap: 8px; }
-  .zx-static-title, .zx-static-home .confirmed-hero { padding-inline: 22px; }
-  .zx-static-home #confirmedJudgement { font-size: 25px; }
+  .zx-static-title, .zx-static-home .confirmed-hero { padding-inline: 20px; }
+  .zx-static-home #confirmedJudgement { font-size: 22px; }
   .zx-static-nav #day-profile-link, .zx-static-profile-fallback { font-size: 12px; }
 }
 @media (min-width: 760px) {

@@ -1,5 +1,7 @@
 /* Shared reading roles. Approved artwork and cover composition remain owned by their source files. */
 :root{--zx-reading-ink:#e8e4d8;--zx-reading-muted:#b9c4c1;--zx-reading-gold:#d7b77b;--zx-reading-rule:#405451;--zx-reading-surface:#0b171b}
+/* Keep mobile browser autosizing consistent; browser zoom remains available. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 :is(dialog,.profile-purchase-dialog){inset:0;margin:auto!important;overflow:auto;max-height:calc(100dvh - 32px);max-width:calc(100vw - 32px);overscroll-behavior:contain}
 dialog:focus-visible,summary:focus-visible{outline:2px solid var(--zx-reading-gold);outline-offset:4px}
 :is(.confirmed-home,.report-preview,.share-gate){max-width:48rem;margin-inline:auto}
@@ -21,7 +23,10 @@ dialog:focus-visible,summary:focus-visible{outline:2px solid var(--zx-reading-go
 #consentHint{color:var(--zx-reading-gold);font-size:.875rem}
 :is(.zx-static-home,.zx-static-opening,.zx-reading) footer{font-size:.8125rem;line-height:1.8;color:var(--zx-reading-muted)}
 .entry-pair-visual img{mask-image:radial-gradient(ellipse,#000 38%,transparent 76%);-webkit-mask-image:radial-gradient(ellipse,#000 38%,transparent 76%)}
-@media(max-width:600px){:is(.managed-chapter,.social-reading)>h3{font-size:1.375rem}.zx-reading .report-chapter>.pad>h2{font-size:1.5rem}}
+@media(max-width:760px){
+ .zx-reading .report-chapter>.pad>h2{font-size:1.375rem;margin-bottom:1.25rem;padding-bottom:.75rem}
+ .zx-reading .chapter-block p.report-conclusion{font-size:1.125rem;line-height:1.8;margin:1.25rem 0;padding:.75rem 0}
+}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 :is(.synastry-brand img,.report-hero::before,.zx-entrance-symbol){mix-blend-mode:screen}
@@ -34,7 +39,7 @@ dialog:focus-visible,summary:focus-visible{outline:2px solid var(--zx-reading-go
 .managed-view p.managed-reading-conclusion,.social-reading p.social-reading-conclusion{font:500 1.1875rem/1.8 var(--serif);color:var(--zx-reading-ink)}
 .social-reading h4.social-reading-headline,.managed-view h4.managed-reading-headline{font:500 1.25rem/1.6 var(--serif);color:var(--zx-reading-gold)}
 #social-detail .social-reading>h3{font:500 1.5rem/1.5 var(--serif);color:var(--zx-reading-gold);margin:1rem 0 1.5rem}
-@media(max-width:600px){#social-detail .social-reading>h3{font-size:1.375rem}}
+@media(max-width:600px){#social-detail .social-reading>h3{font-size:1.25rem}}
 
 .chart-resume-dialog{box-sizing:border-box;width:min(480px,calc(100vw - 32px));padding:24px;background:#0b171b;color:#e8e4d8;border:1px solid #c9a85c66;border-radius:16px;font:1rem/1.8 system-ui,sans-serif}
 .chart-resume-dialog::backdrop{background:#050916b8}.chart-resume-dialog h2,.chart-resume-panel h2{font:500 1.5rem/1.5 var(--serif,serif);color:#d7b77b}
@@ -70,7 +75,28 @@ dialog.synastry-reading-dialog{width:min(44rem,calc(100vw - 24px));max-width:cal
 .synastry-reading-dialog .synastry-opening :is(.synastry-opening__summary,.synastry-opening__identity,.synastry-opening__basis p,.synastry-opening__basis summary){font-size:.875rem;line-height:1.85;color:var(--zx-reading-muted)}
 .synastry-reading-dialog .synastry-opening__balance :is(h3,h4){font:500 1.125rem/1.7 var(--serif);color:var(--zx-reading-gold)}
 .synastry-reading-dialog .synastry-opening__reason-title{text-wrap:balance}
-@media(max-width:600px){.synastry-reading-dialog .dialog-body{padding:1.25rem}.synastry-reading-dialog .synastry-opening__balance{padding:1.125rem}.synastry-reading-dialog :is(.managed-chapter,.social-reading)>h3{font-size:1.375rem}}
+@media(max-width:600px){
+ .synastry-reading-dialog .dialog-body{padding:1.25rem}
+ .synastry-reading-dialog .synastry-opening{margin:12px 0 8px}
+ .synastry-reading-dialog .synastry-opening__hero{padding:20px 0 16px}
+ .synastry-reading-dialog .synastry-opening .synastry-opening__title{font-size:26px;line-height:1.4;margin:12px 0 8px}
+ .synastry-reading-dialog .synastry-opening .synastry-opening__tagline{font-size:16px;line-height:1.8}
+ .synastry-reading-dialog .synastry-opening__reasons{padding-block:20px;gap:20px}
+ .synastry-reading-dialog .synastry-opening .synastry-opening__reason-title{font-size:18px;line-height:1.6;text-wrap:pretty}
+ .synastry-reading-dialog .synastry-opening__balance{padding:1rem}
+ :is(.managed-chapter,.social-reading)>h3{font-size:1.25rem}
+ .synastry-reading-dialog :is(.managed-chapter,.social-reading){padding:1.25rem 0 .25rem;margin:.5rem 0;font-size:1rem;line-height:1.8}
+ .synastry-reading-dialog :is(.managed-chapter,.social-reading) p{font-size:1rem;line-height:1.8;margin:.75rem 0}
+ .synastry-reading-dialog :is(.managed-chapter,.social-reading)>h3{font-size:1.25rem;line-height:1.5;margin-bottom:1rem}
+ .synastry-reading-dialog :is(h4.managed-reading-headline,h4.social-reading-headline){font-size:1.125rem;line-height:1.6;margin:1.25rem 0 .75rem;text-wrap:pretty}
+ .synastry-reading-dialog :is(p.managed-reading-conclusion,p.social-reading-conclusion){font-size:1.0625rem;line-height:1.8;margin:1rem 0;padding:.75rem 0}
+ .synastry-reading-dialog :is(.managed-reading-action,.social-reading-action){margin:1rem 0}
+ .synastry-reading-dialog :is(.managed-chapter,.social-reading) details{margin:1rem 0}
+ .synastry-reading-dialog .synastry-opening :is(.synastry-opening__paragraph,.synastry-opening__balance p){font-size:1rem;line-height:1.8}
+ .synastry-reading-dialog .synastry-opening .synastry-opening__lead{font-size:1.0625rem;line-height:1.8}
+ .synastry-reading-dialog .synastry-opening__balance :is(h3,h4){font-size:1rem}
+ .synastry-reading-dialog :is(p.managed-note,p.social-note){font-size:.875rem;line-height:1.8}
+}
 @media(max-width:350px){.synastry-reading-dialog .dialog-body{padding:1rem}}
 
 /* Profile essentials: static navigation, readable identity and secondary management. */

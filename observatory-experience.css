@@ -145,11 +145,21 @@
 .zx-observatory.zx-reading :is(.src,.src-inline,.report-download button){font-size:var(--ob-caption)}
 .zx-observatory.zx-reading .meta{font-size:var(--ob-caption);line-height:1.8;color:#aebeb8;text-align:left}
 @media(max-width:760px){
- .zx-observatory.zx-reading body{--ob-body:1.0625rem;--ob-chapter:1.5rem;--ob-heading:1.375rem;--ob-subhead:1.1875rem}
- .zx-observatory.zx-reading #reportTitle{font-size:2rem}
- .zx-observatory.zx-reading #reportJudgement{font-size:1.3125rem;line-height:1.8}
- .zx-observatory.zx-reading .report-chapter>.pad>h2{margin-bottom:24px}
- .zx-observatory.zx-reading .report-chapter blockquote,.zx-observatory.zx-reading .action-opening>p:first-of-type{font-size:1.3125rem}
+ .zx-observatory.zx-reading body{--ob-body:1rem;--ob-chapter:1.375rem;--ob-heading:1.25rem;--ob-subhead:1.0625rem}
+ .zx-observatory.zx-reading #reportTitle{font-size:1.625rem}
+ .zx-observatory.zx-reading #reportJudgement{font-size:1.125rem;line-height:1.75;margin-top:14px}
+ .zx-observatory.zx-reading .report-chapter>.pad>h2{margin-bottom:20px}
+ .zx-observatory.zx-reading .chapter-block{margin-top:24px}
+ .zx-observatory.zx-reading .chapter-block:first-of-type{margin-top:0}
+ .zx-observatory.zx-reading .report-chapter h3{margin-bottom:12px;text-wrap:pretty}
+ .zx-observatory.zx-reading .report-chapter h4{margin:22px 0 10px}
+ .zx-observatory.zx-reading .report-chapter :is(p,li){line-height:1.8}
+ .zx-observatory.zx-reading .report-chapter p{margin-bottom:14px}
+ .zx-observatory.zx-reading .report-chapter blockquote,.zx-observatory.zx-reading .action-opening>p:first-of-type{font-size:1.125rem;line-height:1.8;margin:20px 0;padding:12px 0}
+ .zx-observatory.zx-reading .action-rule{font-size:1.125rem!important;line-height:1.8}
+ .zx-observatory.zx-reading .report-chapter .ten-god-summary{margin:20px 0 24px;padding-block:16px}
+ .zx-observatory.zx-reading .report-chapter .chapter-source{margin-bottom:20px}
+ .zx-observatory.zx-reading .time-year-heading h4{margin:0}
  .zx-observatory.zx-reading .reader-rail{margin-bottom:28px;border-bottom-color:#233832;padding-bottom:16px}
  .zx-observatory .reader-rail-inner>.zx-ob-route{bottom:-10px}
  .zx-observatory.zx-profile .shared-reading-panel .section-description{font-size:13px;line-height:1.7}

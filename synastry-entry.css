@@ -27,9 +27,14 @@
   .syn-shortcut-short{display:inline}
   .syn-reader-shortcut a{padding:8px;gap:6px;flex-shrink:0;font-size:12px}
 }
+@media(max-width:759px){
+  .synastry-approved-layout .syn-entry-home h2{font-size:24px}
+  .synastry-approved-layout .syn-entry-copy{font-size:15px;line-height:1.8;margin-block:10px 16px}
+  .syn-entry-home{margin-block:20px 24px}
+}
 @media(max-width:359px){
   .syn-entry-home{padding:17px}
-  .synastry-approved-layout .syn-entry-home h2{font-size:28px}
+  .synastry-approved-layout .syn-entry-home h2{font-size:22px}
   .syn-entry-actions{gap:7px}
   .synastry-approved-layout .syn-entry-primary,.synastry-approved-layout .syn-entry-secondary{font-size:12px;gap:6px;padding:10px 6px}
 }
