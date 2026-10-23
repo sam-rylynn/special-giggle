@@ -2,32 +2,55 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-4tV3PEdWa4XgUr/IDBHSDCVO9Mhev3qHEmtikafwan4='; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.zhixng.cn; object-src 'none'; base-uri 'none'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'; upgrade-insecure-requests">
-  <meta name="referrer" content="no-referrer">
-<style id="zx-frame-guard">html{visibility:hidden!important}</style>
+  <style id="zx-frame-guard">html{visibility:hidden!important}</style>
 <script>(function(){var guard=document.getElementById('zx-frame-guard');if(window.self===window.top){guard.remove();return;}document.documentElement.setAttribute('aria-hidden','true');window.addEventListener('DOMContentLoaded',function(){document.body.replaceChildren();});})();</script>
-  <meta name="theme-color" content="#020a0e">
-  <title>知星 · 以易理观己，以星盘为证</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070b0e">
+  <meta name="referrer" content="no-referrer">
+  <title>知星 · 观星台</title>
   <link rel="icon" href="./media/static-home/approved-symbol.png" type="image/png">
-  <link rel="stylesheet" href="./static-home.css?v=e1328d3ca182">
-  <script defer src="./static-opening.js?v=f8f9b8184264"></script>
-<link rel="stylesheet" href="./static-opening-production.css?v=17067acfeca3">
-<link rel="stylesheet" href="./h5-reading.css?v=20969762597f">
+  <link rel="preload" as="image" href="./observatory-opening/taiji-original.png" fetchpriority="high">
+  <link rel="stylesheet" href="./observatory-opening/opening.css?v=bf4c09227500">
+  <script defer src="./observatory-opening/lucide.min.js"></script>
+  <script type="module" src="./observatory-opening/opening.js?v=b26980aae8ec"></script>
 </head>
-<body class="zx-static-opening zx-entrance-pending">
-  <main class="zx-entrance">
-    <div class="zx-entrance-frame">
-      <picture class="zx-entrance-picture">
-        <source media="(min-width: 760px) and (min-aspect-ratio: 4/3)" srcset="./media/static-home/entrance-landscape.webp">
-        <img id="zx-entrance-image" src="./media/static-home/approved-entrance-opt.webp" width="563" height="1203" alt="知星，以易理观己，以星盘为证。金色星环环绕玄青太极，两颗宝石映照星空。" fetchpriority="high">
-      </picture>
-      <div class="zx-entrance-copy">
-        <div class="zx-entrance-fallback"><img class="zx-entrance-symbol" src="./media/static-home/approved-symbol.png" width="81" height="82" alt=""><h1>知 星</h1><p>以易理观己，以星盘为证</p></div>
-        <a class="zx-enter" href="./app.html"><span>进入知星 <span aria-hidden="true">→</span></span></a>
-      </div>
+<body>
+  <main class="observatory" aria-label="知星观星台">
+    <div class="scene" aria-hidden="true">
+      <img class="scene-poster" src="./observatory-opening/taiji-original.png" width="1672" height="941" alt="" fetchpriority="high">
+      <canvas class="scene-canvas"></canvas>
+      <div class="scene-shade"></div>
     </div>
+    <header class="masthead">
+      <a class="brand-home" href="./" aria-label="知星首页">
+        <img src="./media/static-home/approved-symbol.png" width="44" height="44" alt="">
+        <span>知星</span>
+      </a>
+      <nav class="tools" aria-label="页面工具">
+        <button class="icon-button motion-control" type="button" aria-label="暂停动态" aria-pressed="false" data-tooltip="暂停动态" hidden>
+          <span class="pause-icon"><i data-lucide="pause" aria-hidden="true"></i></span>
+          <span class="play-icon"><i data-lucide="play" aria-hidden="true"></i></span>
+        </button>
+        <a class="profile-link" href="./profile.html" aria-label="我的资料" data-tooltip="我的资料">
+          <i data-lucide="user-round" aria-hidden="true"></i><span>我的资料</span>
+        </a>
+      </nav>
+    </header>
+    <section class="brand-lockup" aria-label="知星，以易理观己，以星盘为证">
+      <div class="brand-rule" aria-hidden="true"></div>
+      <h1><span>知</span><span>星</span></h1>
+      <p>以易理观己<span class="tagline-separator" aria-hidden="true"></span>以星盘为证</p>
+    </section>
+    <div class="entry-action">
+      <a class="enter" href="./app.html"><span>进入知星</span><i data-lucide="arrow-right" aria-hidden="true"></i></a>
+      <span class="entry-line" aria-hidden="true"></span>
+    </div>
+    <footer class="filing">
+      <span>贵州天云稀泉科技有限公司</span>
+      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">黔ICP备2026013593号-1</a>
+    </footer>
+    <div class="blackout" aria-hidden="true"></div>
   </main>
-<footer class="filing-footer">贵州天云稀泉科技有限公司 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">黔ICP备2026013593号-1</a></footer>
 </body>
 </html>
